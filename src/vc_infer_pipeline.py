@@ -106,7 +106,7 @@ class VC(object):
             np.float32
         )  # fixes the F.conv2D exception. We needed to convert double to float.
         x /= np.quantile(np.abs(x), 0.999)
-        torch_device = self.get_optimal_torch_device()
+        torch_device = self.device
         audio = torch.from_numpy(x).to(torch_device, copy=True)
         audio = torch.unsqueeze(audio, dim=0)
         if audio.ndim == 2 and audio.shape[0] > 1:
@@ -466,7 +466,7 @@ class VC(object):
                     (net_g.infer(feats, p_len, sid)[0][0, 0]).data.cpu().float().numpy()
                 )
         del feats, p_len, padding_mask
-        if torch.cuda.is_available():
+        if self.device.startswith("cuda"):
             torch.cuda.empty_cache()
         t2 = ttime()
         times[0] += t1 - t0
@@ -651,6 +651,6 @@ class VC(object):
             max_int16 /= audio_max
         audio_opt = (audio_opt * max_int16).astype(np.int16)
         del pitch, pitchf, sid
-        if torch.cuda.is_available():
+        if self.device.startswith("cuda"):
             torch.cuda.empty_cache()
         return audio_opt, tgt_sr

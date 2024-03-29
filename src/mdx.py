@@ -5,6 +5,7 @@ import queue
 import threading
 import warnings
 
+import multiprocessing
 import librosa
 import numpy as np
 import onnxruntime as ort
@@ -89,18 +90,15 @@ class MDX:
     DEFAULT_CHUNK_SIZE = 0 * DEFAULT_SR
     DEFAULT_MARGIN_SIZE = 1 * DEFAULT_SR
 
-    DEFAULT_PROCESSOR = 0
-
-    def __init__(self, model_path: str, params: MDXModel, processor=DEFAULT_PROCESSOR):
+    def __init__(self, model_path: str, params: MDXModel, device_id="cpu"):
 
         # Set the device and the provider (CPU or CUDA)
-        self.device = (
-            torch.device(f"cuda:{processor}") if processor >= 0 else torch.device("cpu")
-        )
+        self.device = torch.device(device_id)
         self.provider = (
-            ["CUDAExecutionProvider"] if processor >= 0 else ["CPUExecutionProvider"]
+            ["CPUExecutionProvider"]
+            if device_id == "cpu"
+            else ["CUDAExecutionProvider"]
         )
-
         self.model = params
 
         # Load the ONNX model using ONNX Runtime
@@ -304,14 +302,17 @@ def run_mdx(
     keep_orig=True,
     m_threads=2,
     sr=44100,
+    device_id="cpu",
 ):
-    device = (
-        torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
-    )
-
-    device_properties = torch.cuda.get_device_properties(device)
-    vram_gb = device_properties.total_memory / 1024**3
-    m_threads = 1 if vram_gb < 8 else 2
+    device = torch.device(device_id)
+    if device_id.startswith("cuda"):
+        device_properties = torch.cuda.get_device_properties(device)
+        vram_gb = device_properties.total_memory / 1024**3
+        m_threads = 1 if vram_gb < 8 else 2
+    elif device_id.startswith("mps"):
+        m_threads = 1
+    else:
+        m_threads = multiprocessing.cpu_count()
 
     model_hash = MDX.get_hash(model_path)
     mp = model_params.get(model_hash)
@@ -324,7 +325,7 @@ def run_mdx(
         compensation=mp["compensate"],
     )
 
-    mdx_sess = MDX(model_path, model)
+    mdx_sess = MDX(model_path, model, device_id)
     wave, sr = librosa.load(filename, mono=False, sr=sr)
     # normalizing input wave gives better output
     peak = max(np.max(wave), abs(np.min(wave)))

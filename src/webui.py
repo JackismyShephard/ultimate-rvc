@@ -8,12 +8,28 @@ from argparse import ArgumentParser
 import gradio as gr
 
 from main import song_cover_pipeline
+import torch
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 mdxnet_models_dir = os.path.join(BASE_DIR, "mdxnet_models")
 rvc_models_dir = os.path.join(BASE_DIR, "rvc_models")
 output_dir = os.path.join(BASE_DIR, "song_output")
+
+
+def get_gpus_info():
+    ngpu = torch.cuda.device_count()
+    gpu_infos = []
+    for i in range(ngpu):
+        gpu_name = torch.cuda.get_device_name(i)
+        mem = int(
+            (
+                torch.cuda.get_device_properties(i).total_memory / 1024 / 1024 / 1024
+                + 0.4
+            )
+        )
+        gpu_infos.append((i, gpu_name, mem))
+    return gpu_infos
 
 
 def get_current_models(models_dir):
@@ -427,6 +443,28 @@ if __name__ == "__main__":
                     info="Sample rate of generated audio files (including intermediate files)",
                 )
 
+            with gr.Accordion("Hardware acceleration", open=False):
+                gpu_infos = get_gpus_info()
+                gpu_options = [
+                    (
+                        "%s: %s %s GB" % (i, gpu_name, mem),
+                        f"cuda:{i}",
+                    )
+                    for i, gpu_name, mem in gpu_infos
+                ]
+
+                mps_options = (
+                    [("MPS", "mps")] if torch.backends.mps.is_available() else []
+                )
+
+                cpu_options = [("CPU", "cpu")]
+                device = gr.Radio(
+                    choices=cpu_options + gpu_options + mps_options,
+                    value="cpu" if not gpu_options else gpu_options[0][1],
+                    label="Inference device",
+                    info="Device used for audio generation",
+                )
+
             with gr.Row():
                 clear_btn = gr.ClearButton(
                     value="Clear",
@@ -461,6 +499,7 @@ if __name__ == "__main__":
                     reverb_damping,
                     output_format,
                     output_sr,
+                    device,
                 ],
                 outputs=[ai_cover],
             )

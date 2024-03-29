@@ -8,6 +8,7 @@ import subprocess
 from contextlib import suppress
 from urllib.parse import urlparse, parse_qs
 
+import torch
 import gradio as gr
 import librosa
 import numpy as np
@@ -130,7 +131,7 @@ def get_audio_paths(song_dir, sr):
 
 
 def convert_to_stereo(audio_path):
-    wave, sr = librosa.load(audio_path, mono=False, sr=44100)
+    wave, _ = librosa.load(audio_path, mono=False, sr=44100)
 
     # check if mono
     if type(wave[0]) != np.ndarray:
@@ -180,6 +181,7 @@ def preprocess_song(
     input_type,
     progress=None,
     output_sr=44100,
+    device="cpu",
 ):
     keep_orig = False
     if input_type == "yt":
@@ -206,6 +208,7 @@ def preprocess_song(
         denoise=True,
         keep_orig=keep_orig,
         sr=output_sr,
+        device_id=device,
     )
 
     display_progress(
@@ -220,6 +223,7 @@ def preprocess_song(
         invert_suffix="Main",
         denoise=True,
         sr=output_sr,
+        device_id=device,
     )
 
     display_progress("[~] Applying DeReverb to Vocals...", 0.3, is_webui, progress)
@@ -232,6 +236,7 @@ def preprocess_song(
         exclude_main=True,
         denoise=True,
         sr=output_sr,
+        device_id=device,
     )
 
     return (
@@ -257,9 +262,9 @@ def voice_change(
     crepe_hop_length,
     is_webui,
     output_sr,
+    device="cpu",
 ):
     rvc_model_path, rvc_index_path = get_rvc_model(voice_model, is_webui)
-    device = "cuda:0"
     config = Config(device, True)
     hubert_model = load_hubert(
         device, config.is_half, os.path.join(rvc_models_dir, "hubert_base.pt")
@@ -359,9 +364,20 @@ def song_cover_pipeline(
     reverb_damping=0.7,
     output_format="mp3",
     output_sr=44100,
+    device="cpu",
     progress=gr.Progress(),
 ):
     try:
+        if (
+            device.startswith("cuda")
+            and not torch.cuda.is_available()
+            or device.startswith("mps")
+            and not torch.backends.mps.is_available()
+        ):
+            raise_exception(
+                "Inference device not found",
+                is_webui,
+            )
         if not song_input or not voice_model:
             raise_exception(
                 "Ensure that the song input field and voice model field is filled.",
@@ -413,6 +429,7 @@ def song_cover_pipeline(
                 input_type,
                 progress,
                 output_sr,
+                device,
             )
 
         else:
@@ -436,6 +453,7 @@ def song_cover_pipeline(
                     input_type,
                     progress,
                     output_sr,
+                    device,
                 )
             else:
                 (
@@ -472,6 +490,7 @@ def song_cover_pipeline(
                 crepe_hop_length,
                 is_webui,
                 output_sr,
+                device,
             )
 
         display_progress(
@@ -660,6 +679,13 @@ if __name__ == "__main__":
         type=int,
         default=44100,
         help="Sample rate of generated audio files (also including intermediate audio files)",
+    )
+    parser.add_argument(
+        "-d",
+        "--device",
+        type=str,
+        default="cpu",
+        help="Device used for audio generation",
     )
     args = parser.parse_args()
 
