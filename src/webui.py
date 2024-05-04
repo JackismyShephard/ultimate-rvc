@@ -6,6 +6,8 @@ import zipfile
 from argparse import ArgumentParser
 
 import gradio as gr
+from gradio.context import Context
+
 import asyncio
 
 from functools import partial
@@ -27,6 +29,21 @@ if os.name == "nt":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 progress_bar = gr.Progress()
+
+
+def persist(component):
+    sessions = {}
+
+    def resume_session(value, request: gr.Request):
+        return sessions.get(request.username, value)
+
+    def update_session(value, request: gr.Request):
+        sessions[request.username] = value
+
+    Context.root_block.load(resume_session, inputs=[component], outputs=component)
+    component.change(update_session, inputs=[component])
+
+    return component
 
 
 def exception_harness(fun, *args):
@@ -357,17 +374,21 @@ with gr.Blocks(title="AICoverGenWebUI") as app:
         with gr.Accordion("Main Options"):
             with gr.Row():
                 with gr.Column():
-                    rvc_model = gr.Dropdown(
-                        voice_models,
-                        label="Voice Models",
-                        info='Models folder "AICoverGen --> rvc_models". After new models are added into this folder, click the refresh button',
+                    rvc_model = persist(
+                        gr.Dropdown(
+                            voice_models,
+                            label="Voice Models",
+                            info='Models folder "AICoverGen --> rvc_models". After new models are added into this folder, click the refresh button',
+                        )
                     )
                     ref_btn = gr.Button("Refresh Models 🔁", variant="primary")
 
                 with gr.Column() as yt_link_col:
-                    song_input = gr.Text(
-                        label="Song input",
-                        info="Link to a song on YouTube or full path to a local file. For file upload, click the button below.",
+                    song_input = persist(
+                        gr.Text(
+                            label="Song input",
+                            info="Link to a song on YouTube or full path to a local file. For file upload, click the button below.",
+                        )
                     )
                     show_file_upload_button = gr.Button("Upload file instead")
 
@@ -386,21 +407,25 @@ with gr.Blocks(title="AICoverGenWebUI") as app:
                     )
 
                 with gr.Column():
-                    pitch = gr.Slider(
-                        -3,
-                        3,
-                        value=0,
-                        step=1,
-                        label="Pitch Change (Vocals ONLY)",
-                        info="Generally, use 1 for male to female conversions and -1 for vice-versa. (Octaves)",
+                    pitch = persist(
+                        gr.Slider(
+                            -3,
+                            3,
+                            value=0,
+                            step=1,
+                            label="Pitch Change (Vocals ONLY)",
+                            info="Generally, use 1 for male to female conversions and -1 for vice-versa. (Octaves)",
+                        )
                     )
-                    pitch_all = gr.Slider(
-                        -12,
-                        12,
-                        value=0,
-                        step=1,
-                        label="Overall Pitch Change",
-                        info="Changes pitch/key of vocals and instrumentals together. Altering this slightly reduces sound quality. (Semitones)",
+                    pitch_all = persist(
+                        gr.Slider(
+                            -12,
+                            12,
+                            value=0,
+                            step=1,
+                            label="Overall Pitch Change",
+                            info="Changes pitch/key of vocals and instrumentals together. Altering this slightly reduces sound quality. (Semitones)",
+                        )
                     )
                 show_file_upload_button.click(
                     swap_visibility,
