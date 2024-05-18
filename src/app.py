@@ -9,7 +9,7 @@ from functools import partial
 from manage_voice_models import (
     get_current_models,
     load_public_models_table,
-    load_public_models_tags,
+    load_public_model_tags,
     filter_public_models_table,
     download_online_model,
     upload_local_model,
@@ -18,6 +18,7 @@ from manage_voice_models import (
 )
 
 from generate_song_cover import (
+    get_cached_input_songs,
     make_song_dir,
     retrieve_song,
     separate_vocals,
@@ -97,6 +98,11 @@ def update_model_lists():
     return gr.Dropdown(choices=models_l), gr.Dropdown(choices=models_l, value=[])
 
 
+def update_cached_input_songs():
+    songs_l = get_cached_input_songs()
+    return gr.Dropdown(choices=songs_l)
+
+
 def pub_dl_autofill(pub_models, event: gr.SelectData):
     return gr.Text(value=pub_models.loc[event.index[0], "URL"]), gr.Text(
         value=pub_models.loc[event.index[0], "Model Name"]
@@ -161,6 +167,7 @@ def toggle_intermediate_files(index, *paths):
 
 
 voice_models = get_current_models()
+cached_input_songs = get_cached_input_songs()
 
 with gr.Blocks(title="Ultimate RVC") as app:
 
@@ -190,6 +197,16 @@ with gr.Blocks(title="Ultimate RVC") as app:
                         process_file_upload,
                         inputs=[song_input_file],
                         outputs=[local_file, song_input],
+                    )
+                with gr.Column() as cached_input_songs_col:
+                    cached_input_songs_dropdown = gr.Dropdown(
+                        cached_input_songs,
+                        label="Cached input songs",
+                    )
+                    cached_input_songs_dropdown.input(
+                        lambda x: gr.update(value=x),
+                        inputs=[cached_input_songs_dropdown],
+                        outputs=[song_input],
                     )
 
                 with gr.Column():
@@ -471,6 +488,10 @@ with gr.Blocks(title="Ultimate RVC") as app:
                 ai_cover,
             ],
         ).then(
+            update_cached_input_songs,
+            inputs=None,
+            outputs=[cached_input_songs_dropdown],
+        ).then(
             lambda: gr.update(interactive=True),
             inputs=[],
             outputs=generate_btn2,
@@ -644,7 +665,7 @@ with gr.Blocks(title="Ultimate RVC") as app:
                 filter_tags = gr.CheckboxGroup(
                     value=[],
                     label="Show voice models with tags",
-                    choices=load_public_models_tags(),
+                    choices=load_public_model_tags(),
                 )
                 search_query = gr.Text(label="Search")
 

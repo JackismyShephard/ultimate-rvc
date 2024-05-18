@@ -2,6 +2,7 @@ import argparse
 import gc
 import json
 import os
+import glob
 from pathlib import Path
 import shutil
 import shlex
@@ -16,7 +17,7 @@ from pedalboard import Pedalboard, Reverb, Compressor, HighpassFilter
 from pedalboard.io import AudioFile
 from pydub import AudioSegment, utils as pydub_utils
 
-from common import MDXNET_MODELS_DIR, RVC_MODELS_DIR, SONGS_DIR
+from common import MDXNET_MODELS_DIR, RVC_MODELS_DIR, SONGS_DIR, TEMP_AUDIO_DIR
 from common import display_progress, json_dump, get_hash, get_file_hash, get_rvc_model
 from mdx import run_mdx
 from rvc import Config, load_hubert, get_vc, rvc_infer
@@ -76,6 +77,18 @@ def yt_download(link, song_dir):
         download_path = ydl.prepare_filename(result, outtmpl=f"{outtmpl}.mp3")
 
     return download_path
+
+
+def get_cached_input_songs():
+    temp_songs_pattern = os.path.join(TEMP_AUDIO_DIR, "*", "*_Original*")
+    cached_input_song_paths = glob.glob(temp_songs_pattern)
+    cached_input_song_names = [
+        os.path.splitext(os.path.basename(path))[0]
+        .removeprefix("0_")
+        .removesuffix("_Original")
+        for path in cached_input_song_paths
+    ]
+    return [(name, path) for name, path in zip(cached_input_song_names, cached_input_song_paths)]
 
 
 def pitch_shift(audio_path, output_path, n_semi_tones):
@@ -213,6 +226,14 @@ def make_song_dir(
         raise Exception(
             "Ensure that the song input field and voice model field is filled."
         )
+    # TODO use regex for testing that song_input matches TEMP_AUDIO_DIR/*/*.mp3
+    # and at the same time extracting the song_dir
+    if song_input.startswith(TEMP_AUDIO_DIR) and os.path.exists(song_input):
+        display_progress("[~] Using existing song directory...", 0.012, progress)
+        song_dir, _ = os.path.split(song_input)
+        input_type = "local"
+        return song_dir, input_type
+
     display_progress("[~] Creating song directory...", 0.012, progress)
     # if youtube url
     if urlparse(song_input).scheme == "https":
@@ -234,7 +255,7 @@ def make_song_dir(
             song_id = None
             raise Exception(error_msg)
 
-    song_dir = os.path.join(SONGS_DIR, "temp", song_id)
+    song_dir = os.path.join(TEMP_AUDIO_DIR, song_id)
 
     Path(song_dir).mkdir(parents=True, exist_ok=True)
 
