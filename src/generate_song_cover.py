@@ -2,6 +2,7 @@ import argparse
 import gc
 import json
 import os
+import glob
 from pathlib import Path
 import shutil
 import shlex
@@ -76,6 +77,18 @@ def yt_download(link, song_dir):
         download_path = ydl.prepare_filename(result, outtmpl=f"{outtmpl}.mp3")
 
     return download_path
+
+
+def get_cached_input_songs():
+    temp_songs_pattern = os.path.join(TEMP_AUDIO_DIR, "*", "*_Original*")
+    cached_input_song_paths = glob.glob(temp_songs_pattern)
+    cached_input_song_names = [
+        os.path.splitext(os.path.basename(path))[0]
+        .removeprefix("0_")
+        .removesuffix("_Original")
+        for path in cached_input_song_paths
+    ]
+    return [(name, path) for name, path in zip(cached_input_song_names, cached_input_song_paths)]
 
 
 def pitch_shift(audio_path, output_path, n_semi_tones):
@@ -213,6 +226,14 @@ def make_song_dir(
         raise Exception(
             "Ensure that the song input field and voice model field is filled."
         )
+    # TODO use regex for testing that song_input matches TEMP_AUDIO_DIR/*/*.mp3
+    # and at the same time extracting the song_dir
+    if song_input.startswith(TEMP_AUDIO_DIR) and os.path.exists(song_input):
+        display_progress("[~] Using existing song directory...", 0.012, progress)
+        song_dir, _ = os.path.split(song_input)
+        input_type = "local"
+        return song_dir, input_type
+
     display_progress("[~] Creating song directory...", 0.012, progress)
     # if youtube url
     if urlparse(song_input).scheme == "https":
@@ -713,7 +734,6 @@ def run_pipeline(
     output_sr=44100,
     output_format="mp3",
     keep_files=True,
-    return_files=False,
     progress=None,
 ):
     display_progress("[~] Starting song cover generation pipeline...", 0, progress)
@@ -774,7 +794,7 @@ def run_pipeline(
         keep_files,
         progress,
     )
-    if keep_files and return_files:
+    if keep_files:
         return (
             orig_song_path,
             vocals_path,

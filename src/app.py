@@ -18,6 +18,7 @@ from manage_voice_models import (
 )
 
 from generate_song_cover import (
+    get_cached_input_songs,
     make_song_dir,
     retrieve_song,
     separate_vocals,
@@ -97,6 +98,11 @@ def update_model_lists():
     return gr.Dropdown(choices=models_l), gr.Dropdown(choices=models_l, value=[])
 
 
+def update_cached_input_songs():
+    songs_l = get_cached_input_songs()
+    return gr.Dropdown(choices=songs_l)
+
+
 def pub_dl_autofill(pub_models, event: gr.SelectData):
     return gr.Text(value=pub_models.loc[event.index[0], "URL"]), gr.Text(
         value=pub_models.loc[event.index[0], "Model Name"]
@@ -123,13 +129,45 @@ def show_hop_slider(pitch_detection_algo):
         return gr.update(visible=False)
 
 
-def toggle_intermediate_files_accordion(visible):
-    audio_components = (None,) * 10
-    accordions = (gr.update(open=False),) * 7
-    return (gr.update(visible=visible, open=False),) + accordions + audio_components
+def toggle_intermediate_files(index, *paths):
+    print(paths)
+    kwargs_sets = [gr.update(visible=False)] * 2
+    track_rows = gr.Row(visible=False)
+    labels = [
+        "Original song",
+        "Instrumentals",
+        "Vocals",
+        "Main vocals",
+        "Backup vocals",
+        "De-reverbed main vocals",
+        "Converted vocals",
+        "Post-processed vocals",
+        "Pitch shifted instrumentals",
+        "Pitch shifted backup vocals",
+    ]
+    if index:
+        if index == 1:
+            indices = [0]
+        if index == 2:
+            indices = [1, 2]
+        elif index == 3:
+            indices = [3, 4]
+        elif index == 4:
+            indices = [5]
+        elif index == 5:
+            indices = [6]
+        elif index == 6:
+            indices = [7]
+        elif index == 7:
+            indices = [8, 9]
+        for j, i in enumerate(indices):
+            kwargs_sets[j] = gr.update(visible=True, value=paths[i], label=labels[i])
+        track_rows = gr.Row(visible=True)
+    return tuple(kwargs_sets + [track_rows])
 
 
 voice_models = get_current_models()
+cached_input_songs = get_cached_input_songs()
 
 with gr.Blocks(title="Ultimate RVC") as app:
 
@@ -159,6 +197,16 @@ with gr.Blocks(title="Ultimate RVC") as app:
                         process_file_upload,
                         inputs=[song_input_file],
                         outputs=[local_file, song_input],
+                    )
+                with gr.Column() as cached_input_songs_col:
+                    cached_input_songs_dropdown = gr.Dropdown(
+                        cached_input_songs,
+                        label="Cached input songs",
+                    )
+                    cached_input_songs_dropdown.input(
+                        lambda x: gr.update(value=x),
+                        inputs=[cached_input_songs_dropdown],
+                        outputs=[song_input],
                     )
 
                 with gr.Column():
@@ -300,97 +348,76 @@ with gr.Blocks(title="Ultimate RVC") as app:
                 value="mp3",
                 label="Output file format",
             )
-        with gr.Accordion("Intermediate file options", open=False):
+        with gr.Accordion("Intermediate audio options", open=False):
             with gr.Row():
                 keep_files = gr.Checkbox(
-                    label="Keep intermediate files",
+                    label="Keep intermediate audio files",
                     value=True,
                     info="Keep all intermediate audio files. Leave unchecked to save space",
                 )
-                show_intermediate_files = gr.Checkbox(
-                    label="Show intermediate files",
-                    value=False,
-                    info="Show available intermediate audio files when audio generation completes. Leave unchecked to optimize performance.",
+            with gr.Row():
+                intermediate_files_dropdown = gr.Dropdown(
+                    [
+                        "None",
+                        "Step 0: input",
+                        "Step 1: instrumentals/vocals separation",
+                        "Step 2: main vocals/ backup vocals separation",
+                        "Step 3: main vocals cleanup",
+                        "Step 4: conversion of main vocals",
+                        "Step 5: post-processing of converted vocals",
+                        "Step 6: Pitch shift of instrumentals and backup vocals",
+                    ],
+                    label="Select intermediate audio files",
+                    type="index",
+                    value="None",
                 )
-        intermediate_files_accordion = gr.Accordion(
-            "Access intermediate files", open=False, visible=False
-        )
-        with intermediate_files_accordion:
-            original_accordion = gr.Accordion(
-                "Step 0: input",
-                open=False,
-            )
-            with original_accordion:
-                original_track = gr.Audio(
-                    label="Original song", type="filepath", interactive=False
+                view_intermediate_files_btn = gr.Button(
+                    "View selected intermediate audio files", variant="primary"
                 )
-            vocals_separation_accordion = gr.Accordion(
-                "Step 1: instrumentals/vocals separation",
-                open=False,
-            )
-            with vocals_separation_accordion:
-                with gr.Row():
-                    instrumentals_track = gr.Audio(
-                        label="Instrumentals", type="filepath", interactive=False
-                    )
-                    vocals_track = gr.Audio(
-                        label="Vocals", type="filepath", interactive=False
-                    )
-            main_vocals_separation_accordion = gr.Accordion(
-                "Step 2: main vocals/ backup vocals separation",
-                open=False,
-            )
-            with main_vocals_separation_accordion:
-                with gr.Row():
-                    main_vocals_track = gr.Audio(
-                        label="Main vocals", type="filepath", interactive=False
-                    )
-                    backup_vocals_track = gr.Audio(
-                        label="Backup vocals", type="filepath", interactive=False
-                    )
-            main_vocals_cleanup_accordion = gr.Accordion(
-                "Step 3: main vocals cleanup",
-                open=False,
-            )
-            with main_vocals_cleanup_accordion:
-                main_vocals_dereverbed_track = gr.Audio(
-                    label="De-reverbed main vocals", type="filepath", interactive=False
-                )
-            vocals_conversion_accordion = gr.Accordion(
-                "Step 4: conversion of main vocals",
-                open=False,
-            )
-            with vocals_conversion_accordion:
-                ai_vocals_track = gr.Audio(
-                    label="Converted vocals", type="filepath", interactive=False
-                )
-            vocals_postprocessing_accordion = gr.Accordion(
-                "Step 5: post-processing of converted vocals",
-                open=False,
-            )
-            with vocals_postprocessing_accordion:
-                mixed_ai_vocals_track = gr.Audio(
-                    label="Post-processed vocals",
+            original_path = gr.State()
+            instrumentals_path = gr.State()
+            vocals_path = gr.State()
+            main_vocals_path = gr.State()
+            backup_vocals_path = gr.State()
+            main_vocals_dereverbed_path = gr.State()
+            ai_vocals_path = gr.State()
+            mixed_ai_vocals_path = gr.State()
+            instrumentals_shifted_path = gr.State()
+            backup_vocals_shifted_path = gr.State()
+            row0 = gr.Row(visible=False)
+            with row0:
+                intermediate_track1 = gr.Audio(
                     type="filepath",
                     interactive=False,
+                    visible=False,
                 )
-            pitch_shift_accordion = gr.Accordion(
-                "Step 6: Pitch shift of instrumentals and backup vocals",
-                open=False,
-            )
-            with pitch_shift_accordion:
-                with gr.Row():
-                    instrumentals_shifted_track = gr.Audio(
-                        label="Pitch shifted instrumentals",
-                        type="filepath",
-                        interactive=False,
-                    )
-                    backup_vocals_shifted_track = gr.Audio(
-                        label="Pitch shifted backup vocals",
-                        type="filepath",
-                        interactive=False,
-                    )
+                intermediate_track2 = gr.Audio(
+                    type="filepath",
+                    interactive=False,
+                    visible=False,
+                )
 
+        view_intermediate_files_btn.click(
+            toggle_intermediate_files,
+            inputs=[
+                intermediate_files_dropdown,
+                original_path,
+                instrumentals_path,
+                vocals_path,
+                main_vocals_path,
+                backup_vocals_path,
+                main_vocals_dereverbed_path,
+                ai_vocals_path,
+                mixed_ai_vocals_path,
+                instrumentals_shifted_path,
+                backup_vocals_shifted_path,
+            ],
+            outputs=[
+                intermediate_track1,
+                intermediate_track2,
+                row0,
+            ],
+        )
         with gr.Row():
             clear_btn = gr.Button(
                 value="Reset settings",
@@ -400,37 +427,28 @@ with gr.Blocks(title="Ultimate RVC") as app:
                 "Generate step-by-step", variant="primary", scale=1, visible=False
             )
             generate_btn = gr.Button("Generate", variant="primary", scale=2)
-            ai_cover = gr.Audio(label="Song cover", scale=3)
-        show_intermediate_files.change(
-            toggle_intermediate_files_accordion,
-            inputs=show_intermediate_files,
-            outputs=[
-                intermediate_files_accordion,
-                original_accordion,
-                vocals_separation_accordion,
-                main_vocals_separation_accordion,
-                main_vocals_cleanup_accordion,
-                vocals_conversion_accordion,
-                vocals_postprocessing_accordion,
-                pitch_shift_accordion,
-                original_track,
-                vocals_track,
-                instrumentals_track,
-                main_vocals_track,
-                backup_vocals_track,
-                main_vocals_dereverbed_track,
-                ai_vocals_track,
-                mixed_ai_vocals_track,
-                instrumentals_shifted_track,
-                backup_vocals_shifted_track,
-            ],
-        )
+            ai_cover = gr.Audio(
+                label="Song cover", scale=3, type="filepath", interactive=False
+            )
         song_dir = gr.State()
         input_type = gr.State()
+
         generate_btn.click(
-            lambda: (gr.update(interactive=False),) * 2,
+            lambda: (gr.update(interactive=False),) + (None,) * 10,
             inputs=[],
-            outputs=[show_intermediate_files, generate_btn2],
+            outputs=[
+                generate_btn2,
+                original_path,
+                vocals_path,
+                instrumentals_path,
+                main_vocals_path,
+                backup_vocals_path,
+                main_vocals_dereverbed_path,
+                ai_vocals_path,
+                mixed_ai_vocals_path,
+                instrumentals_shifted_path,
+                backup_vocals_shifted_path,
+            ],
             show_progress=False,
         ).success(
             partial(exception_harness, update_audio_components),
@@ -455,32 +473,49 @@ with gr.Blocks(title="Ultimate RVC") as app:
                 output_sr,
                 output_format,
                 keep_files,
-                show_intermediate_files,
             ],
             outputs=[
-                original_track,
-                vocals_track,
-                instrumentals_track,
-                main_vocals_track,
-                backup_vocals_track,
-                main_vocals_dereverbed_track,
-                ai_vocals_track,
-                mixed_ai_vocals_track,
-                instrumentals_shifted_track,
-                backup_vocals_shifted_track,
+                original_path,
+                vocals_path,
+                instrumentals_path,
+                main_vocals_path,
+                backup_vocals_path,
+                main_vocals_dereverbed_path,
+                ai_vocals_path,
+                mixed_ai_vocals_path,
+                instrumentals_shifted_path,
+                backup_vocals_shifted_path,
                 ai_cover,
             ],
         ).then(
-            lambda: (gr.update(interactive=True),) * 2,
+            update_cached_input_songs,
+            inputs=None,
+            outputs=[cached_input_songs_dropdown],
+        ).then(
+            lambda: gr.update(interactive=True),
             inputs=[],
-            outputs=[show_intermediate_files, generate_btn2],
+            outputs=generate_btn2,
             show_progress=False,
         )
 
         generate_btn2.click(
-            lambda: (gr.update(interactive=False),) * 4,
+            lambda: (gr.update(interactive=False),) * 3 + (None,) * 10,
             inputs=[],
-            outputs=[show_intermediate_files, generate_btn, generate_btn2, clear_btn],
+            outputs=[
+                generate_btn,
+                generate_btn2,
+                clear_btn,
+                original_path,
+                vocals_path,
+                instrumentals_path,
+                main_vocals_path,
+                backup_vocals_path,
+                main_vocals_dereverbed_path,
+                ai_vocals_path,
+                mixed_ai_vocals_path,
+                instrumentals_shifted_path,
+                backup_vocals_shifted_path,
+            ],
             show_progress=False,
         ).success(
             partial(exception_harness, make_song_dir),
@@ -492,23 +527,23 @@ with gr.Blocks(title="Ultimate RVC") as app:
         ).success(
             partial(duplication_harness, retrieve_song),
             inputs=[song_input, input_type, song_dir],
-            outputs=[ai_cover, original_track],
+            outputs=[ai_cover, original_path],
         ).success(
             partial(duplication_harness, separate_vocals),
-            inputs=[original_track, song_dir],
-            outputs=[ai_cover, vocals_track, instrumentals_track],
+            inputs=[original_path, song_dir],
+            outputs=[ai_cover, vocals_path, instrumentals_path],
         ).success(
             partial(duplication_harness, separate_main_vocals),
-            inputs=[vocals_track, song_dir],
-            outputs=[ai_cover, backup_vocals_track, main_vocals_track],
+            inputs=[vocals_path, song_dir],
+            outputs=[ai_cover, backup_vocals_path, main_vocals_path],
         ).success(
             partial(duplication_harness, dereverb_main_vocals),
-            inputs=[main_vocals_track, song_dir],
-            outputs=[ai_cover, main_vocals_dereverbed_track],
+            inputs=[main_vocals_path, song_dir],
+            outputs=[ai_cover, main_vocals_dereverbed_path],
         ).success(
             partial(duplication_harness, convert_main_vocals),
             inputs=[
-                main_vocals_dereverbed_track,
+                main_vocals_dereverbed_path,
                 song_dir,
                 rvc_model,
                 pitch_change_vocals,
@@ -520,40 +555,40 @@ with gr.Blocks(title="Ultimate RVC") as app:
                 f0_method,
                 crepe_hop_length,
             ],
-            outputs=[ai_cover, ai_vocals_track],
+            outputs=[ai_cover, ai_vocals_path],
         ).success(
             partial(duplication_harness, postprocess_main_vocals),
             inputs=[
-                ai_vocals_track,
+                ai_vocals_path,
                 song_dir,
                 reverb_rm_size,
                 reverb_wet,
                 reverb_dry,
                 reverb_damping,
             ],
-            outputs=[ai_cover, mixed_ai_vocals_track],
+            outputs=[ai_cover, mixed_ai_vocals_path],
         ).success(
             partial(duplication_harness, pitch_shift_background),
             inputs=[
-                instrumentals_track,
-                backup_vocals_track,
+                instrumentals_path,
+                backup_vocals_path,
                 song_dir,
                 pitch_change_all,
             ],
             outputs=[
                 ai_cover,
-                instrumentals_shifted_track,
-                backup_vocals_shifted_track,
+                instrumentals_shifted_path,
+                backup_vocals_shifted_path,
             ],
         ).success(
             partial(exception_harness, combine_w_background_harness),
             inputs=[
-                instrumentals_track,
-                backup_vocals_track,
-                instrumentals_shifted_track,
-                backup_vocals_shifted_track,
-                original_track,
-                mixed_ai_vocals_track,
+                instrumentals_path,
+                backup_vocals_path,
+                instrumentals_shifted_path,
+                backup_vocals_shifted_path,
+                original_path,
+                mixed_ai_vocals_path,
                 song_dir,
                 rvc_model,
                 main_gain,
@@ -565,9 +600,9 @@ with gr.Blocks(title="Ultimate RVC") as app:
             ],
             outputs=[ai_cover],
         ).then(
-            lambda: (gr.update(interactive=True),) * 4,
+            lambda: (gr.update(interactive=True),) * 3,
             inputs=[],
-            outputs=[show_intermediate_files, generate_btn, generate_btn2, clear_btn],
+            outputs=[generate_btn, generate_btn2, clear_btn],
             show_progress=False,
         )
         clear_btn.click(
@@ -611,7 +646,6 @@ with gr.Blocks(title="Ultimate RVC") as app:
                 output_sr,
                 output_format,
                 keep_files,
-                show_intermediate_files,
             ],
         )
     with gr.Tab("Manage models"):
