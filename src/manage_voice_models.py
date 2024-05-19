@@ -13,7 +13,9 @@ with open(
     public_models = json.load(infile)
 
 
-def get_current_models():
+def get_current_models(progress=None):
+    if progress is not None:
+        display_progress("[~] Loading voice models ...", 0.5, progress)
     models_list = os.listdir(RVC_MODELS_DIR)
     items_to_remove = ["hubert_base.pt", "MODELS.txt", "public_models.json", "rmvpe.pt"]
     return [item for item in models_list if item not in items_to_remove]

@@ -93,13 +93,13 @@ def confirm_box_js(msg):
     return f"(x) => confirm({formatted_msg})"
 
 
-def update_model_lists():
-    models_l = get_current_models()
+def update_model_lists(progress):
+    models_l = get_current_models(progress)
     return gr.Dropdown(choices=models_l), gr.Dropdown(choices=models_l, value=[])
 
 
-def update_cached_input_songs():
-    songs_l = get_cached_input_paths_named()
+def update_cached_input_songs(progress):
+    songs_l = get_cached_input_paths_named(progress)
     return gr.Dropdown(choices=songs_l)
 
 
@@ -499,7 +499,7 @@ with gr.Blocks(title="Ultimate RVC") as app:
                 ai_cover,
             ],
         ).then(
-            update_cached_input_songs,
+            partial(exception_harness, update_cached_input_songs),
             inputs=None,
             outputs=cached_input_songs_dropdown,
         ).then(
@@ -597,7 +597,7 @@ with gr.Blocks(title="Ultimate RVC") as app:
             ],
             outputs=[ai_cover],
         ).then(
-            update_cached_input_songs,
+            partial(exception_harness, update_cached_input_songs),
             inputs=None,
             outputs=cached_input_songs_dropdown,
         ).then(
@@ -817,7 +817,7 @@ with gr.Blocks(title="Ultimate RVC") as app:
             delete_all_models_btn_click,
         ]:
             click_event.success(
-                update_model_lists,
+                partial(exception_harness, update_model_lists),
                 inputs=None,
                 outputs=[rvc_model, rvc_models_to_delete],
             )

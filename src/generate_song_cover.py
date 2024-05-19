@@ -85,17 +85,6 @@ def get_cached_input_paths():
     return glob.glob(input_paths_pattern)
 
 
-def get_cached_input_paths_named():
-    input_paths = get_cached_input_paths()
-    input_names = [
-        os.path.splitext(os.path.basename(path))[0]
-        .removeprefix("0_")
-        .removesuffix("_Original")
-        for path in input_paths
-    ]
-    return [(name, path) for name, path in zip(input_names, input_paths)]
-
-
 def pitch_shift(audio_path, output_path, n_semi_tones):
     y, sr = sf.read(audio_path)
     tfm = sox.Transformer()
@@ -220,6 +209,19 @@ def combine_audio(
     )
     combined_audio_resampled = combined_audio.set_frame_rate(output_sr)
     combined_audio_resampled.export(output_path, format=output_format)
+
+
+def get_cached_input_paths_named(progress=None):
+    if progress is not None:
+        display_progress("[~] loading cached input songs...", 0.5, progress)
+    input_paths = get_cached_input_paths()
+    input_names = [
+        os.path.splitext(os.path.basename(path))[0]
+        .removeprefix("0_")
+        .removesuffix("_Original")
+        for path in input_paths
+    ]
+    return [(name, path) for name, path in zip(input_names, input_paths)]
 
 
 def make_song_dir(
