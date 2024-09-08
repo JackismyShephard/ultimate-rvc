@@ -241,12 +241,13 @@ def render(
                 )
                 with gr.Column():
                     f0_method = gr.Dropdown(
-                        ["rmvpe", "mangio-crepe"],
+                        ["crepe", "rmvpe", "fcpe",  "mangio-crepe", "hybrid[rmvpe+fcpe]",
                         value="rmvpe",
                         label="Pitch detection algorithm",
                         info=(
-                            "Best option is rmvpe (clarity in vocals), then"
-                            " mangio-crepe (smoother vocals)"
+                            "Best option is rmvpe (clarity in vocals),"
+                            " mangio-crepe (smoother vocals),"
+                            "Fcpe is a faster with less context sensitivity."
                         ),
                     )
                     crepe_hop_length = gr.Slider(
