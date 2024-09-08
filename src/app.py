@@ -57,7 +57,7 @@ os.environ["GRADIO_TEMP_DIR"] = GRADIO_TEMP_DIR
 if os.name == "nt":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-with gr.Blocks(title="Ultimate RVC") as app:
+with gr.Blocks(title="Ultimate RVC",theme="ParityError/Anime") as app:
 
     gr.Label("Ultimate RVC ❤️", show_label=False)
 
@@ -122,7 +122,7 @@ with gr.Blocks(title="Ultimate RVC") as app:
     ]
 
     # main tab
-    with gr.Tab("Generate song covers"):
+    with gr.Tab("inference Tab"):
         render_one_click_tab(
             generate_buttons,
             song_dir_dropdowns,
@@ -141,7 +141,7 @@ with gr.Blocks(title="Ultimate RVC") as app:
             intermediate_audio_to_delete,
             output_audio_to_delete,
         )
-    with gr.Tab("Manage models"):
+    with gr.Tab("Manage models Tab"):
         render_manage_models_tab(
             dummy_deletion_checkbox,
             delete_confirmation,
@@ -149,7 +149,7 @@ with gr.Blocks(title="Ultimate RVC") as app:
             rvc_model_1click,
             rvc_model_multi,
         )
-    with gr.Tab("Manage audio"):
+    with gr.Tab("Manage audio Tab"):
 
         render_manage_audio_tab(
             dummy_deletion_checkbox,
