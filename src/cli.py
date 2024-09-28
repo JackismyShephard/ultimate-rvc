@@ -4,6 +4,7 @@ cover.
 """
 
 from argparse import ArgumentParser, BooleanOptionalAction
+from pydub import AudioSegment
 
 from typing_extra import AudioExt, F0Method, SampleRate
 
@@ -237,3 +238,6 @@ if __name__ == "__main__":
         progress_bar=None,
     )
     print(f"[+] Cover generated at {song_cover_path}")  # noqa: T201
+    print(f"[+] showing {song_cover_path}")  # noqa: T201
+
+    AudioSegment.from_file(song_cover_path, output_name=args.output_name)
