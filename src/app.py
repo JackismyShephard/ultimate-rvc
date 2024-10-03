@@ -46,20 +46,7 @@ def _init_app() -> list[gr.Dropdown]:
 if os.name == "nt":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-os.environ["GRADIO_TEMP_DIR"] = str(TEMP_DIR)
-gr.set_static_paths([MODELS_DIR, AUDIO_DIR])
 
-CSS = """
-h1 { text-align: center; margin-top: 20px; margin-bottom: 20px; }
-"""
-CACHE_DELETE_FREQUENCY = 86400  # every 24 hours check for files to delete
-CACHE_DELETE_CUTOFF = 86400  # and delete files older than 24 hours
-
-with gr.Blocks(
-    title="Ultimate RVC",
-    css=CSS,
-    delete_cache=(CACHE_DELETE_FREQUENCY, CACHE_DELETE_CUTOFF),
-) as app:
 
     gr.HTML("<h1>Ultimate RVC ❤️</h1>")
 
@@ -112,7 +99,7 @@ with gr.Blocks(
     model_delete = gr.Dropdown(label="Voice models", multiselect=True, render=False)
 
     # main tab
-    with gr.Tab("Generate song covers"):
+    with gr.Tab("inference Tab"):
         render_one_click_tab(
             song_dirs,
             cached_song_1click,
@@ -129,7 +116,7 @@ with gr.Blocks(
             intermediate_audio,
             output_audio,
         )
-    with gr.Tab("Manage models"):
+    with gr.Tab("Manage models Tab"):
         render_manage_models_tab(
             dummy_checkbox,
             confirmation,
@@ -137,7 +124,7 @@ with gr.Blocks(
             model_1click,
             model_multi,
         )
-    with gr.Tab("Manage audio"):
+    with gr.Tab("Manage audio Tab"):
 
         render_manage_audio_tab(
             dummy_checkbox,

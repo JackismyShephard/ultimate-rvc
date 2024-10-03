@@ -211,22 +211,7 @@ def render(
                         " but better pitch accuracy."
                     ),
                 )
-                f0_method.change(
-                    show_hop_slider,
-                    inputs=f0_method,
-                    outputs=hop_length,
-                    show_progress="hidden",
-                )
-        with gr.Accordion("Audio mixing options", open=False):
-            gr.Markdown("")
-            gr.Markdown("### Reverb control on converted vocals")
-            with gr.Row():
-                room_size = gr.Slider(
-                    0,
-                    1,
-                    value=0.15,
-                    label="Room size",
-                    info=(
+ 
                         "Size of the room which reverb effect simulates. Increase for"
                         " longer reverb time."
                     ),
