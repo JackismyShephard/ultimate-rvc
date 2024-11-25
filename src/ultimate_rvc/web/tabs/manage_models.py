@@ -5,6 +5,25 @@ from functools import partial
 
 import gradio as gr
 import pandas as pd
+import requests
+
+# Function to search for RVC models on Hugging Face
+def search_rvc_models(query):
+    url = f"https://huggingface.co/api/models?search={query}&library=rvc"
+    response = requests.get(url)
+    if response.status_code == 200:
+        models = response.json()
+        # Create a DataFrame to store the results
+        df = pd.DataFrame(models)
+        # Filter the DataFrame to only include the desired columns
+        df = df[["id", "likes", "downloads"]]
+        # Add a new column for the download URL
+        df["downloadUrl"] = "https://huggingface.co/" + df["id"]
+        # Sort the DataFrame by downloads in descending order
+        df = df.sort_values(by="downloads", ascending=False)
+        return df
+    else:
+        return pd.DataFrame({"id": ["No models found"]})
 
 from ultimate_rvc.core.manage.models import (
     delete_all_models,
@@ -306,6 +325,20 @@ def render(
             outputs=delete_msg,
             show_progress="hidden",
         )
+        
+        
+    with gr.Tab("Search models"): 
+        # Textbox for user to enter search query
+        query = gr.Textbox(label="Search for RVC models", placeholder="Enter your search query here")
+
+            # Button to trigger the search
+        search_button = gr.Button("Search")
+    
+         # Output for displaying the search results as a DataFrame
+        results = gr.Dataframe(label="Search Results")
+    
+        # Event listener for the search button
+        search_button.click(fn=search_rvc_models, inputs=query, outputs=results)
 
     for click_event in [
         download_btn_click,
