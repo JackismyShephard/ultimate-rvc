@@ -238,55 +238,11 @@ def get_file_hash(file: StrPath, size: int = 5) -> str:
 
     """
     with Path(file).open("rb") as fp:
-        file_hash = hashlib.file_digest(fp, lambda: hashlib.blake2b(digest_size=size))
+        file_hash = hashlib.file_digest(
+            fp,
+            lambda: hashlib.blake2b(digest_size=size),  # type: ignore[reportArgumentType]
+        )
     return file_hash.hexdigest()
-
-
-# NOTE consider increasing hash_size to 16. Otherwise
-# we might have problems with hash collisions when using app as CLI
-def get_unique_base_path(
-    directory: StrPath,
-    prefix: str,
-    args_dict: Json,
-    hash_size: int = 5,
-) -> Path:
-    """
-    Get a unique base path (a path without any extension) for a file in
-    a directory by hashing the arguments used to generate
-    the audio that is stored or will be stored in that file.
-
-    Parameters
-    ----------
-    directory :StrPath
-        The path to a directory.
-    prefix : str
-        The prefix to use for the base path.
-    args_dict : Json
-        A JSON-serializable dictionary of named arguments used to
-        generate the audio that is stored or will be stored in a file
-        in the given directory.
-    hash_size : int, default=5
-        The size (in bytes) of the hash to use for the base path.
-
-    Returns
-    -------
-    Path
-        The unique base path for a file in a song directory.
-
-    """
-    directory_path = Path(directory)
-    dict_hash = get_hash(args_dict, size=hash_size)
-    while True:
-        base_path = directory_path / f"{prefix}_{dict_hash}"
-        json_path = base_path.with_suffix(".json")
-        if json_path.exists():
-            file_dict = json_load(json_path)
-            if file_dict == args_dict:
-                return base_path
-            dict_hash = get_hash(dict_hash, size=hash_size)
-            rprint("[~] Rehashing...")
-        else:
-            return base_path
 
 
 def validate_url(url: str) -> None:

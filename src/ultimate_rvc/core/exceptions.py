@@ -28,6 +28,7 @@ class Entity(StrEnum):
     SONG_DIR = "song directory"
     AUDIO_TRACK = "audio track"
     AUDIO_TRACK_GAIN_PAIRS = "pairs of audio track and gain"
+    VOICE_TRACK = "voice track"
     SONG = "song"
     VOCALS_TRACK = "vocals track"
     INSTRUMENTALS_TRACK = "instrumentals track"
