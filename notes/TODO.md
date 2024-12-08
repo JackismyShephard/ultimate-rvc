@@ -6,6 +6,8 @@
 * fix problem with audio components restarting if play button is pressed too fast after loading new audio
   * this is a gradio bug so report?
 
+* need to consider consolidating the commands exposed main.py, song_cover.py and tts.py under ultimate_rvc.cli.generate into just one generate command.
+
 ## Project/task management
 
 * Should find tool for project/task management

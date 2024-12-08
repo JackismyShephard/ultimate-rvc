@@ -30,6 +30,15 @@ class SegmentSize(IntEnum):
     SEG_2048 = 2048
 
 
+class F0Method(StrEnum):
+    """The method to use for pitch detection."""
+
+    RMVPE = "rmvpe"
+    CREPE = "crepe"
+    CREPE_TINY = "crepe-tiny"
+    FCPE = "fcpe"
+
+
 class EmbedderModel(StrEnum):
     """The model to use for audio embedding."""
 
@@ -40,13 +49,12 @@ class EmbedderModel(StrEnum):
     CUSTOM = "custom"
 
 
-class F0Method(StrEnum):
-    """The method to use for pitch detection."""
+class RVCContentType(StrEnum):
+    """The valid types of content to convert with RVC."""
 
-    RMVPE = "rmvpe"
-    CREPE = "crepe"
-    CREPE_TINY = "crepe-tiny"
-    FCPE = "fcpe"
+    VOCALS = "vocals"
+    VOICE = "voice"
+    AUDIO = "audio"
 
 
 class SampleRate(IntEnum):

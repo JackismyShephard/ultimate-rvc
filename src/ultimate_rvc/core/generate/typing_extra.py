@@ -1,11 +1,10 @@
 """
-Module which defines extra types for the core of the Ultimate RVC
-project.
+Module which defines extra types used by modules in the
+ultimate_rvc.core.generate package.
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from enum import StrEnum, auto
 
 from pydantic import BaseModel, ConfigDict
@@ -13,93 +12,6 @@ from pydantic import BaseModel, ConfigDict
 # NOTE these types are used at runtime by pydantic so cannot be
 # relegated to a IF TYPE_CHECKING block
 from ultimate_rvc.typing_extra import AudioExt, EmbedderModel, F0Method  # noqa: TC002
-
-# Voice model management
-
-
-class ModelTagName(StrEnum):
-    """Names of valid voice model tags."""
-
-    ENGLISH = "English"
-    JAPANESE = "Japanese"
-    OTHER_LANGUAGE = "Other Language"
-    ANIME = "Anime"
-    VTUBER = "Vtuber"
-    REAL_PERSON = "Real person"
-    GAME_CHARACTER = "Game character"
-
-
-class ModelTagMetaData(BaseModel):
-    """
-    Metadata for a voice model tag.
-
-    Attributes
-    ----------
-    name : ModelTagName
-        The name of the tag.
-    description : str
-        The description of the tag.
-
-    """
-
-    name: ModelTagName
-    description: str
-
-
-class ModelMetaData(BaseModel):
-    """
-    Metadata for a voice model.
-
-    Attributes
-    ----------
-    name : str
-        The name of the voice model.
-    description : str
-        A description of the voice model.
-    tags : list[ModelTagName]
-        The tags associated with the voice model.
-    credit : str
-        Who created the voice model.
-    added : str
-        The date the voice model was created.
-    url : str
-        An URL pointing to a location where the voice model can be
-        downloaded.
-
-    """
-
-    name: str
-    description: str
-    tags: list[ModelTagName]
-    credit: str
-    added: str
-    url: str
-
-
-class ModelMetaDataTable(BaseModel):
-    """
-    Table with metadata for a set of voice models.
-
-    Attributes
-    ----------
-    tags : list[ModelTagMetaData]
-        Metadata for the tags associated with the given set of voice
-        models.
-    models : list[ModelMetaData]
-        Metadata for the given set of voice models.
-
-    """
-
-    tags: list[ModelTagMetaData]
-    models: list[ModelMetaData]
-
-
-ModelMetaDataPredicate = Callable[[ModelMetaData], bool]
-
-ModelMetaDataList = list[list[str | list[ModelTagName]]]
-
-
-# Song cover generation
 
 
 class SourceType(StrEnum):
@@ -191,45 +103,45 @@ class SeparatedAudioMetaData(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
 
 
-class ConvertedVocalsMetaData(BaseModel):
+class RVCAudioMetaData(BaseModel):
     """
-    Metadata for an RVC converted vocals track.
+    Metadata for a voice converted audio track.
 
     Attributes
     ----------
-    vocals_track : FileMetaData
-        Metadata for the vocals track that was converted.
+    voice_track : FileMetaData
+        Metadata for the audio track that was voice converted.
     model_name : str
-        The name of the model used for vocal conversion.
+        The name of the model used for voice conversion.
     n_semitones : int
-        The number of semitones the converted vocals were pitch-shifted
+        The number of semitones the converted audio was pitch-shifted
         by.
     f0_methods : list[F0Method]
         The methods used for pitch extraction.
     index_rate : float
-        The influence of the index file on the vocal conversion.
+        The influence of the index file on the voice conversion.
     filter_radius : int
-        The filter radius used for the vocal conversion.
+        The filter radius used for the voice conversion.
     rms_mix_rate : float
         The blending rate of the volume envelope of the converted
-        vocals.
+        audio.
     protect_rate : float
         The protection rate for consonants and breathing sounds used
-        for the vocal conversion.
+        for the audio conversion.
     hop_length : int
         The hop length used for CREPE-based pitch detection.
-    split_vocals : bool
-        Whether the vocals track was split before it was converted.
-    autotune_vocals : bool
-        Whether autotune was applied to the converted vocals.
+    split_audio : bool
+        Whether the audio track was split before it was converted.
+    autotune_audio : bool
+        Whether autotune was applied to the converted audio.
     autotune_strength : float
         The strength of the autotune effect applied to the converted
-        vocals.
-    clean_vocals : bool
-        Whether the converted vocals were cleaned.
+        audio.
+    clean_audio : bool
+        Whether the converted audio was cleaned.
     clean_strength : float
         The intensity of the cleaning that was applied to the converted
-        vocals.
+        audio.
     embedder_model : EmbedderModel
         The model used for generating speaker embeddings.
     embedder_model_custom : DirectoryMetaData | None
@@ -240,7 +152,7 @@ class ConvertedVocalsMetaData(BaseModel):
 
     """
 
-    vocals_track: FileMetaData
+    audio_track: FileMetaData
     model_name: str
     n_semitones: int
     f0_methods: list[F0Method]
@@ -249,10 +161,10 @@ class ConvertedVocalsMetaData(BaseModel):
     rms_mix_rate: float
     protect_rate: float
     hop_length: int
-    split_vocals: bool
-    autotune_vocals: bool
+    split_audio: bool
+    autotune_audio: bool
     autotune_strength: float
-    clean_vocals: bool
+    clean_audio: bool
     clean_strength: float
     embedder_model: EmbedderModel
     embedder_model_custom: DirectoryMetaData | None

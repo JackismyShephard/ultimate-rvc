@@ -28,7 +28,7 @@ from ultimate_rvc.core.exceptions import (
     VoiceModelExistsError,
     VoiceModelNotFoundError,
 )
-from ultimate_rvc.core.typing_extra import (
+from ultimate_rvc.core.manage.typing_extra import (
     ModelMetaData,
     ModelMetaDataList,
     ModelMetaDataPredicate,

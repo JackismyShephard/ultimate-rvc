@@ -7,8 +7,7 @@ from __future__ import annotations
 
 import typer
 
-from ultimate_rvc.cli.generate.song_cover import app as song_cover_app
-from ultimate_rvc.cli.generate.tts import app as tts_app
+from ultimate_rvc.cli.generate.main import app as generate_app
 
 app = typer.Typer(
     name="urvc-cli",
@@ -17,8 +16,7 @@ app = typer.Typer(
     rich_markup_mode="markdown",
 )
 
-app.add_typer(song_cover_app)
-app.add_typer(tts_app)
+app.add_typer(generate_app)
 
 
 if __name__ == "__main__":
