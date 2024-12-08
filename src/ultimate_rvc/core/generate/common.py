@@ -5,7 +5,7 @@ generate audio.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 import logging
 from functools import cache
@@ -36,7 +36,7 @@ from ultimate_rvc.core.generate.typing_extra import (
     RVCAudioMetaData,
     WaveifiedAudioMetaData,
 )
-from ultimate_rvc.typing_extra import AudioExt, EmbedderModel, F0Method
+from ultimate_rvc.typing_extra import AudioExt, EmbedderModel, F0Method, RVCContentType
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -194,7 +194,7 @@ def get_unique_base_path(
             return base_path
 
 
-def to_wav(
+def wavify(
     audio_track: StrPath,
     directory: StrPath,
     prefix: str,
@@ -374,7 +374,7 @@ def convert(
     embedder_model: EmbedderModel = EmbedderModel.CONTENTVEC,
     embedder_model_custom: StrPath | None = None,
     sid: int = 0,
-    entity: Literal["vocals", "audio"] = "audio",
+    content_type: RVCContentType = RVCContentType.AUDIO,
     progress_bar: gr.Progress | None = None,
     percentage: float = 0.5,
 ) -> Path:
@@ -415,7 +415,7 @@ def convert(
         Whether to apply autotune to the converted audio.
     autotune_strength : float, default=1.0
         The strength of the autotune to apply to the converted audio.
-    clean_voice : bool, default=False
+    clean_audio : bool, default=False
         Whether to clean the converted audio.
     clean_strength : float, default=0.7
         The intensity of the cleaning to apply to the converted audio.
@@ -426,6 +426,9 @@ def convert(
         generating speaker embeddings.
     sid : int, default=0
         The speaker id to use for multi-speaker models.
+    content_type : RVCContentType, default=RVCContentType.AUDIO
+        The type of content to convert. Determines what is shown in
+        display mesages and saved file names.
     progress_bar : gr.Progress, optional
         Gradio progress bar to update.
     percentage : float, default=0.5
@@ -437,13 +440,20 @@ def convert(
         The path to the converted audio track.
 
     """
+    match content_type:
+        case RVCContentType.VOCALS:
+            track_entity = Entity.VOCALS_TRACK
+            directory_entity = Entity.SONG_DIR
+        case RVCContentType.VOICE:
+            track_entity = Entity.VOICE_TRACK
+            directory_entity = Entity.DIRECTORY
+        case RVCContentType.AUDIO:
+            track_entity = Entity.AUDIO_TRACK
+            directory_entity = Entity.DIRECTORY
     audio_path, directory_path, _ = validate_all_exist(
         [
-            (
-                audio_track,
-                Entity.VOCALS_TRACK if entity == "vocals" else Entity.AUDIO_TRACK,
-            ),
-            (directory, Entity.SONG_DIR if entity == "vocals" else Entity.DIRECTORY),
+            (audio_track, track_entity),
+            (directory, directory_entity),
             (model_name, Entity.MODEL_NAME),
         ],
     )
@@ -453,7 +463,7 @@ def convert(
             Entity.EMBEDDER_MODEL_CUSTOM,
         )
 
-    audio_path = to_wav(
+    audio_path = wavify(
         audio_path,
         directory_path,
         "20_Input",
@@ -498,7 +508,7 @@ def convert(
     paths = [
         get_unique_base_path(
             directory_path,
-            f"21_{entity.capitalize}_Converted",
+            f"21_{content_type.capitalize}_Converted",
             args_dict,
         ).with_suffix(suffix)
         for suffix in [".wav", ".json"]
@@ -508,7 +518,7 @@ def convert(
 
     if not all(path.exists() for path in paths):
         display_progress(
-            f"[~] Converting {entity} using RVC...",
+            f"[~] Converting {content_type} using RVC...",
             percentage,
             progress_bar,
         )

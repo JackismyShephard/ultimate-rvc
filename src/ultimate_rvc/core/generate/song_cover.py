@@ -40,9 +40,9 @@ from ultimate_rvc.core.exceptions import (
 from ultimate_rvc.core.generate.common import (
     convert,
     get_unique_base_path,
-    to_wav,
     validate_all_exist,
     validate_exists,
+    wavify,
 )
 from ultimate_rvc.core.generate.typing_extra import (
     AudioExtInternal,
@@ -59,6 +59,7 @@ from ultimate_rvc.typing_extra import (
     AudioExt,
     EmbedderModel,
     F0Method,
+    RVCContentType,
     SegmentSize,
     SeparationModel,
     StrPath,
@@ -769,7 +770,7 @@ def postprocess(
         [(vocals_track, Entity.VOCALS_TRACK), (song_dir, Entity.SONG_DIR)],
     )
 
-    vocals_path = to_wav(
+    vocals_path = wavify(
         vocals_path,
         song_dir_path,
         "30_Input",
@@ -877,7 +878,7 @@ def pitch_shift(
         [(audio_track, Entity.AUDIO_TRACK), (song_dir, Entity.SONG_DIR)],
     )
 
-    audio_path = to_wav(
+    audio_path = wavify(
         audio_path,
         song_dir_path,
         "40_Input",
@@ -1029,7 +1030,7 @@ def mix_song(
 
     audio_path_gain_pairs = [
         (
-            to_wav(
+            wavify(
                 validate_exists(audio_track, Entity.AUDIO_TRACK),
                 song_dir,
                 "50_Input",
@@ -1251,7 +1252,7 @@ def run_pipeline(
         embedder_model=embedder_model,
         embedder_model_custom=embedder_model_custom,
         sid=sid,
-        entity="vocals",
+        content_type=RVCContentType.VOCALS,
         progress_bar=progress_bar,
         percentage=4 / 9,
     )
