@@ -264,6 +264,9 @@ class EdgeTTSAudioMetaData(BaseModel):
     ----------
     text: str
         The text that was spoken to generate the audio track.
+    file : FileMetaData, optional
+        Metadata for file containing the text that was spoken to
+        generate the audio track.
     voice : str
         The short name of the voice used for generating the audio track.
     pitch_shift : int
@@ -279,6 +282,7 @@ class EdgeTTSAudioMetaData(BaseModel):
     """
 
     text: str
+    file: FileMetaData | None
     voice: str
     pitch_shift: int
     speed_change: int
