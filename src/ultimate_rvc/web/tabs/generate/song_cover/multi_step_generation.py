@@ -8,8 +8,8 @@ from functools import partial
 
 import gradio as gr
 
+from ultimate_rvc.core.generate.common import convert
 from ultimate_rvc.core.generate.song_cover import (
-    convert,
     mix_song,
     pitch_shift,
     postprocess,
@@ -20,6 +20,7 @@ from ultimate_rvc.typing_extra import (
     AudioExt,
     EmbedderModel,
     F0Method,
+    RVCContentType,
     SampleRate,
     SegmentSize,
     SeparationModel,
@@ -29,6 +30,7 @@ from ultimate_rvc.web.common import (
     exception_harness,
     toggle_visibility,
     toggle_visible_component,
+    update_audio,
     update_cached_songs,
     update_output_audio,
     update_song_cover_name,
@@ -38,49 +40,6 @@ from ultimate_rvc.web.typing_extra import ConcurrencyId, SongSourceType
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-
-    from ultimate_rvc.web.typing_extra import UpdateAudioKwArgs
-
-
-def _update_audio(
-    num_components: int,
-    output_indices: Sequence[int],
-    track: str | None,
-    disallow_none: bool = True,
-) -> gr.Audio | tuple[gr.Audio, ...]:
-    """
-    Update the value of a subset of `Audio` components to the given
-    audio track.
-
-    Parameters
-    ----------
-    num_components : int
-        The total number of `Audio` components under consideration.
-    output_indices : Sequence[int]
-        Indices of `Audio` components to update the value for.
-    track : str
-        Path pointing to an audio track to update the value of the
-        indexed `Audio` components with.
-    disallow_none : bool, default=True
-        Whether to disallow the value of the indexed components to be
-        `None`.
-
-    Returns
-    -------
-    gr.Audio | tuple[gr.Audio, ...]
-        Each `Audio` component under consideration with the value of the
-        indexed components updated to the given audio track.
-
-    """
-    update_args_list: list[UpdateAudioKwArgs] = [{} for _ in range(num_components)]
-    for index in output_indices:
-        if track or not disallow_none:
-            update_args_list[index]["value"] = track
-    match update_args_list:
-        case [update_args]:
-            return gr.Audio(**update_args)
-        case _:
-            return tuple(gr.Audio(**update_args) for update_args in update_args_list)
 
 
 def _pair_audio_tracks_and_gain(
@@ -695,6 +654,7 @@ def render(
                         convert,
                         info_msg="Vocals converted successfully!",
                     ),
+                    content_type=RVCContentType.VOCALS,
                     progress_bar=PROGRESS_BAR,
                 ),
                 inputs=[
@@ -1065,7 +1025,7 @@ def render(
             (song_cover_transfer_btn, song_cover_transfer, song_cover_output),
         ]:
             btn.click(
-                partial(_update_audio, len(input_tracks)),
+                partial(update_audio, len(input_tracks)),
                 inputs=[transfer, output],
                 outputs=input_tracks,
                 show_progress="hidden",

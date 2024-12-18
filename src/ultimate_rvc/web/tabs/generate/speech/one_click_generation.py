@@ -456,7 +456,7 @@ def render(
                 0.25,
                 0.33,
                 128,
-                False,
+                True,
                 False,
                 1.0,
                 False,

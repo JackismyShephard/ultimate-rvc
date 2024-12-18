@@ -64,10 +64,13 @@ def _init_app() -> list[gr.Dropdown]:
     model_names = get_saved_model_names()
     named_song_dirs = get_named_song_dirs()
 
-    edge_tts_voice = gr.Dropdown(
-        choices=get_edge_tts_voice_names(),
-        value="en-US-ChristopherNeural",
-    )
+    edge_tts_voice_1click, edge_tts_voice_multi = [
+        gr.Dropdown(
+            choices=get_edge_tts_voice_names(),
+            value="en-US-ChristopherNeural",
+        )
+        for _ in range(2)
+    ]
     models = [
         gr.Dropdown(
             choices=model_names,
@@ -87,7 +90,8 @@ def _init_app() -> list[gr.Dropdown]:
     speech_audio = gr.Dropdown(choices=get_saved_speech_audio())
     output_audio = gr.Dropdown(choices=get_saved_output_audio())
     return [
-        edge_tts_voice,
+        edge_tts_voice_1click,
+        edge_tts_voice_multi,
         *models,
         model_delete,
         *cached_songs,
@@ -167,11 +171,14 @@ def render_app() -> gr.Blocks:
             info="Select one or more output audio files to delete.",
             render=False,
         )
-        edge_tts_voice = gr.Dropdown(
-            label="Edge TTS voice",
-            info="Select a voice to use for text to speech conversion.",
-            render=False,
-        )
+        edge_tts_voice_1click, edge_tts_voice_multi = [
+            gr.Dropdown(
+                label="Edge TTS voice",
+                info="Select a voice to use for text to speech conversion.",
+                render=False,
+            )
+            for _ in range(2)
+        ]
         (
             song_cover_model_1click,
             speech_model_1click,
@@ -217,13 +224,13 @@ def render_app() -> gr.Blocks:
             )
         with gr.Tab("Generate speech"):
             render_speech_one_click_tab(
-                edge_tts_voice,
+                edge_tts_voice_1click,
                 speech_model_1click,
                 speech_audio,
                 output_audio,
             )
             render_speech_multi_step_tab(
-                edge_tts_voice,
+                edge_tts_voice_multi,
                 speech_model_multi,
                 speech_audio,
                 output_audio,
@@ -251,7 +258,8 @@ def render_app() -> gr.Blocks:
         app.load(
             _init_app,
             outputs=[
-                edge_tts_voice,
+                edge_tts_voice_1click,
+                edge_tts_voice_multi,
                 song_cover_model_1click,
                 song_cover_model_multi,
                 speech_model_1click,

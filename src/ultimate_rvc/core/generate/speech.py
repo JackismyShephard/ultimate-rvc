@@ -11,13 +11,17 @@ from pathlib import Path
 
 import anyio
 
+from pydantic import ValidationError
+
 from ultimate_rvc.common import lazy_import
 from ultimate_rvc.core.common import (
     OUTPUT_AUDIO_DIR,
     SPEECH_DIR,
     copy_file_safe,
     display_progress,
+    get_file_hash,
     json_dump,
+    json_load,
 )
 from ultimate_rvc.core.exceptions import Entity, NotProvidedError, UIMessage
 from ultimate_rvc.core.generate.common import (
@@ -30,7 +34,9 @@ from ultimate_rvc.core.generate.typing_extra import (
     EdgeTTSAudioMetaData,
     EdgeTTSVoiceKeys,
     EdgeTTSVoiceTable,
+    FileMetaData,
     MixedAudioType,
+    RVCAudioMetaData,
 )
 from ultimate_rvc.typing_extra import (
     AudioExt,
@@ -191,12 +197,12 @@ async def run_edge_tts(
         speaking the provided text.
 
     speed_change : int, default=0
-        The percentual change to the speed of the Edge TTS voice speaking
-        the provided text.
+        The percentual change to the speed of the Edge TTS voice
+        speaking the provided text.
 
     volume_change : int, default=0
-        The percentual change to the volume of the Edge TTS voice speaking
-        the provided text.
+        The percentual change to the volume of the Edge TTS voice
+        speaking the provided text.
 
     progress_bar : gr.Progress, optional
         Gradio progress bar to update.
@@ -227,6 +233,11 @@ async def run_edge_tts(
 
     args_dict = EdgeTTSAudioMetaData(
         text=text,
+        file=(
+            FileMetaData(name=source_path.name, hash_id=get_file_hash(source_path))
+            if source_is_file
+            else None
+        ),
         voice=voice,
         pitch_shift=pitch_shift,
         speed_change=speed_change,
@@ -270,13 +281,85 @@ async def run_edge_tts(
     return converted_audio_path
 
 
+def _get_converted_voice_metadata(
+    converted_voice_track: StrPath | None,
+) -> RVCAudioMetaData | None:
+    """
+    Get the metadata associated with a converted voice track if it
+    exists.
+
+    Parameters
+    ----------
+    converted_voice_track : str, optional
+        A path to a converted voice track.
+
+    Returns
+    -------
+    RVCAudioMetaData
+        The metadata associated with the converted voice track.
+
+    """
+    if not converted_voice_track:
+        return None
+    converted_voice_path = Path(converted_voice_track)
+    converted_voice_json_path = SPEECH_DIR / f"{converted_voice_path.stem}.json"
+    if not converted_voice_json_path.is_file():
+        return None
+    converted_voice_dict = json_load(converted_voice_json_path)
+    try:
+        converted_voice_metadata = RVCAudioMetaData.model_validate(converted_voice_dict)
+    except ValidationError:
+        return None
+    return converted_voice_metadata
+
+
+def _get_edge_tts_metadata(
+    converted_voice_track: StrPath | None,
+) -> EdgeTTSAudioMetaData | None:
+    """
+    Get the metadata associated with the speech track that was converted
+    to another voice using RVC.
+
+    Parameters
+    ----------
+    converted_voice_track : str, optional
+        A path to a converted voice track.
+
+    Returns
+    -------
+    EdgeTTSAudioMetaData
+        The metadata associated with the speech track that was converted
+        to another voice using RVC.
+
+    """
+    converted_voice_metadata = _get_converted_voice_metadata(converted_voice_track)
+    if not converted_voice_metadata:
+        return None
+    speech_path = SPEECH_DIR / f"{converted_voice_metadata.audio_track.name}"
+    speech_json_path = speech_path.with_suffix(".json")
+    if not speech_json_path.is_file():
+        return None
+    speech_dict = json_load(speech_json_path)
+    try:
+        speech_metadata = EdgeTTSAudioMetaData.model_validate(speech_dict)
+    except ValidationError:
+        return None
+    return speech_metadata
+
+
 def get_speech_track_name(
     source: str | None = None,
     model_name: str | None = None,
+    converted_voice_track: StrPath | None = None,
 ) -> str:
     """
     Generate a suitable name for a TTS-RVC generated speech track based
     on the source of input text and the model used for voice conversion.
+
+    If either source or model name is not provided, but the path to an
+    existing converted voice track is provided, then the source and
+    model name is inferred from the metadata associated with that track,
+    if possible.
 
     Parameters
     ----------
@@ -287,16 +370,88 @@ def get_speech_track_name(
     model_name : str
         The name of the model used for voice conversion.
 
+    converted_voice_track : str, optional
+        A path to a converted voice track.
+
     Returns
     -------
     str
         The name of the speech track.
 
     """
-    model_name = model_name or "Unknown Speaker"
-    source_path = Path(source) if source else None
-    source_name = source_path.stem if source_path and source_path.is_file() else "Text"
+    if model_name is None:
+        model_metadata = _get_converted_voice_metadata(converted_voice_track)
+        model_name = model_metadata.model_name if model_metadata else "Unknown Speaker"
+    if source is None:
+        speech_metadata = _get_edge_tts_metadata(converted_voice_track)
+        source = (
+            speech_metadata.file.name
+            if speech_metadata and speech_metadata.file
+            else "Text"
+        )
+    source_path = Path(source)
+    source_name = source_path.stem if source_path.is_file() else "Text"
     return f"{source_name} (Spoken by {model_name})"
+
+
+def mix_voice(
+    voice_track: StrPath,
+    output_gain: int = 0,
+    output_sr: int = 44100,
+    output_format: AudioExt = AudioExt.MP3,
+    output_name: str | None = None,
+    progress_bar: gr.Progress | None = None,
+    percentage: float = 0.5,
+) -> Path:
+    """
+    Mix an audio track containing a voice with optional gain and
+    convert it to a different sample rate and format.
+
+    Parameters
+    ----------
+    voice_track : str
+        A path to an audio track containing a voice.
+
+    output_gain : int, default=0
+        The gain to apply to the audio track containing the voice.
+
+    output_sr : int, default=44100
+        The sample rate of the mixed audio track.
+
+    output_format : AudioExt, default=AudioExt.MP3
+        The audio format of the mixed audio track.
+
+    output_name : str, optional
+        The name of the mixed audio track.
+
+    progress_bar : gr.Progress, optional
+        Gradio progress bar to update.
+
+    percentage : float, default=0.5
+        Percentage to display in the progress bar.
+
+    Returns
+    -------
+    Path
+        The path to the mixed audio track.
+
+    """
+    mixed_voice_track = mix_audio(
+        audio_track_gain_pairs=[(voice_track, output_gain)],
+        directory=SPEECH_DIR,
+        output_sr=output_sr,
+        output_format=output_format,
+        content_type=MixedAudioType.VOICE,
+        progress_bar=progress_bar,
+        percentage=percentage,
+    )
+
+    output_name = output_name or get_speech_track_name(
+        converted_voice_track=voice_track,
+    )
+
+    audio_path = OUTPUT_AUDIO_DIR / f"{output_name}.{output_format}"
+    return copy_file_safe(mixed_voice_track, audio_path)
 
 
 def run_pipeline(
@@ -478,19 +633,14 @@ def run_pipeline(
         percentage=0.33,
     )
 
-    mixed_voice_track = mix_audio(
-        audio_track_gain_pairs=[(converted_voice_track, output_gain)],
-        directory=SPEECH_DIR,
+    mixed_voice_track = mix_voice(
+        voice_track=converted_voice_track,
+        output_gain=output_gain,
         output_sr=output_sr,
         output_format=output_format,
-        content_type=MixedAudioType.VOICE,
+        output_name=output_name,
         progress_bar=progress_bar,
         percentage=0.66,
     )
 
-    output_name = output_name or get_speech_track_name(source, model_name)
-
-    audio_path = OUTPUT_AUDIO_DIR / f"{output_name}.{output_format}"
-    output_audio_track = copy_file_safe(mixed_voice_track, audio_path)
-
-    return output_audio_track, speech_track, converted_voice_track
+    return mixed_voice_track, speech_track, converted_voice_track
