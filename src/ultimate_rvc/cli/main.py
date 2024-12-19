@@ -5,19 +5,16 @@ project.
 
 from __future__ import annotations
 
-import typer
+import sys
 
-from ultimate_rvc.cli.generate.main import app as generate_app
+from cyclopts import App
 
-app = typer.Typer(
-    name="urvc-cli",
-    no_args_is_help=True,
-    help="CLI for the Ultimate RVC project",
-    rich_markup_mode="markdown",
-)
+from ultimate_rvc.cli.generate.main import new_app as generate_app
 
-app.add_typer(generate_app)
+app = App(name="urvc-cli", help="CLI for the Ultimate RVC project.")
+
+app.command(generate_app)
 
 
 if __name__ == "__main__":
-    app()
+    sys.exit(app())

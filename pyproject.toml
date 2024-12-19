@@ -17,7 +17,7 @@ dependencies = [
 
     # CLI
     "typer==0.14.0",
-    
+    "cyclopts==3.1.2",
     # Networking
     "requests==2.32.3",
     "yt_dlp==2024.12.6",
