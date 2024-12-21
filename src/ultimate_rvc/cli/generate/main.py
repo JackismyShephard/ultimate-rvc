@@ -13,6 +13,8 @@ import time
 # even though it appears it is only a type annotation
 from pathlib import Path  # noqa: TC003
 
+from cyclopts import App
+
 import typer
 from rich import print as rprint
 from rich.panel import Panel
@@ -28,6 +30,7 @@ from ultimate_rvc.cli.generate.speech import app as speech_app
 from ultimate_rvc.cli.generate.typing_extra import PanelName
 from ultimate_rvc.core.generate.common import convert as _convert
 from ultimate_rvc.core.generate.common import wavify as _wavify
+from ultimate_rvc.core.generate.song_cover import app as song_cover_new_app
 from ultimate_rvc.typing_extra import AudioExt, EmbedderModel, F0Method, RVCContentType
 
 app = typer.Typer(
@@ -37,9 +40,13 @@ app = typer.Typer(
     rich_markup_mode="markdown",
 )
 
+new_app = App(name="generate", help="Generate audio using RVC.")
+
 
 app.add_typer(song_cover_app)
 app.add_typer(speech_app)
+
+new_app.command(song_cover_new_app)
 
 
 @app.command(no_args_is_help=True)
