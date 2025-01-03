@@ -16,6 +16,7 @@ from rich import print as rprint
 from ultimate_rvc.common import (
     AUDIO_DIR,
     CUSTOM_EMBEDDER_MODELS_DIR,
+    CUSTOM_PRETRAINED_MODELS_DIR,
     MODELS_DIR,
     TRAINING_MODELS_DIR,
     VOICE_MODELS_DIR,
@@ -401,6 +402,9 @@ def validate_model_exists(name: str | None, entity: ModelEntity) -> Path:
         case Entity.TRAINING_MODEL:
             ui_msg = None
             directory = TRAINING_MODELS_DIR
+        case Entity.CUSTOM_PRETRAINED_MODEL:
+            ui_msg = UIMessage.NO_CUSTOM_PRETRAINED_MODEL
+            directory = CUSTOM_PRETRAINED_MODELS_DIR
 
     directory_path = Path(directory)
     if not name:

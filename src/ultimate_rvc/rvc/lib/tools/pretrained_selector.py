@@ -1,7 +1,12 @@
 import os
 
 
-def pretrained_selector(version, vocoder, pitch_guidance, sample_rate):
+def pretrained_selector(
+    version: str,
+    vocoder: str,
+    pitch_guidance: bool,
+    sample_rate: int,
+) -> tuple[str, str]:
     base_path = os.path.join("rvc", "models", "pretraineds", f"pretrained_{version}")
     f0 = "f0" if pitch_guidance else ""
 

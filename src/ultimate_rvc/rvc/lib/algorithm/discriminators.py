@@ -51,14 +51,6 @@ class MultiPeriodDiscriminator(torch.nn.Module):
         )
 
     def forward(self, y, y_hat):
-        """
-        Forward pass of the multi-period discriminator.
-
-        Args:
-            y (torch.Tensor): Real audio signal.
-            y_hat (torch.Tensor): Fake audio signal.
-
-        """
         y_d_rs, y_d_gs, fmap_rs, fmap_gs = [], [], [], []
         for d in self.discriminators:
             if self.training and self.checkpointing:

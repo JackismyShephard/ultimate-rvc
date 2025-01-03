@@ -25,7 +25,7 @@ from ultimate_rvc.cli.common import (
 )
 from ultimate_rvc.cli.generate.song_cover import app as song_cover_app
 from ultimate_rvc.cli.generate.speech import app as speech_app
-from ultimate_rvc.cli.generate.typing_extra import PanelName
+from ultimate_rvc.cli.typing_extra import PanelName
 from ultimate_rvc.core.generate.common import convert as _convert
 from ultimate_rvc.core.generate.common import wavify as _wavify
 from ultimate_rvc.typing_extra import AudioExt, EmbedderModel, F0Method, RVCContentType

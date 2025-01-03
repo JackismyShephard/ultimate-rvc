@@ -14,12 +14,15 @@ from ultimate_rvc.core.common import (
     get_combined_file_hash,
     validate_model_exists,
 )
-from ultimate_rvc.core.exceptions import Entity, PreprocessedAudioNotFoundError
+from ultimate_rvc.core.exceptions import (
+    Entity,
+    ModelAsssociatedEntityNotFoundError,
+    Step,
+)
 from ultimate_rvc.typing_extra import (
     EmbedderModel,
     RVCVersion,
     TrainingF0Method,
-    TrainingSampleRate,
 )
 
 if TYPE_CHECKING:
@@ -31,38 +34,29 @@ def extract_features(
     rvc_version: RVCVersion = RVCVersion.V2,
     f0_method: TrainingF0Method = TrainingF0Method.RMVPE,
     hop_length: int = 128,
-    cpu_cores: int = cpu_count(),
-    gpus: set[int] | None = None,
-    sample_rate: TrainingSampleRate = TrainingSampleRate.HZ_40K,
     embedder_model: EmbedderModel = EmbedderModel.CONTENTVEC,
     custom_embedder_model: str | None = None,
     include_mutes: int = 2,
+    cpu_cores: int = cpu_count(),
+    gpus: set[int] | None = None,
     progress_bar: gr.Progress | None = None,
     percentage: tuple[float, float] = (0.0, 0.5),
 ) -> None:
     """
     Extract features from the preprocessed dataset associated with a
-    model to be trained.
+    voice model to be trained.
 
     Parameters
     ----------
     model_name : str
-        The name of the model to be trained.
+        The name of the voice model to be trained.
     rvc_version : RVCVersion, default=RVCVersion.V2
-        Version of RVC to use for training the model.
+        Version of RVC to use for training the voice model.
     f0_method : TrainingF0Method, default=TrainingF0Method.RMVPE
         The method to use for extracting pitch features.
     hop_length : int, default=128
         The hop length to use for extracting pitch features. Only used
         with the CREPE pitch extraction method.
-    cpu_cores : int, default=cpu_count()
-        The number of CPU cores to use for feature extraction.
-    gpus : set[int], optional
-        The device ids of the GPUs to use for feature extraction.
-        If None, only CPU will be used.
-    sample_rate : TrainingSampleRate, default=TrainingSampleRate.HZ_40K
-        The sample rate of the audio files in the preprocessed
-        dataset associated with the model to be trained.
     embedder_model : EmbedderModel, default=EmbedderModel.CONTENTVEC
         The model to use for extracting audio embeddings.
     custom_embedder_model : StrPath, optional
@@ -70,10 +64,15 @@ def extract_features(
         audio embeddings.
     include_mutes : int, default=2
         The number of mute audio files to include in the generated
-        training file list. Adding silent files enables the model to
-        handle pure silence in inferred audio files. If the preprocessed
-        audio dataset already contains segments of pure silence, set
-        this to 0.
+        training file list. Adding silent files enables the voice model
+        to handle pure silence in inferred audio files. If the
+        preprocessed audio dataset already contains segments of pure
+        silence, set this to 0.
+    cpu_cores : int, default=cpu_count()
+        The number of CPU cores to use for feature extraction.
+    gpus : set[int], optional
+        The device ids of the GPUs to use for feature extraction.
+        If None, only CPU will be used.
     progress_bar : gr.Progress, optional
         The progress bar to update as the features are extracted.
     percentage : float, optional
@@ -81,17 +80,21 @@ def extract_features(
 
     Raises
     ------
-    PreprocessedAudioNotFoundError
+    ModelAsssociatedEntityNotFoundError
         If no preprocessed dataset audio files are associated with the
-        model identified by the provided name.
+        voice model identified by the provided name.
 
     """
     model_path = validate_model_exists(model_name, Entity.TRAINING_MODEL)
     sliced_audios16k_path = model_path / "sliced_audios_16k"
     if not sliced_audios16k_path.is_dir() or not any(sliced_audios16k_path.iterdir()):
-        raise PreprocessedAudioNotFoundError(model_name)
+        raise ModelAsssociatedEntityNotFoundError(
+            Entity.PREPROCESSED_AUDIO_DATASET_FILES,
+            model_name,
+            Step.DATASET_PREPROCESSING,
+        )
 
-    custom_embedder_model_path = None
+    custom_embedder_model_path, combined_file_hash = None, None
     chosen_embedder_model, embedder_model_id = [embedder_model] * 2
     if embedder_model == EmbedderModel.CUSTOM:
         custom_embedder_model_path = validate_model_exists(
@@ -121,7 +124,12 @@ def extract_features(
         f0_method_id,
         embedder_model_id,
     )
-    extract.update_model_info(str(model_path), chosen_embedder_model)
+    extract.update_model_info(
+        str(model_path),
+        rvc_version,
+        chosen_embedder_model,
+        combined_file_hash,
+    )
     display_progress("[~] Extracting pitch features...", percentage[0], progress_bar)
     extract.run_pitch_extraction(file_infos, devices, f0_method, hop_length, cpu_cores)
     display_progress("[~] Extracting audio embeddings...", percentage[1], progress_bar)
@@ -141,11 +149,10 @@ def extract_features(
     # so we import it here manually
     from ultimate_rvc.rvc.train.extract import preparing_files  # noqa: PLC0415
 
-    preparing_files.generate_config(rvc_version, int(sample_rate), str(model_path))
+    preparing_files.generate_config(rvc_version, str(model_path))
     preparing_files.generate_filelist(
         str(model_path),
         rvc_version,
-        int(sample_rate),
         include_mutes,
         f0_method_id,
         embedder_model_id,

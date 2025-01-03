@@ -112,3 +112,19 @@ class AudioSplitMethod(StrEnum):
     SKIP = "Skip"
     SIMPLE = "Simple"
     AUTOMATIC = "Automatic"
+
+
+class Vocoder(StrEnum):
+    """Enumeration of vocoders for training voice models."""
+
+    HIFI_GAN = "HiFi-GAN"
+    MRF_HIFI_GAN = "MRF HiFi-GAN"
+    REFINE_GAN = "RefineGAN"
+
+
+class IndexAlgorithm(StrEnum):
+    """Enumeration of indexing algorithms for training voice models."""
+
+    AUTO = "auto"
+    FAISS = "Faiss"
+    KMEANS = "KMeans"

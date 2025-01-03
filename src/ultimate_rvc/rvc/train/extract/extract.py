@@ -52,7 +52,6 @@ class FeatureInput:
         self.model_rmvpe = None
 
     def compute_f0(self, audio_array, method, hop_length):
-        """Extract F0 using the specified method."""
         if method == "crepe":
             return self._get_crepe(audio_array, hop_length, type="full")
         if method == "crepe-tiny":
@@ -62,7 +61,6 @@ class FeatureInput:
         raise ValueError(f"Unknown F0 method: {method}")
 
     def _get_crepe(self, x, hop_length, type):
-        """Extract F0 using CREPE."""
         audio = torch.from_numpy(x.astype(np.float32)).to(self.device)
         audio /= torch.quantile(torch.abs(audio), 0.999)
         audio = audio.unsqueeze(0)
@@ -101,7 +99,6 @@ class FeatureInput:
         return np.rint(f0_mel).astype(int)
 
     def process_file(self, file_info, f0_method, hop_length):
-        """Process a single audio file for F0 extraction."""
         inp_path, opt_path_coarse, opt_path_full, _ = file_info
 
         if os.path.exists(opt_path_coarse) and os.path.exists(opt_path_full):
@@ -299,8 +296,8 @@ def initialize_extraction(
         file_name = os.path.basename(file)
         file_info = [
             file,
-            os.path.join(exp_dir, f"f0_{f0_method}_voiced", file_name + ".npy"),
             os.path.join(exp_dir, f"f0_{f0_method}", file_name + ".npy"),
+            os.path.join(exp_dir, f"f0_{f0_method}_voiced", file_name + ".npy"),
             os.path.join(
                 exp_dir,
                 f"{version}_{embedder_model}_extracted",
@@ -312,13 +309,20 @@ def initialize_extraction(
     return files
 
 
-def update_model_info(exp_dir: str, embedder_model: str) -> None:
+def update_model_info(
+    exp_dir: str,
+    rvc_version: str,
+    embedder_model: str,
+    custom_embedder_model_hash: str | None,
+) -> None:
     file_path = os.path.join(exp_dir, "model_info.json")
     if os.path.exists(file_path):
         with open(file_path) as f:
             data = json.load(f)
     else:
         data = {}
+    data["rvc_version"] = rvc_version
     data["embedder_model"] = embedder_model
+    data["custom_embedder_model_hash"] = custom_embedder_model_hash
     with open(file_path, "w") as f:
         json.dump(data, f, indent=4)

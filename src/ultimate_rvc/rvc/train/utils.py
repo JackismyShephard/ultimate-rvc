@@ -1,4 +1,5 @@
 import glob
+import logging
 import os
 from collections import OrderedDict
 
@@ -8,6 +9,8 @@ import numpy as np
 import torch
 
 import soundfile as sf
+
+logger = logging.getLogger(__name__)
 
 MATPLOTLIB_FLAG = False
 
@@ -50,7 +53,11 @@ def load_checkpoint(checkpoint_path, model, optimizer=None, load_opt=1):
         checkpoint_path,
     ), f"Checkpoint file not found: {checkpoint_path}"
 
-    checkpoint_dict = torch.load(checkpoint_path, map_location="cpu")
+    checkpoint_dict = torch.load(
+        checkpoint_path,
+        map_location="cpu",
+        weights_only=False,
+    )
     checkpoint_dict = replace_keys_in_dict(
         replace_keys_in_dict(
             checkpoint_dict,
@@ -110,10 +117,8 @@ def save_checkpoint(model, optimizer, learning_rate, iteration, checkpoint_path)
         "optimizer": optimizer.state_dict(),
         "learning_rate": learning_rate,
     }
-    torch.save(checkpoint_data, checkpoint_path)
 
     # Create a backwards-compatible checkpoint
-    old_version_path = checkpoint_path.replace(".pth", "_old_version.pth")
     checkpoint_data = replace_keys_in_dict(
         replace_keys_in_dict(
             checkpoint_data,
@@ -123,10 +128,8 @@ def save_checkpoint(model, optimizer, learning_rate, iteration, checkpoint_path)
         ".parametrizations.weight.original0",
         ".weight_g",
     )
-    torch.save(checkpoint_data, old_version_path)
-
-    os.replace(old_version_path, checkpoint_path)
-    print(f"Saved model '{checkpoint_path}' (epoch {iteration})")
+    torch.save(checkpoint_data, checkpoint_path)
+    logger.info("Saved model '%s' (epoch %d)", checkpoint_path, iteration)
 
 
 def summarize(

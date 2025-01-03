@@ -5,8 +5,10 @@ from ultimate_rvc.typing_extra import (
     AudioSplitMethod,
     EmbedderModel,
     F0Method,
+    IndexAlgorithm,
     RVCVersion,
     TrainingSampleRate,
+    Vocoder,
 )
 
 
@@ -168,3 +170,41 @@ def complete_training_sample_rate(incomplete: str) -> list[str]:
 
     """
     return complete_name(incomplete, list(TrainingSampleRate))
+
+
+def complete_vocoder(incomplete: str) -> list[str]:
+    """
+    Return a list of vocoders that start with the incomplete string.
+
+    Parameters
+    ----------
+    incomplete : str
+        The incomplete string to complete.
+
+    Returns
+    -------
+    list[str]
+        The list of vocoders that start with the incomplete string.
+
+    """
+    return complete_name(incomplete, list(Vocoder))
+
+
+def complete_index_algorithm(incomplete: str) -> list[str]:
+    """
+    Return a list of index algorithms that start with the incomplete
+    string.
+
+    Parameters
+    ----------
+    incomplete : str
+        The incomplete string to complete.
+
+    Returns
+    -------
+    list[str]
+        The list of index algorithms that start with the incomplete
+        string.
+
+    """
+    return complete_name(incomplete, list(IndexAlgorithm))

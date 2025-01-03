@@ -125,34 +125,33 @@ def preprocess_dataset(
     model_name: str,
     dataset: StrPath,
     sample_rate: TrainingSampleRate = TrainingSampleRate.HZ_40K,
-    cpu_cores: int = cpu_count(),
     split_method: AudioSplitMethod = AudioSplitMethod.AUTOMATIC,
     chunk_len: float = 3.0,
     overlap_len: float = 0.3,
     filter_audio: bool = True,
     clean_audio: bool = False,
     clean_strength: float = 0.7,
+    cpu_cores: int = cpu_count(),
     progress_bar: gr.Progress | None = None,
     percentage: float = 0.5,
 ) -> None:
     """
-    Preprocess a dataset of audio files for training a given model.
-
-    If the given model does not exist, it will be created. if the given
-    model does exist, its currently associated dataset will be
-    replaced with the provided dataset.
+    Preprocess a dataset of audio files for training a voice model.
 
     Parameters
     ----------
     model_name : str
-        The name of the model to train.
+        The name of the voice model to train. If no voice model
+        with the provided name exists for training, a new voice model
+        for training will be created with the provided name. If a voice
+        model with the provided name already exists for training, then
+        its currently associated dataset will be replaced with the
+        provided dataset.
     dataset : StrPath
         The path to the dataset to preprocess.
     sample_rate : TrainingSampleRate, default=TrainingSampleRate.HZ_40K
         The target sample rate for the audio files in the provided
         dataset.
-    cpu_cores : int, default=cpu_count()
-        The number of CPU cores to use for preprocessing.
     split_method : AudioSplitMethod, default=AudioSplitMethod.AUTOMATIC
         The method to use for splitting the audio files in the provided
         dataset. Use the `Skip` method to skip splitting if the audio
@@ -175,6 +174,8 @@ def preprocess_dataset(
     clean_strength : float, default=0.7
         The intensity of the cleaning to apply to the audio files in the
         provided dataset.
+    cpu_cores : int, default=cpu_count()
+        The number of CPU cores to use for preprocessing.
     progress_bar : gr.Progress, optional
         The progress bar to update as the dataset is preprocessed.
     percentage : float, optional
@@ -193,7 +194,7 @@ def preprocess_dataset(
     dataset_path = validate_audio_dir_exists(dataset, Entity.DATASET)
 
     display_progress(
-        "[~] preprocessing dataset for training model...",
+        "[~] preprocessing dataset for training voice model...",
         percentage,
         progress_bar,
     )
@@ -212,9 +213,9 @@ def preprocess_dataset(
         cpu_cores,
         str(model_path),
         split_method,
-        chunk_len,
-        overlap_len,
         filter_audio,
         clean_audio,
         clean_strength,
+        chunk_len,
+        overlap_len,
     )

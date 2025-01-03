@@ -1,5 +1,46 @@
 # TODO
 
+* starting training is slow -- optimize
+* we should make a queue for training tab event listener so that only one event listener can be executed at a time
+  * specifically we dont want to be able to extract features if dataset preprocessing is already running
+  * and we dont want to be able to train a model if feature extraction is already running
+
+* we should have a button for quitting training. We can do as they do in applio
+  * the same method can also be used for quitting any other ongoing process from the UI.
+
+* we should also have a button for tranfering generated voice model files to the voice model folder?
+   *  this can also be a checkbox option instead
+   * in that case the name of the voice model in the voice model folder will be the same as the name of the voice model in the training folder. so if there is already a voice model with that name in the voice model folder then an error will be raised. but only after training has completed
+   * it might be better with a separate button for this so that the user can choose to do this after training has completed and they can choose which name they want to give the voice model in the voice model folder. the button should be in a new accordion called "post training" or something like that?
+
+* for the training function there is no option to just use gpu
+  * if no device is chosen then device will be 0 but gpu will always be chosen if its available.
+
+* we are getting the the following error during training sporadically:
+```
+[W101 01:15:16.000000000 socket.cpp:518] [c10d] The server socket has failed to bind to [Christians-Desktop]:51023 (system error: 10013 - An attempt was made to access a socket in a way forbidden by its access permissions.).
+[W101 01:15:16.000000000 socket.cpp:518] [c10d] The server socket has failed to bind to Christians-Desktop:51023 (system error: 10013 - An attempt was made to access a socket in a way forbidden by its access permissions.).
+[E101 01:15:16.000000000 socket.cpp:554] [c10d] The server socket has failed to listen on any local network address.
+Process Process-1:
+Traceback (most recent call last):
+  File "C:\Users\Jacki\AppData\Local\Programs\Python\Python312\Lib\multiprocessing\process.py", line 314, in _bootstrap
+    self.run()
+  File "C:\Users\Jacki\AppData\Local\Programs\Python\Python312\Lib\multiprocessing\process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Users\Jacki\repositories\ultimate-rvc\src\ultimate_rvc\rvc\train\train.py", line 358, in run
+    dist.init_process_group(
+  File "C:\Users\Jacki\repositories\ultimate-rvc\uv\.venv\Lib\site-packages\torch\distributed\c10d_logger.py", line 83, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Jacki\repositories\ultimate-rvc\uv\.venv\Lib\site-packages\torch\distributed\c10d_logger.py", line 97, in wrapper
+    func_return = func(*args, **kwargs)
+                  ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Jacki\repositories\ultimate-rvc\uv\.venv\Lib\site-packages\torch\distributed\distributed_c10d.py", line 1520, in init_process_group
+    store, rank, world_size = next(rendezvous_iterator)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Jacki\repositories\ultimate-rvc\uv\.venv\Lib\site-packages\torch\distributed\rendezvous.py", line 269, in _env_rendezvous_handler
+    store = _create_c10d_store(```
+
 * Add reset settings button for each step in train multistep tab?
 * combine step 0: data population and step 1: dataset preprocsessing into one step?
   * need a (dataset) source dropdown with two options: existing dataset and new dataset
@@ -35,7 +76,8 @@
 * should remove input validation from modules from core package
   * typer handles this on the cli part
   * for gradio we should make a wrapper functio nthat provides the needed validation
-
+* training does evaluation on training data and not an unbiased test set, which should be fixed perhaps
+  * also perhaps we should use another metric than the loss function for evaluation
 * add feature for comparing two models using their  cosine similarity or other metric?
 
 * add to ui feature for extracting specific weigth from specific epoch of training 

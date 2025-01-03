@@ -1,7 +1,4 @@
-"""
-Extra type definitions for the audio generation commands in the
-CLI of the Ultimate RVC project.
-"""
+"""Extra type definitions for the CLI of the Ultimate RVC project."""
 
 from __future__ import annotations
 
@@ -27,3 +24,9 @@ class PanelName(StrEnum):
     RVC_EMBEDDINGS_OPTIONS = "RVC Embeddings Options"
     VOCAL_POST_PROCESSING_OPTIONS = "Vocal Post-processing Options"
     AUDIO_MIXING_OPTIONS = "Audio Mixing Options"
+    EXTRACTION_OPTIONS = "Extraction Options"
+    TRAINING_OPTIONS = "Training Options"
+    SAVE_OPTIONS = "Save Options"
+    PRETRAINED_MODEL_OPTIONS = "Pretrained Model Options"
+    MEMORY_OPTIONS = "Memory Options"
+    DEVICE_OPTIONS = "Device Options"

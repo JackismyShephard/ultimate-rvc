@@ -20,7 +20,7 @@ from ultimate_rvc.cli.common import (
     complete_f0_method,
     format_duration,
 )
-from ultimate_rvc.cli.generate.typing_extra import PanelName
+from ultimate_rvc.cli.typing_extra import PanelName
 from ultimate_rvc.core.generate.song_cover import run_pipeline as _run_pipeline
 from ultimate_rvc.typing_extra import AudioExt, EmbedderModel, F0Method
 

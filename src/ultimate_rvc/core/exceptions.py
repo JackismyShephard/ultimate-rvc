@@ -28,6 +28,9 @@ class Entity(StrEnum):
     VOICE_MODEL = "voice model"
     TRAINING_MODEL = "training model"
     CUSTOM_EMBEDDER_MODEL = "custom embedder model"
+    CUSTOM_PRETRAINED_MODEL = "custom pretrained model"
+    GENERATOR = "generator"
+    DISCRIMINATOR = "discriminator"
     MODEL_FILE = "model file"
     MODEL_BIN_FILE = "pytorch_model.bin file"
     CONFIG_JSON_FILE = "config.json file"
@@ -42,6 +45,8 @@ class Entity(StrEnum):
     DATASET = "dataset"
     DATASETS = "datasets"
     DATASET_NAME = "dataset name"
+    DATASET_FILE_LIST = "dataset file list"
+    PREPROCESSED_AUDIO_DATASET_FILES = "preprocessed dataset audio files"
 
     # Source entitiess
     SOURCE = "source"
@@ -62,6 +67,7 @@ ModelEntity = Literal[
     Entity.VOICE_MODEL,
     Entity.TRAINING_MODEL,
     Entity.CUSTOM_EMBEDDER_MODEL,
+    Entity.CUSTOM_PRETRAINED_MODEL,
 ]
 
 
@@ -76,6 +82,13 @@ class Location(StrEnum):
 
     # Model locations
     EXTRACTED_ZIP_FILE = "extracted zip file"
+
+
+class Step(StrEnum):
+    """Enumeration of steps that can be run."""
+
+    DATASET_PREPROCESSING = "dataset preprocessing"
+    FEATURE_EXTRACTION = "feature extraction"
 
 
 class UIMessage(StrEnum):
@@ -111,6 +124,9 @@ class UIMessage(StrEnum):
     NO_TRAINING_MODELS = "No training models selected."
     NO_CUSTOM_EMBEDDER_MODEL = "No custom embedder model selected."
     NO_CUSTOM_EMBEDDER_MODELS = "No custom embedder models selected."
+    NO_CUSTOM_PRETRAINED_MODEL = "No custom pretrained model selected."
+    NO_CUSTOM_GENERATOR = "No custom pretrained generator selected."
+    NO_CUSTOM_GENERATORS = "No custom pretrained generators selected."
 
     # Source messages
     NO_AUDIO_SOURCE = (
@@ -201,31 +217,39 @@ class ModelNotFoundError(OSError):
         super().__init__(f"{entity.capitalize()} with name '{name}' not found.")
 
 
-class PreprocessedAudioNotFoundError(OSError):
-    """
-    Raised when no preprocessed dataset audio files are associated
-    with a model.
-    """
+class ModelAsssociatedEntityNotFoundError(OSError):
+    """Raised when an entity associated with a model is not found."""
 
-    def __init__(self, name: str) -> None:
+    def __init__(
+        self,
+        entity: Entity,
+        model_name: str,
+        required_step: Step | None = None,
+    ) -> None:
         r"""
-        Initialize a PreprocessedAudioNotFoundError instance.
+        Initialize a ModelAsssociatedEntityNotFoundError instance.
 
         Exception message will be formatted as:
 
-        'No preprocessed dataset audio files associated with the model
-        with name "`<name>`".'
+        'No `<entity>` associated with the model with name
+        "`<model_name>`". [Please run `<required_step>` first.]'
 
         Parameters
         ----------
-        name : str
-            The name of the model with no associated preprocessed
-            dataset audio files.
+        entity : str
+            The entity that is not associated with the model.
+        model_name : str
+            The name of the model that the entity is not associated
+            with.
+        required_step : str, default=None
+            The required step that needs to be run before will be
+            associated with the model.
 
         """
+        suffix = f"Please run {required_step} first." if required_step else ""
         super().__init__(
-            "No preprocessed dataset audio files associated with the model with name"
-            f" '{name}'.",
+            f"No {entity.capitalize()} associated with the model with name"
+            f" {model_name}. {suffix}",
         )
 
 

@@ -53,7 +53,7 @@ class MRFLayer(torch.nn.Module):
         # new tensor
         y = torch.nn.functional.leaky_relu(x, LRELU_SLOPE)
         y = self.conv1(y)
-        # in place call
+        # in-place call
         y = torch.nn.functional.leaky_relu_(y, LRELU_SLOPE)
         y = self.conv2(y)
         return x + y

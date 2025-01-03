@@ -235,7 +235,11 @@ def format_duration(seconds):
     return f"{hours:02}:{minutes:02}:{seconds:02}"
 
 
-def save_dataset_duration(file_path, dataset_duration):
+def save_dataset_duration_and_sample_rate(
+    file_path,
+    dataset_duration,
+    sample_rate,
+) -> None:
     try:
         with open(file_path) as f:
             data = json.load(f)
@@ -246,6 +250,7 @@ def save_dataset_duration(file_path, dataset_duration):
     new_data = {
         "total_dataset_duration": formatted_duration,
         "total_seconds": dataset_duration,
+        "sample_rate": sample_rate,
     }
     data.update(new_data)
 
@@ -294,11 +299,11 @@ def preprocess_training_set(
     num_processes: int,
     exp_dir: str,
     cut_preprocess: str,
-    chunk_len: float,
-    overlap_len: float,
     process_effects: bool,
     noise_reduction: bool,
     reduction_strength: float,
+    chunk_len: float,
+    overlap_len: float,
 ):
 
     static_ffmpeg.add_paths()
@@ -389,9 +394,10 @@ def preprocess_training_set(
                 pbar.update(1)
 
     audio_length = sum(audio_length)
-    save_dataset_duration(
+    save_dataset_duration_and_sample_rate(
         os.path.join(exp_dir, "model_info.json"),
         dataset_duration=audio_length,
+        sample_rate=sr,
     )
     elapsed_time = time.time() - start_time
     logger.info(

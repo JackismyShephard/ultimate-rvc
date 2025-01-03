@@ -33,7 +33,7 @@ from ultimate_rvc.web.common import (
     toggle_visibilities,
     toggle_visibility,
     update_dropdowns,
-    update_values,
+    update_value,
 )
 
 
@@ -90,23 +90,6 @@ def render(
         "Delete audio" tab.
 
     """
-    sample_rate_preprocess, sample_rate_extract = [
-        gr.Dropdown(
-            choices=list(TrainingSampleRate),
-            label="Sample rate",
-            info=info,
-            value=TrainingSampleRate.HZ_40K,
-            render=False,
-        )
-        for info in [
-            "Target sample rate for the audio files in the provided dataset.",
-            (
-                "The sample rate of the audio files in the preprocessed dataset"
-                " associated with the model. When a new dataset is preprocessed,"
-                " its target sample rate is selected by default."
-            ),
-        ]
-    ]
     current_dataset = gr.State()
     with gr.Tab("Multi-step generation"):
         with gr.Accordion("Step 0: dataset population", open=True):
@@ -158,7 +141,15 @@ def render(
             with gr.Accordion("Advanced Settings", open=False):
                 with gr.Row():
                     with gr.Column():
-                        sample_rate_preprocess.render()
+                        sample_rate = gr.Dropdown(
+                            choices=list(TrainingSampleRate),
+                            label="Sample rate",
+                            info=(
+                                "Target sample rate for the audio files in the provided"
+                                " dataset."
+                            ),
+                            value=TrainingSampleRate.HZ_40K,
+                        )
                     with gr.Column():
                         filter_audio = gr.Checkbox(
                             value=True,
@@ -256,14 +247,14 @@ def render(
                     inputs=[
                         preprocess_model,
                         dataset,
-                        sample_rate_preprocess,
-                        cpu_cores_preprocess,
+                        sample_rate,
                         split_method,
                         chunk_len,
                         overlap_len,
                         filter_audio,
                         clean_audio,
                         clean_strength,
+                        cpu_cores_preprocess,
                     ],
                     outputs=preprocess_msg,
                 ).success(
@@ -284,16 +275,14 @@ def render(
                     outputs=preprocess_model,
                     show_progress="hidden",
                 ).then(
-                    update_values,
-                    inputs=[preprocess_model, sample_rate_preprocess],
-                    outputs=[extract_model, sample_rate_extract],
+                    update_value,
+                    inputs=preprocess_model,
+                    outputs=extract_model,
                     show_progress="hidden",
                 )
         with gr.Accordion("Step 2: feature extraction", open=True):
             with gr.Row():
                 extract_model.render()
-
-                sample_rate_extract.render()
             with gr.Accordion("Advanced Settings", open=False):
                 with gr.Row():
                     with gr.Column():
@@ -401,12 +390,11 @@ def render(
                         rvc_version,
                         f0_method,
                         hop_length,
-                        cpu_cores_extract,
-                        gpus,
-                        sample_rate_extract,
                         embedder_model,
                         custom_embedder_model,
                         include_mutes,
+                        cpu_cores_extract,
+                        gpus,
                     ],
                     outputs=extract_msg,
                 ).success(

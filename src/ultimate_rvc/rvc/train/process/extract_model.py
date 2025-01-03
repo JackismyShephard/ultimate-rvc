@@ -1,11 +1,14 @@
 import datetime
 import hashlib
 import json
+import logging
 import os
 import sys
 from collections import OrderedDict
 
 import torch
+
+logger = logging.getLogger(__name__)
 
 now_dir = os.getcwd()
 sys.path.append(now_dir)
@@ -42,29 +45,15 @@ def extract_model(
         model_dir_path = os.path.dirname(model_dir)
         os.makedirs(model_dir_path, exist_ok=True)
 
-        if "best_epoch" in model_dir:
-            pth_file = f"{name}_{epoch}e_{step}s_best_epoch.pth"
-        else:
-            pth_file = f"{name}_{epoch}e_{step}s.pth"
-
-        pth_file_old_version_path = os.path.join(
-            model_dir_path,
-            f"{pth_file}_old_version.pth",
-        )
-
-        model_dir_path = os.path.dirname(model_dir)
         if os.path.exists(os.path.join(model_dir_path, "model_info.json")):
             with open(os.path.join(model_dir_path, "model_info.json")) as f:
                 data = json.load(f)
                 dataset_length = data.get("total_dataset_duration", None)
                 embedder_model = data.get("embedder_model", None)
                 speakers_id = data.get("speakers_id", 1)
+                model_author = data.get("model_author", None)
         else:
             dataset_length = None
-
-        with open(os.path.join(now_dir, "assets", "config.json")) as f:
-            data = json.load(f)
-            model_author = data.get("model_author", None)
 
         opt = OrderedDict(
             weight={
@@ -108,26 +97,19 @@ def extract_model(
         opt["embedder_model"] = embedder_model
         opt["speakers_id"] = speakers_id
         opt["vocoder"] = vocoder
-
-        torch.save(opt, os.path.join(model_dir_path, pth_file))
-
-        # Create a backwards-compatible checkpoint
-        model = torch.load(model_dir, map_location=torch.device("cpu"))
         torch.save(
             replace_keys_in_dict(
                 replace_keys_in_dict(
-                    model,
+                    opt,
                     ".parametrizations.weight.original1",
                     ".weight_v",
                 ),
                 ".parametrizations.weight.original0",
                 ".weight_g",
             ),
-            pth_file_old_version_path,
+            model_dir,
         )
-        os.remove(model_dir)
-        os.rename(pth_file_old_version_path, model_dir)
-        print(f"Saved model '{model_dir}' (epoch {epoch} and step {step})")
+        logger.info("Saved model '%s' (epoch %d and step %d)", model_dir, epoch, step)
 
     except Exception as error:
         print(f"An error occurred extracting the model: {error}")

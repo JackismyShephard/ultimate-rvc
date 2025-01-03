@@ -43,16 +43,17 @@ dependencies = [
     "faiss-cpu==1.9.0",
     # Version of onnxruntime-gpu needs to align with what 
     # version audio-separator package uses.
-    "onnxruntime-gpu==1.19.2", 
+    "onnxruntime-gpu==1.19.2",
     "local-attention",
     "einops",
-    "transformers",
+    "transformers==4.44.2",
     "diffq==0.2.4",
     "tensorboardX==2.6.2.2",
+    "tensorboard",
+    "torch-tb-profiler==0.4.3",
     # TODO potentially add these later
-    # "tensorboard",
-    # "torchfcpe",
-    # "libf0",
+    #"torchfcpe",
+    #"libf0",
     
     # Audio
     "static-ffmpeg==2.7",

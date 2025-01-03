@@ -1,5 +1,4 @@
-from typing import Optional
-
+import logging
 import math
 
 import torch
@@ -8,6 +7,8 @@ from ultimate_rvc.rvc.lib.algorithm.attentions import FFN, MultiHeadAttention
 from ultimate_rvc.rvc.lib.algorithm.commons import sequence_mask
 from ultimate_rvc.rvc.lib.algorithm.modules import WaveNet
 from ultimate_rvc.rvc.lib.algorithm.normalization import LayerNorm
+
+logger = logging.getLogger(__name__)
 
 
 class Encoder(torch.nn.Module):
@@ -39,7 +40,6 @@ class Encoder(torch.nn.Module):
 
         self.hidden_channels = hidden_channels
         self.n_layers = n_layers
-
         self.drop = torch.nn.Dropout(p_dropout)
 
         self.attn_layers = torch.nn.ModuleList(
@@ -124,6 +124,8 @@ class TextEncoder(torch.nn.Module):
         self.emb_phone = torch.nn.Linear(embedding_dim, hidden_channels)
         self.lrelu = torch.nn.LeakyReLU(0.1, inplace=True)
         self.emb_pitch = torch.nn.Embedding(256, hidden_channels) if f0 else None
+        logger.info("hidden_channels: %d", hidden_channels)
+
         self.encoder = Encoder(
             hidden_channels,
             filter_channels,
@@ -146,7 +148,7 @@ class TextEncoder(torch.nn.Module):
 
         x *= math.sqrt(self.hidden_channels)
         x = self.lrelu(x)
-        x = x.transpose(1, -1)  # [b, h, t]
+        x = x.transpose(1, -1)  # [B, H, T]
 
         x_mask = sequence_mask(lengths, x.size(2)).unsqueeze(1).to(x.dtype)
         x = self.encoder(x, x_mask)
@@ -158,7 +160,6 @@ class TextEncoder(torch.nn.Module):
 
 class PosteriorEncoder(torch.nn.Module):
     """
-
     Posterior Encoder for inferring latent representation.
 
     Args:
@@ -184,7 +185,6 @@ class PosteriorEncoder(torch.nn.Module):
     ):
         super().__init__()
         self.out_channels = out_channels
-
         self.pre = torch.nn.Conv1d(in_channels, hidden_channels, 1)
         self.enc = WaveNet(
             hidden_channels,
