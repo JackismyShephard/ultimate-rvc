@@ -149,6 +149,7 @@ def render_app() -> gr.Blocks:
     with gr.Blocks(
         title="Ultimate RVC",
         css=css,
+        theme="theNeofr/Syne",
         delete_cache=(cache_delete_frequency, cache_delete_cutoff),
     ) as app:
         gr.HTML("<h1>Ultimate RVC 🧡</h1>")
