@@ -21,7 +21,7 @@ import yt_dlp  # type: ignore[ReportUnusedImport] # noqa: F401
 import gradio as gr
 
 import typer
-
+from ultimate_rvc.web.Applio import Applio
 from ultimate_rvc.common import AUDIO_DIR, MODELS_DIR, TEMP_DIR
 from ultimate_rvc.core.generate.song_cover import get_named_song_dirs
 from ultimate_rvc.core.generate.speech import get_edge_tts_voice_names
@@ -130,6 +130,9 @@ def _init_app() -> list[gr.Dropdown]:
     ]
 
 
+
+applio = Applio()
+
 def render_app() -> gr.Blocks:
     """
     Render the Ultimate RVC web application.
@@ -149,6 +152,7 @@ def render_app() -> gr.Blocks:
     with gr.Blocks(
         title="Ultimate RVC",
         css=css,
+        theme=applio,
         delete_cache=(cache_delete_frequency, cache_delete_cutoff),
     ) as app:
         gr.HTML("<h1>Ultimate RVC 🧡</h1>")
