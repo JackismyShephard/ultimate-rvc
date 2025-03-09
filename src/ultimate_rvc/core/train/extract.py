@@ -5,8 +5,6 @@ audio datasets.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from multiprocessing import cpu_count
 
 from ultimate_rvc.core.common import (
@@ -26,9 +24,6 @@ from ultimate_rvc.typing_extra import (
     TrainingF0Method,
 )
 
-if TYPE_CHECKING:
-    import gradio as gr
-
 
 def extract_features(
     model_name: str,
@@ -40,8 +35,6 @@ def extract_features(
     cpu_cores: int = cpu_count(),
     hardware_acceleration: DeviceType = DeviceType.AUTOMATIC,
     gpu_ids: set[int] | None = None,
-    progress_bar: gr.Progress | None = None,
-    percentage: tuple[float, float] = (0.0, 0.5),
 ) -> None:
     """
     Extract features from the preprocessed dataset associated with a
@@ -76,10 +69,6 @@ def extract_features(
     gpu_ids : set[int], optional
         Set of ids of the GPUs to use for feature extraction when `GPU`
         is selected for hardware acceleration.
-    progress_bar : gr.Progress, optional
-        The progress bar to update as the features are extracted.
-    percentage : float, optional
-        The percentage to display on the progress bar.
 
     Raises
     ------
@@ -136,9 +125,9 @@ def extract_features(
         chosen_embedder_model,
         combined_file_hash,
     )
-    display_progress("[~] Extracting pitch features...", percentage[0], progress_bar)
+    display_progress("[~] Extracting pitch features...")
     extract.run_pitch_extraction(file_infos, devices, f0_method, hop_length, cpu_cores)
-    display_progress("[~] Extracting audio embeddings...", percentage[1], progress_bar)
+    display_progress("[~] Extracting audio embeddings...")
     extract.run_embedding_extraction(
         file_infos,
         devices,

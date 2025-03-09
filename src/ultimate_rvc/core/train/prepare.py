@@ -13,7 +13,6 @@ from multiprocessing import cpu_count
 from ultimate_rvc.common import TRAINING_MODELS_DIR, lazy_import
 from ultimate_rvc.core.common import (
     TRAINING_AUDIO_DIR,
-    display_progress,
     validate_audio_dir_exists,
     validate_audio_file_exists,
 )
@@ -29,8 +28,6 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from pathlib import Path
 
-    import gradio as gr
-
     import static_ffmpeg
 
     from ultimate_rvc.typing_extra import StrPath
@@ -38,12 +35,7 @@ else:
     static_ffmpeg = lazy_import("static_ffmpeg")
 
 
-def populate_dataset(
-    name: str,
-    audio_files: Sequence[StrPath],
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
-) -> Path:
+def populate_dataset(name: str, audio_files: Sequence[StrPath]) -> Path:
     """
     Populate the dataset with the provided name with the provided audio
     files.
@@ -58,11 +50,6 @@ def populate_dataset(
         The name of the dataset to populate.
     audio_files : list[StrPath]
         The audio files to populate the dataset with.
-
-    progress_bar : gr.Progress, optional
-        The progress bar to update as the dataset is populated.
-    percentage : float, optional
-        The percentage to display on the progress bar.
 
     Returns
     -------
@@ -105,12 +92,6 @@ def populate_dataset(
             raise InvalidAudioFormatError(audio_path, [e.value for e in AudioExt])
         audio_paths.append(audio_path)
 
-    display_progress(
-        "[~] Populating dataset with provided audio files ",
-        percentage,
-        progress_bar,
-    )
-
     dataset_path = TRAINING_AUDIO_DIR / name.strip()
 
     dataset_path.mkdir(parents=True, exist_ok=True)
@@ -132,8 +113,6 @@ def preprocess_dataset(
     clean_audio: bool = False,
     clean_strength: float = 0.7,
     cpu_cores: int = cpu_count(),
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
 ) -> None:
     """
     Preprocess a dataset of audio files for training a voice model.
@@ -176,10 +155,6 @@ def preprocess_dataset(
         provided dataset.
     cpu_cores : int, default=cpu_count()
         The number of CPU cores to use for preprocessing.
-    progress_bar : gr.Progress, optional
-        The progress bar to update as the dataset is preprocessed.
-    percentage : float, optional
-        The percentage to display on the progress bar.
 
 
     Raises
@@ -193,11 +168,6 @@ def preprocess_dataset(
 
     dataset_path = validate_audio_dir_exists(dataset, Entity.DATASET)
 
-    display_progress(
-        "[~] preprocessing dataset for training voice model...",
-        percentage,
-        progress_bar,
-    )
     model_path = TRAINING_MODELS_DIR / model_name.strip()
     model_path.mkdir(parents=True, exist_ok=True)
 

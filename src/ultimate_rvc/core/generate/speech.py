@@ -32,8 +32,10 @@ from ultimate_rvc.core.generate.common import (
 )
 from ultimate_rvc.core.generate.typing_extra import (
     EdgeTTSAudioMetaData,
-    EdgeTTSVoiceKeys,
+    EdgeTTSKeys,
+    EdgeTTSVoiceKey,
     EdgeTTSVoiceTable,
+    EdgeTTSVoiceTagKey,
     FileMetaData,
     MixedAudioType,
     RVCAudioMetaData,
@@ -65,7 +67,7 @@ def list_edge_tts_voices(
     limit: int | None = None,
     include_status_info: bool = False,
     include_codec_info: bool = False,
-) -> tuple[EdgeTTSVoiceTable, EdgeTTSVoiceKeys]:
+) -> tuple[EdgeTTSVoiceTable, EdgeTTSKeys]:
     """
     List Edge TTS voices based on provided filters.
 
@@ -102,18 +104,22 @@ def list_edge_tts_voices(
 
 
     """
-    keys = [
+    keys: list[EdgeTTSVoiceKey] = [
         "Name",
         "FriendlyName",
         "ShortName",
         "Locale",
-        "ContentCategories",
-        "VoicePersonalities",
     ]
+
     if include_status_info:
         keys.append("Status")
     if include_codec_info:
         keys.append("SuggestedCodec")
+    voice_tag_keys: list[EdgeTTSVoiceTagKey] = [
+        "ContentCategories",
+        "VoicePersonalities",
+    ]
+    all_keys: EdgeTTSKeys = keys + voice_tag_keys
 
     voices = anyio.run(edge_tts.list_voices)
     filtered_voices = [
@@ -144,17 +150,12 @@ def list_edge_tts_voices(
 
     table: list[list[str]] = []
     for voice in limited_voices:
-
-        features = [
-            (
-                ", ".join(voice["VoiceTag"][key])
-                if key in {"ContentCategories", "VoicePersonalities"}
-                else voice[key]
-            )
-            for key in keys
-        ]
+        features = [voice[key] for key in keys]
+        features.extend(
+            [", ".join(voice["VoiceTag"][tag_key]) for tag_key in voice_tag_keys],
+        )
         table.append(features)
-    return table, keys
+    return table, all_keys
 
 
 def get_edge_tts_voice_names() -> list[str]:
@@ -177,8 +178,6 @@ def run_edge_tts(
     pitch_shift: int = 0,
     speed_change: int = 0,
     volume_change: int = 0,
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
 ) -> Path:
     """
     Convert text to speech using edge TTS.
@@ -203,11 +202,6 @@ def run_edge_tts(
     volume_change : int, default=0
         The percentual change to the volume of the Edge TTS voice
         speaking the provided text.
-
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
 
     Returns
     -------
@@ -256,11 +250,6 @@ def run_edge_tts(
     converted_audio_path, converted_audio_json_path = paths
 
     if not all(path.exists() for path in paths):
-        display_progress(
-            "[~] Converting text using Edge TTS...",
-            percentage,
-            progress_bar,
-        )
 
         pitch_shift_str = f"{pitch_shift:+}Hz"
         speed_change_str = f"{speed_change:+}%"
@@ -421,8 +410,6 @@ def mix_speech(
     output_sr: int = 44100,
     output_format: AudioExt = AudioExt.MP3,
     output_name: str | None = None,
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
 ) -> Path:
     """
     Mix a speech track.
@@ -444,12 +431,6 @@ def mix_speech(
     output_name : str, optional
         The name of the mixed speech track.
 
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
-
     Returns
     -------
     Path
@@ -462,8 +443,6 @@ def mix_speech(
         output_sr=output_sr,
         output_format=output_format,
         content_type=MixedAudioType.SPEECH,
-        progress_bar=progress_bar,
-        percentage=percentage,
     )
 
     output_name = output_name or get_mixed_speech_track_name(
@@ -615,16 +594,15 @@ def run_pipeline(
     validate_model_exists(model_name, Entity.VOICE_MODEL)
     if embedder_model == EmbedderModel.CUSTOM:
         validate_model_exists(custom_embedder_model, Entity.CUSTOM_EMBEDDER_MODEL)
-    display_progress("[~] Starting RVC TTS pipeline...", 0, progress_bar)
+    display_progress("[~] Converting text using Edge TTS...", 0.0, progress_bar)
     speech_track = run_edge_tts(
         source,
         tts_voice,
         tts_pitch_shift,
         tts_speed_change,
         tts_volume_change,
-        progress_bar,
-        0.0,
     )
+    display_progress("[~] Converting speech using RVC...", 0.33, progress_bar)
     converted_speech_track = convert(
         audio_track=speech_track,
         directory=SPEECH_DIR,
@@ -646,18 +624,14 @@ def run_pipeline(
         custom_embedder_model=custom_embedder_model,
         sid=sid,
         content_type=RVCContentType.SPEECH,
-        progress_bar=progress_bar,
-        percentage=0.33,
     )
-
+    display_progress("[~] Mixing speech track...", 0.66, progress_bar)
     mixed_speech_track = mix_speech(
         speech_track=converted_speech_track,
         output_gain=output_gain,
         output_sr=output_sr,
         output_format=output_format,
         output_name=output_name,
-        progress_bar=progress_bar,
-        percentage=0.66,
     )
 
     return mixed_speech_track, speech_track, converted_speech_track

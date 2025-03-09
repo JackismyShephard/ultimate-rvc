@@ -26,6 +26,7 @@ class Entity(StrEnum):
     MODEL_NAME = "model name"
     MODEL_NAMES = "model names"
     UPLOAD_NAME = "upload name"
+    MODEL = "model"
     VOICE_MODEL = "voice model"
     TRAINING_MODEL = "training model"
     CUSTOM_EMBEDDER_MODEL = "custom embedder model"
@@ -68,6 +69,7 @@ AudioFileEntity = Literal[
 AudioDirectoryEntity = Literal[Entity.SONG_DIR, Entity.DATASET, Entity.DIRECTORY]
 
 ModelEntity = Literal[
+    Entity.MODEL,
     Entity.VOICE_MODEL,
     Entity.TRAINING_MODEL,
     Entity.CUSTOM_EMBEDDER_MODEL,
@@ -79,6 +81,7 @@ class Location(StrEnum):
     """Enumeration of locations where entities can be found."""
 
     # Audio locations
+    AUDIO_ROOT = "the root of the audio base directory"
     INTERMEDIATE_AUDIO_ROOT = "the root of the intermediate audio base directory"
     SPEECH_AUDIO_ROOT = "the root of the speech audio directory"
     TRAINING_AUDIO_ROOT = "the root of the training audio directory"
@@ -123,6 +126,8 @@ class UIMessage(StrEnum):
     )
 
     # Model messages
+    NO_MODEL = "No model selected."
+    NO_MODELS = "No models selected."
     NO_VOICE_MODEL = "No voice model selected."
     NO_VOICE_MODELS = "No voice models selected."
     NO_TRAINING_MODELS = "No training models selected."

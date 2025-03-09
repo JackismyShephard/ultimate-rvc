@@ -32,7 +32,6 @@ from ultimate_rvc.typing_extra import (
     SeparationModel,
 )
 from ultimate_rvc.web.common import (
-    PROGRESS_BAR,
     exception_harness,
     toggle_visibility,
     toggle_visible_component,
@@ -333,7 +332,6 @@ def render(
                         info_msg="Song retrieved successfully!",
                     ),
                     cookiefile=cookiefile,
-                    progress_bar=PROGRESS_BAR,
                 ),
                 inputs=source,
                 outputs=[song_output, current_song_dir],
@@ -406,12 +404,9 @@ def render(
                 show_progress="hidden",
             )
             separate_vocals_btn.click(
-                partial(
-                    exception_harness(
-                        separate_audio,
-                        info_msg="Vocals separated successfully!",
-                    ),
-                    progress_bar=PROGRESS_BAR,
+                exception_harness(
+                    separate_audio,
+                    info_msg="Vocals separated successfully!",
                 ),
                 inputs=[
                     audio_track_input,
@@ -673,7 +668,6 @@ def render(
                         info_msg="Vocals converted successfully!",
                     ),
                     content_type=RVCContentType.VOCALS,
-                    progress_bar=PROGRESS_BAR,
                 ),
                 inputs=[
                     vocals_track_input,
@@ -774,12 +768,9 @@ def render(
                 show_progress="hidden",
             )
             postprocess_vocals_btn.click(
-                partial(
-                    exception_harness(
-                        postprocess,
-                        info_msg="Vocals post-processed successfully!",
-                    ),
-                    progress_bar=PROGRESS_BAR,
+                exception_harness(
+                    postprocess,
+                    info_msg="Vocals post-processed successfully!",
                 ),
                 inputs=[
                     converted_vocals_track_input,
@@ -861,13 +852,9 @@ def render(
                 show_progress="hidden",
             )
             pitch_shift_instrumentals_btn.click(
-                partial(
-                    exception_harness(
-                        pitch_shift,
-                        info_msg="Instrumentals pitch-shifted successfully!",
-                    ),
-                    display_msg="Pitch shifting instrumentals...",
-                    progress_bar=PROGRESS_BAR,
+                exception_harness(
+                    pitch_shift,
+                    info_msg="Instrumentals pitch-shifted successfully!",
                 ),
                 inputs=[
                     instrumentals_track_input,
@@ -877,13 +864,9 @@ def render(
                 outputs=shifted_instrumentals_track_output,
             )
             pitch_shift_backup_vocals_btn.click(
-                partial(
-                    exception_harness(
-                        pitch_shift,
-                        info_msg="Backup vocals pitch-shifted successfully!",
-                    ),
-                    display_msg="Pitch shifting backup vocals...",
-                    progress_bar=PROGRESS_BAR,
+                exception_harness(
+                    pitch_shift,
+                    info_msg="Backup vocals pitch-shifted successfully!",
                 ),
                 inputs=[
                     backup_vocals_track_input,
@@ -1004,12 +987,9 @@ def render(
                 },
                 outputs=temp_audio_gains,
             ).then(
-                partial(
-                    exception_harness(
-                        mix_song,
-                        info_msg="Song cover succesfully generated.",
-                    ),
-                    progress_bar=PROGRESS_BAR,
+                exception_harness(
+                    mix_song,
+                    info_msg="Song cover succesfully generated.",
                 ),
                 inputs=[
                     temp_audio_gains,

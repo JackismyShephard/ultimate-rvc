@@ -26,7 +26,6 @@ from ultimate_rvc.typing_extra import (
     SampleRate,
 )
 from ultimate_rvc.web.common import (
-    PROGRESS_BAR,
     exception_harness,
     toggle_visibility,
     toggle_visible_component,
@@ -214,12 +213,9 @@ def render(
                 show_progress="hidden",
             )
             tts_btn.click(
-                partial(
-                    exception_harness(
-                        run_edge_tts,
-                        info_msg="Text succesfully converted!",
-                    ),
-                    progress_bar=PROGRESS_BAR,
+                exception_harness(
+                    run_edge_tts,
+                    info_msg="Text succesfully converted!",
                 ),
                 inputs=[
                     source,
@@ -484,7 +480,6 @@ def render(
                         info_msg="Speech succesfully converted!",
                     ),
                     content_type=RVCContentType.SPEECH,
-                    progress_bar=PROGRESS_BAR,
                 ),
                 inputs=[
                     speech_track_input,
@@ -580,12 +575,9 @@ def render(
                 show_progress="hidden",
             )
             mix_speech_btn.click(
-                partial(
-                    exception_harness(
-                        mix_speech,
-                        info_msg="Speech succesfully mixed!",
-                    ),
-                    progress_bar=PROGRESS_BAR,
+                exception_harness(
+                    mix_speech,
+                    info_msg="Speech succesfully mixed!",
                 ),
                 inputs=[
                     converted_speech_track_input,

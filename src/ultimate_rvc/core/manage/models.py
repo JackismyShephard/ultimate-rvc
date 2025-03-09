@@ -28,6 +28,7 @@ from ultimate_rvc.core.common import (
 from ultimate_rvc.core.exceptions import (
     Entity,
     Location,
+    ModelEntity,
     ModelExistsError,
     ModelNotFoundError,
     NotFoundError,
@@ -38,6 +39,7 @@ from ultimate_rvc.core.exceptions import (
     UploadLimitError,
     UploadTypeError,
 )
+from ultimate_rvc.core.manage.common import delete_directory, get_items
 from ultimate_rvc.core.manage.typing_extra import (
     PretrainedModelMetaDataTable,
     VoiceModelMetaData,
@@ -55,7 +57,6 @@ if TYPE_CHECKING:
 
     import requests
 
-    import gradio as gr
     import tqdm
 
     from ultimate_rvc.typing_extra import PretrainedSampleRate, StrPath
@@ -78,12 +79,7 @@ def get_voice_model_names() -> list[str]:
         A list of names of all saved voice models.
 
     """
-    if VOICE_MODELS_DIR.is_dir():
-        model_paths = VOICE_MODELS_DIR.iterdir()
-        return sorted(
-            [model_path.name for model_path in model_paths],
-        )
-    return []
+    return get_items(VOICE_MODELS_DIR)
 
 
 def get_custom_embedder_model_names() -> list[str]:
@@ -96,13 +92,10 @@ def get_custom_embedder_model_names() -> list[str]:
         A list of the names of all saved custom embedder models.
 
     """
-    if CUSTOM_EMBEDDER_MODELS_DIR.is_dir():
-        return sorted(
-            [model.name for model in CUSTOM_EMBEDDER_MODELS_DIR.iterdir()],
-        )
-    return []
+    return get_items(CUSTOM_EMBEDDER_MODELS_DIR)
 
 
+# TODO need to ensure that we should actually exclude all json files
 def get_custom_pretrained_model_names() -> list[str]:
     """
     Get the names of all saved custom pretrained models.
@@ -113,15 +106,7 @@ def get_custom_pretrained_model_names() -> list[str]:
         A list of the names of all saved custom pretrained models.
 
     """
-    if CUSTOM_PRETRAINED_MODELS_DIR.is_dir():
-        return sorted(
-            [
-                model.name
-                for model in CUSTOM_PRETRAINED_MODELS_DIR.iterdir()
-                if model.name != "pretrains.json"
-            ],
-        )
-    return []
+    return get_items(CUSTOM_PRETRAINED_MODELS_DIR, exclude=".json")
 
 
 def get_training_model_names() -> list[str]:
@@ -134,11 +119,7 @@ def get_training_model_names() -> list[str]:
         A list of the names of all saved training models.
 
     """
-    if TRAINING_MODELS_DIR.is_dir():
-        return sorted(
-            [model.name for model in TRAINING_MODELS_DIR.iterdir()],
-        )
-    return []
+    return get_items(TRAINING_MODELS_DIR)
 
 
 def load_public_models_table(
@@ -389,12 +370,7 @@ def _extract_voice_model(
             zip_path.unlink()
 
 
-def download_voice_model(
-    url: str,
-    name: str,
-    progress_bar: gr.Progress | None = None,
-    percentages: tuple[float, float] = (0.0, 0.5),
-) -> None:
+def download_voice_model(url: str, name: str) -> None:
     """
     Download a zipped voice model.
 
@@ -405,10 +381,6 @@ def download_voice_model(
         be downloaded from.
     name : str
         The name to give to the downloaded voice model.
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentages : tuple[float, float], default=(0.0, 0.5)
-        Percentages to display in the progress bar.
 
     Raises
     ------
@@ -439,15 +411,10 @@ def download_voice_model(
     )
     if "pixeldrain.com" in url:
         url = f"https://pixeldrain.com/api/file/{zip_name}"
+    display_progress("[~] Downloading voice model ...")
 
-    display_progress(
-        "[~] Downloading voice model ...",
-        percentages[0],
-        progress_bar,
-    )
     urllib.request.urlretrieve(url, zip_name)  # noqa: S310
-
-    display_progress("[~] Extracting zip file...", percentages[1], progress_bar)
+    display_progress("[~] Extracting zip file...")
     _extract_voice_model(zip_name, extraction_path, remove_zip=True)
 
 
@@ -480,12 +447,7 @@ def _download_pretrained_model_file(
                 progress_bar.update(len(data))
 
 
-def download_pretrained_model(
-    name: str,
-    sample_rate: PretrainedSampleRate,
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
-) -> None:
+def download_pretrained_model(name: str, sample_rate: PretrainedSampleRate) -> None:
     """
     Download a pretrained model.
 
@@ -495,10 +457,6 @@ def download_pretrained_model(
         The name of the pretrained model to download.
     sample_rate : PretrainedSampleRate
         The sample rate of the pretrained model to download.
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
 
     Raises
     ------
@@ -530,8 +488,6 @@ def download_pretrained_model(
     g_url = f"https://huggingface.co/{paths.G}"
 
     total_size = get_file_size(d_url) + get_file_size(g_url)
-
-    display_progress("[~] Downloading pretrained model...", percentage, progress_bar)
 
     model_path.mkdir(parents=True)
 
@@ -567,12 +523,7 @@ def download_pretrained_model(
                 raise PretrainedModelNotAvailableError(name, sample_rate) from e
 
 
-def upload_voice_model(
-    files: Sequence[StrPath],
-    name: str,
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
-) -> None:
+def upload_voice_model(files: Sequence[StrPath], name: str) -> None:
     """
     Upload a voice model from either a zip file or a .pth file and an
     optional index file.
@@ -583,10 +534,6 @@ def upload_voice_model(
         Paths to the files to upload.
     name : str
         The name to give to the uploaded voice model.
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
 
     Raises
     ------
@@ -614,11 +561,9 @@ def upload_voice_model(
     match sorted_file_paths:
         case [file_path]:
             if file_path.suffix == ".pth":
-                display_progress("[~] Copying .pth file ...", percentage, progress_bar)
                 copy_files_to_new_dir([file_path], model_dir_path)
             # NOTE a .pth file is actually itself a zip file
             elif zipfile.is_zipfile(file_path):
-                display_progress("[~] Extracting zip file...", percentage, progress_bar)
                 _extract_voice_model(file_path, model_dir_path)
             else:
                 raise UploadTypeError(
@@ -629,11 +574,6 @@ def upload_voice_model(
                 )
         case [index_path, pth_path]:
             if index_path.suffix == ".index" and pth_path.suffix == ".pth":
-                display_progress(
-                    "[~] Copying .pth file and index file ...",
-                    percentage,
-                    progress_bar,
-                )
                 copy_files_to_new_dir([index_path, pth_path], model_dir_path)
             else:
                 raise UploadTypeError(
@@ -721,12 +661,7 @@ def _extract_custom_embedder_model(
             zip_path.unlink()
 
 
-def upload_custom_embedder_model(
-    files: Sequence[StrPath],
-    name: str,
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
-) -> None:
+def upload_custom_embedder_model(files: Sequence[StrPath], name: str) -> None:
     """
     Upload a custom embedder model from either a zip file or a pair
     consisting of a pytorch_model.bin file and a config.json file.
@@ -737,10 +672,6 @@ def upload_custom_embedder_model(
         Paths to the files to upload.
     name : str
         The name to give to the uploaded custom embedder model.
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
 
     Raises
     ------
@@ -768,7 +699,6 @@ def upload_custom_embedder_model(
     match sorted_file_paths:
         case [file_path]:
             if zipfile.is_zipfile(file_path):
-                display_progress("[~] Extracting zip file...", percentage, progress_bar)
                 _extract_custom_embedder_model(file_path, model_dir_path)
             else:
                 raise UploadTypeError(
@@ -779,11 +709,6 @@ def upload_custom_embedder_model(
                 )
         case [bin_path, json_path]:
             if bin_path.name == "pytorch_model.bin" and json_path.name == "config.json":
-                display_progress(
-                    "[~] Copying pytorch_model.bin file and config.json file ...",
-                    percentage,
-                    progress_bar,
-                )
                 copy_files_to_new_dir([bin_path, json_path], model_dir_path)
             else:
                 raise UploadTypeError(
@@ -796,11 +721,47 @@ def upload_custom_embedder_model(
             raise UploadLimitError(entity=Entity.FILES, limit="two")
 
 
-def delete_voice_models(
+def delete_models(
+    directory: StrPath,
     names: Sequence[str],
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
+    entity: ModelEntity = Entity.MODEL,
+    ui_msg: UIMessage = UIMessage.NO_MODELS,
 ) -> None:
+    """
+    Delete the models with the provided names.
+
+    Parameters
+    ----------
+    directory : StrPath
+        The path to the directory containing the models to delete.
+    names : Sequence[str]
+        Names of the models to delete.
+    entity : ModelEntity, optional
+        The model entity being deleted.
+    ui_msg : UIMessage, optional
+        The message to display if no model names are provided.
+
+    Raises
+    ------
+    NotProvidedError
+        If no names of items are provided.
+    ModelNotFoundError
+        if an item with a provided name is not found.
+
+    """
+    if not names:
+        raise NotProvidedError(entity=Entity.MODEL_NAMES, ui_msg=ui_msg)
+    model_dir_paths: list[Path] = []
+    for name in names:
+        model_dir_path = Path(directory) / name
+        if not model_dir_path.is_dir():
+            raise ModelNotFoundError(entity=entity, name=name)
+        model_dir_paths.append(model_dir_path)
+    for model_dir_path in model_dir_paths:
+        shutil.rmtree(model_dir_path)
+
+
+def delete_voice_models(names: Sequence[str]) -> None:
     """
     Delete one or more voice models.
 
@@ -808,44 +769,17 @@ def delete_voice_models(
     ----------
     names : Sequence[str]
         Names of the voice models to delete.
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
-
-    Raises
-    ------
-    NotProvidedError
-        If no names are provided.
-    ModelNotFoundError
-        If a voice model with a provided name does not exist.
 
     """
-    if not names:
-        raise NotProvidedError(
-            entity=Entity.MODEL_NAMES,
-            ui_msg=UIMessage.NO_VOICE_MODELS,
-        )
-    model_dir_paths: list[Path] = []
-    for name in names:
-        model_dir_path = VOICE_MODELS_DIR / name
-        if not model_dir_path.is_dir():
-            raise ModelNotFoundError(Entity.VOICE_MODEL, name)
-        model_dir_paths.append(model_dir_path)
-    display_progress(
-        "[~] Deleting voice models ...",
-        percentage,
-        progress_bar,
+    delete_models(
+        VOICE_MODELS_DIR,
+        names,
+        entity=Entity.VOICE_MODEL,
+        ui_msg=UIMessage.NO_VOICE_MODELS,
     )
-    for model_dir_path in model_dir_paths:
-        shutil.rmtree(model_dir_path)
 
 
-def delete_custom_embedder_models(
-    names: Sequence[str],
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
-) -> None:
+def delete_custom_embedder_models(names: Sequence[str]) -> None:
     """
     Delete one or more custom embedder models.
 
@@ -853,44 +787,17 @@ def delete_custom_embedder_models(
     ----------
     names : Sequence[str]
         Names of the custom embedder models to delete.
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
-
-    Raises
-    ------
-    NotProvidedError
-        If no names are provided.
-    ModelNotFoundError
-        If a custom embedder model with a provided name does not exist.
 
     """
-    if not names:
-        raise NotProvidedError(
-            entity=Entity.MODEL_NAMES,
-            ui_msg=UIMessage.NO_CUSTOM_EMBEDDER_MODELS,
-        )
-    model_dir_paths: list[Path] = []
-    for name in names:
-        model_dir_path = CUSTOM_EMBEDDER_MODELS_DIR / name
-        if not model_dir_path.is_dir():
-            raise ModelNotFoundError(Entity.CUSTOM_EMBEDDER_MODEL, name)
-        model_dir_paths.append(model_dir_path)
-    display_progress(
-        "[~] Deleting custom embedder models ...",
-        percentage,
-        progress_bar,
+    delete_models(
+        CUSTOM_EMBEDDER_MODELS_DIR,
+        names,
+        entity=Entity.CUSTOM_EMBEDDER_MODEL,
+        ui_msg=UIMessage.NO_CUSTOM_EMBEDDER_MODELS,
     )
-    for model_dir_path in model_dir_paths:
-        shutil.rmtree(model_dir_path)
 
 
-def delete_custom_pretrained_models(
-    names: Sequence[str],
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
-) -> None:
+def delete_custom_pretrained_models(names: Sequence[str]) -> None:
     """
     Delete one or more custom pretrained models.
 
@@ -898,45 +805,17 @@ def delete_custom_pretrained_models(
     ----------
     names : Sequence[str]
         Names of the custom pretrained models to delete.
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
-
-    Raises
-    ------
-    NotProvidedError
-        If no names are provided.
-    ModelNotFoundError
-        If a custom pretrained model with a provided name does not
-        exist.
 
     """
-    if not names:
-        raise NotProvidedError(
-            entity=Entity.MODEL_NAMES,
-            ui_msg=UIMessage.NO_CUSTOM_PRETRAINED_MODELS,
-        )
-    model_dir_paths: list[Path] = []
-    for name in names:
-        model_dir_path = CUSTOM_PRETRAINED_MODELS_DIR / name
-        if not model_dir_path.is_dir():
-            raise ModelNotFoundError(Entity.CUSTOM_PRETRAINED_MODEL, name)
-        model_dir_paths.append(model_dir_path)
-    display_progress(
-        "[~] Deleting custom pretrained models ...",
-        percentage,
-        progress_bar,
+    delete_models(
+        CUSTOM_PRETRAINED_MODELS_DIR,
+        names,
+        entity=Entity.CUSTOM_PRETRAINED_MODEL,
+        ui_msg=UIMessage.NO_CUSTOM_PRETRAINED_MODELS,
     )
-    for model_dir_path in model_dir_paths:
-        shutil.rmtree(model_dir_path)
 
 
-def delete_training_models(
-    names: Sequence[str],
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
-) -> None:
+def delete_training_models(names: Sequence[str]) -> None:
     """
     Delete one or more training models.
 
@@ -944,146 +823,43 @@ def delete_training_models(
     ----------
     names : Sequence[str]
         Names of the training models to delete.
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
-
-    Raises
-    ------
-    NotProvidedError
-        If no names are provided.
-    ModelNotFoundError
-        If a training model with a provided name does not exist.
 
     """
-    if not names:
-        raise NotProvidedError(
-            entity=Entity.MODEL_NAMES,
-            ui_msg=UIMessage.NO_TRAINING_MODELS,
-        )
-
-    model_dir_paths: list[Path] = []
-    for name in names:
-        model_dir_path = TRAINING_MODELS_DIR / name
-        if not model_dir_path.is_dir():
-            raise ModelNotFoundError(Entity.TRAINING_MODEL, name)
-        model_dir_paths.append(model_dir_path)
-
-    display_progress(
-        "[~] Deleting training models ...",
-        percentage,
-        progress_bar,
+    delete_models(
+        TRAINING_MODELS_DIR,
+        names,
+        entity=Entity.TRAINING_MODEL,
+        ui_msg=UIMessage.NO_TRAINING_MODELS,
     )
-    for model_dir_path in model_dir_paths:
-        shutil.rmtree(model_dir_path)
 
 
-def delete_all_voice_models(
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
-) -> None:
-    """
-    Delete all voice models.
-
-    Parameters
-    ----------
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
-
-    """
-    display_progress("[~] Deleting all voice models ...", percentage, progress_bar)
-    if VOICE_MODELS_DIR.is_dir():
-        shutil.rmtree(VOICE_MODELS_DIR)
+def delete_all_voice_models() -> None:
+    """Delete all voice models."""
+    delete_directory(VOICE_MODELS_DIR)
 
 
-def delete_all_custom_embedder_models(
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
-) -> None:
-    """
-    Delete all custom embedder models.
-
-    Parameters
-    ----------
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
-
-    """
-    display_progress(
-        "[~] Deleting all custom embedder models ...",
-        percentage,
-        progress_bar,
-    )
-    if CUSTOM_EMBEDDER_MODELS_DIR.is_dir():
-        shutil.rmtree(CUSTOM_EMBEDDER_MODELS_DIR)
+def delete_all_custom_embedder_models() -> None:
+    """Delete all custom embedder models."""
+    delete_directory(CUSTOM_EMBEDDER_MODELS_DIR)
 
 
-def delete_all_custom_pretrained_models(
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
-) -> None:
-    """
-    Delete all custom pretrained models.
-
-    Parameters
-    ----------
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
-
-    """
-    display_progress(
-        "[~] Deleting all custom pretrained models ...",
-        percentage,
-        progress_bar,
-    )
-    if CUSTOM_PRETRAINED_MODELS_DIR.is_dir():
-        shutil.rmtree(CUSTOM_PRETRAINED_MODELS_DIR)
+def delete_all_custom_pretrained_models() -> None:
+    """Delete all custom pretrained models."""
+    delete_directory(CUSTOM_PRETRAINED_MODELS_DIR)
 
 
-def delete_all_training_models(
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
-) -> None:
-    """
-    Delete all training models.
-
-    Parameters
-    ----------
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
-
-    """
-    display_progress("[~] Deleting all training models ...", percentage, progress_bar)
-    if TRAINING_MODELS_DIR.is_dir():
-        shutil.rmtree(TRAINING_MODELS_DIR)
+def delete_all_training_models() -> None:
+    """Delete all training models."""
+    delete_directory(TRAINING_MODELS_DIR)
 
 
-def delete_all_models(
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
-) -> None:
-    """
-    Delete all voice and training models.
-
-    Parameters
-    ----------
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
-
-    """
-    display_progress("[~] Deleting all models ...", percentage, progress_bar)
-    delete_all_voice_models(progress_bar, percentage)
-    delete_all_custom_embedder_models(progress_bar, percentage)
-    delete_all_custom_pretrained_models(progress_bar, percentage)
-    delete_all_training_models(progress_bar, percentage)
+def delete_all_models() -> None:
+    """Delete all voice and training models."""
+    display_progress("[~] Deleting all voice models ...", 0.0)
+    delete_all_voice_models()
+    display_progress("[~] Deleting all custom embedder models ...", 0.25)
+    delete_all_custom_embedder_models()
+    display_progress("[~] Deleting all custom pretrained models ...", 0.5)
+    delete_all_custom_pretrained_models()
+    display_progress("[~] Deleting all training models ...", 0.75)
+    delete_all_training_models()

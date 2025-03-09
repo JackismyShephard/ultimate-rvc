@@ -5,6 +5,8 @@ ultimate_rvc.core.generate package.
 
 from __future__ import annotations
 
+from typing import Literal
+
 from enum import StrEnum, auto
 
 from pydantic import BaseModel, ConfigDict
@@ -298,4 +300,16 @@ class MixedAudioType(StrEnum):
 
 
 EdgeTTSVoiceTable = list[list[str]]
-EdgeTTSVoiceKeys = list[str]
+EdgeTTSVoiceKey = Literal[
+    "Name",
+    "FriendlyName",
+    "ShortName",
+    "Locale",
+    "Status",
+    "SuggestedCodec",
+]
+EdgeTTSVoiceTagKey = Literal[
+    "ContentCategories",
+    "VoicePersonalities",
+]
+EdgeTTSKeys = list[EdgeTTSVoiceKey | EdgeTTSVoiceTagKey]

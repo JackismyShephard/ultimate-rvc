@@ -5,8 +5,6 @@ models.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import logging
 import os
 import re
@@ -16,7 +14,6 @@ from ultimate_rvc.core.common import (
     TRAINING_MODELS_DIR,
     VOICE_MODELS_DIR,
     copy_files_to_new_dir,
-    display_progress,
     json_dump,
     json_load,
     validate_model_exists,
@@ -38,10 +35,6 @@ from ultimate_rvc.typing_extra import (
     PretrainedType,
     Vocoder,
 )
-
-if TYPE_CHECKING:
-
-    import gradio as gr
 
 logger = logging.getLogger(__name__)
 
@@ -169,8 +162,6 @@ def run_training(
     gpu_ids: set[int] | None = None,
     preload_dataset: bool = False,
     reduce_memory_usage: bool = False,
-    progress_bar: gr.Progress | None = None,
-    percentage: tuple[float, float] = (0.0, 0.5),
 ) -> None:
     """
 
@@ -251,10 +242,6 @@ def run_training(
         speed by enabling activation checkpointing. This is useful for
         GPUs with limited memory (e.g., <6GB VRAM) or when training with
         a batch size larger than what your GPU can normally accommodate.
-    progress_bar : gr.Progress, optional
-        The progress bar to display during training.
-    percentage : tuple[float, float], default=(0.0, 0.5)
-        The percentage of the progress bar to display during training.
 
     Raises
     ------
@@ -298,7 +285,6 @@ def run_training(
         custom_pretrained,
     )
 
-    display_progress("[~] training voice model...", percentage[0], progress_bar)
     from ultimate_rvc.rvc.train.train import main as train_main  # noqa: PLC0415
 
     device_type, device_ids = validate_devices(hardware_acceleration, gpu_ids)
@@ -328,11 +314,6 @@ def run_training(
     if not model_file.is_file():
         return
 
-    display_progress(
-        "[~] Generating index file for trained voice model...",
-        percentage[1],
-        progress_bar,
-    )
     from ultimate_rvc.rvc.train.process.extract_index import (  # noqa: PLC0415
         main as extract_index_main,
     )
