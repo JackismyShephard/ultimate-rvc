@@ -5,7 +5,7 @@ web application of the Ultimate RVC project.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Concatenate
+from typing import TYPE_CHECKING, Any, Concatenate, ParamSpec, TypeVar
 
 import gradio as gr
 
@@ -25,10 +25,14 @@ if TYPE_CHECKING:
 
 PROGRESS_BAR = gr.Progress()
 
+T = TypeVar("T")
+P = ParamSpec("P")
 
-def exception_harness[
-    T, **P,
-](fn: Callable[P, T], info_msg: str | None = None) -> Callable[P, T]:
+
+def exception_harness(  # noqa: UP047
+    fn: Callable[P, T],
+    info_msg: str | None = None,
+) -> Callable[P, T]:
     """
     Wrap a function in a harness that catches exceptions and re-raises
     them as instances of `gradio.Error`.
@@ -67,9 +71,9 @@ def exception_harness[
     return _wrapped_fn
 
 
-def confirmation_harness[
-    T, **P,
-](fn: Callable[P, T]) -> Callable[Concatenate[bool, P], T]:
+def confirmation_harness(  # noqa: UP047
+    fn: Callable[P, T],
+) -> Callable[Concatenate[bool, P], T]:
     """
     Wrap a function in a harness that requires a confirmation before
     executing and catches exceptions, re-raising them as instances of
@@ -189,7 +193,7 @@ def update_values(*xs: str) -> tuple[dict[str, Any], ...]:
     return tuple(gr.update(value=x) for x in xs)
 
 
-def toggle_visibility[T](
+def toggle_visibility(
     value: T,
     targets: set[T],
     default: str | float | None = None,
@@ -222,7 +226,7 @@ def toggle_visibility[T](
     return gr.update(**update_args)
 
 
-def toggle_visibilities[T](
+def toggle_visibilities(
     value: T,
     targets: set[T],
     defaults: Sequence[str | float | None],
@@ -303,7 +307,7 @@ def toggle_visible_component(
             return tuple(gr.update(**update_args) for update_args in update_args_list)
 
 
-def update_dropdowns[**P](
+def update_dropdowns(
     fn: Callable[P, DropdownChoices],
     num_components: int,
     value: DropdownValue = None,
@@ -369,10 +373,7 @@ def update_dropdowns[**P](
             return tuple(gr.Dropdown(**update_args) for update_args in update_args_list)
 
 
-def toggle_intermediate_audio(
-    visible: bool,
-    num_components: int,
-) -> list[gr.Accordion]:
+def toggle_intermediate_audio(visible: bool, num_components: int) -> list[gr.Accordion]:
     """
     Toggle the visibility of intermediate audio accordions.
 
@@ -395,8 +396,8 @@ def toggle_intermediate_audio(
     return [gr.Accordion(visible=visible, open=False), *accordions]
 
 
-def update_output_name[**P](
-    fn: Callable[..., str],
+def update_output_name(
+    fn: Callable[P, str],
     update_placeholder: bool = False,
     *args: P.args,
     **kwargs: P.kwargs,

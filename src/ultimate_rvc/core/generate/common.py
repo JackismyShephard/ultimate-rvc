@@ -15,7 +15,6 @@ from rich import print as rprint
 
 from ultimate_rvc.common import lazy_import
 from ultimate_rvc.core.common import (
-    display_progress,
     get_file_hash,
     get_hash,
     json_dump,
@@ -49,8 +48,6 @@ from ultimate_rvc.typing_extra import (
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-
-    import gradio as gr
 
     import ffmpeg
     import static_ffmpeg
@@ -121,8 +118,6 @@ def wavify(
     directory: StrPath,
     prefix: str,
     accepted_formats: set[AudioExt] | None = None,
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
 ) -> Path:
     """
     Convert a given audio track to wav format if its current format is
@@ -193,11 +188,6 @@ def wavify(
         ]
         wav_path, wav_json_path = paths
         if not all(path.exists() for path in paths):
-            display_progress(
-                "[~] Converting audio track to wav format...",
-                percentage,
-                progress_bar,
-            )
 
             _, stderr = (
                 ffmpeg.input(audio_path)
@@ -293,8 +283,6 @@ def convert(
     custom_embedder_model: str | None = None,
     sid: int = 0,
     content_type: RVCContentType = RVCContentType.AUDIO,
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
 ) -> Path:
     """
     Convert an audio track using an RVC model.
@@ -347,10 +335,6 @@ def convert(
     content_type : RVCContentType, default=RVCContentType.AUDIO
         The type of content to convert. Determines what is shown in
         display mesages and saved file names.
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
 
     Returns
     -------
@@ -386,8 +370,6 @@ def convert(
         directory_path,
         "20_Input",
         accepted_formats={AudioExt.M4A, AudioExt.AAC},
-        progress_bar=progress_bar,
-        percentage=percentage,
     )
 
     n_semitones = n_octaves * 12 + n_semitones
@@ -428,11 +410,6 @@ def convert(
     converted_audio_path, converted_audio_json_path = paths
 
     if not all(path.exists() for path in paths):
-        display_progress(
-            f"[~] Converting {content_type} using RVC...",
-            percentage,
-            progress_bar,
-        )
 
         rvc_model_path, rvc_index_path = _get_rvc_files(model_name)
 
@@ -540,8 +517,6 @@ def mix_audio(
     output_sr: int = 44100,
     output_format: AudioExt = AudioExt.MP3,
     content_type: MixedAudioType = MixedAudioType.AUDIO,
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
 ) -> Path:
     """
     Mix one or more audio tracks.
@@ -579,13 +554,10 @@ def mix_audio(
     match content_type:
         case MixedAudioType.AUDIO:
             directory_entity = Entity.DIRECTORY
-            display_msg = "[~] Mixing audio tracks..."
         case MixedAudioType.SPEECH:
             directory_entity = Entity.DIRECTORY
-            display_msg = "[~] Mixing speech track..."
         case MixedAudioType.SONG:
             directory_entity = Entity.SONG_DIR
-            display_msg = "[~] Mixing main vocals, instrumentals, and backup vocals..."
     if not audio_track_gain_pairs:
         raise NotProvidedError(
             entity=Entity.AUDIO_TRACK_GAIN_PAIRS,
@@ -598,8 +570,6 @@ def mix_audio(
                 validate_audio_file_exists(audio_track, Entity.AUDIO_TRACK),
                 directory,
                 "50_Input",
-                progress_bar=progress_bar,
-                percentage=percentage,
             ),
             gain,
         )
@@ -633,7 +603,6 @@ def mix_audio(
     mix_path, mix_json_path = paths
 
     if not all(path.exists() for path in paths):
-        display_progress(display_msg, percentage, progress_bar)
 
         _mix_audio(audio_path_gain_pairs, mix_path, output_sr, output_format)
         json_dump(args_dict, mix_json_path)

@@ -99,7 +99,6 @@
 * simplify and extend progress bar functionality by using the new show_progress_on and show_progress paramters on event listeners (https://github.com/gradio-app/gradio/pull/10492)
 * optimize rendering speed using new js=True parameter (https://github.com/gradio-app/gradio/pull/10500)
 * optimize rendering colab notebook
-* utilize new settings link in the gradio app footer (https://github.com/gradio-app/gradio/pull/10254)
 * utilize new gr.success pop up message (https://github.com/gradio-app/gradio/pull/10254)
 
 
@@ -118,9 +117,6 @@
                   ^^^^^^^^^^^^^^^^^^^
   RuntimeError: dictionary changed size during iteration
   ```
-
-* only have custom gradio progress bars for pipeline functions. these should be defined inline in the given function. Then we dont need to have the progress_bar and percentage(s) params for each generation function?
-  * we could also just remove the custom percentages for those components that justh ave one percetnage. in that case we might get the automatic progress bar from gradio for free
 
 * it is possible to have several parallel event listeners for a component:
   * like if we have click_event = some_component.click(...) then we can have several click.then event listeners.

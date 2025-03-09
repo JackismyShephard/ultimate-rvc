@@ -33,7 +33,6 @@ from ultimate_rvc.core.manage.models import (
     upload_voice_model,
 )
 from ultimate_rvc.web.common import (
-    PROGRESS_BAR,
     confirm_box_js,
     confirmation_harness,
     exception_harness,
@@ -295,10 +294,7 @@ def render(
             )
 
             download_voice_btn_click = download_voice_btn.click(
-                partial(
-                    exception_harness(download_voice_model),
-                    progress_bar=PROGRESS_BAR,
-                ),
+                exception_harness(download_voice_model),
                 inputs=[voice_model_url, voice_model_name],
                 outputs=download_voice_msg,
             ).success(
@@ -348,10 +344,7 @@ def render(
                     scale=20,
                 )
             download_pretrained_btn_click = download_pretrained_btn.click(
-                partial(
-                    exception_harness(download_pretrained_model),
-                    progress_bar=PROGRESS_BAR,
-                ),
+                exception_harness(download_pretrained_model),
                 inputs=[pretrained_model, pretrained_sample_rate],
                 outputs=download_pretrained_msg,
             ).success(
@@ -397,10 +390,7 @@ def render(
                     scale=20,
                 )
                 upload_voice_btn_click = upload_voice_btn.click(
-                    partial(
-                        exception_harness(upload_voice_model),
-                        progress_bar=PROGRESS_BAR,
-                    ),
+                    exception_harness(upload_voice_model),
                     inputs=[voice_model_files, local_voice_model_name],
                     outputs=upload_voice_msg,
                 ).success(
@@ -442,10 +432,7 @@ def render(
                     scale=20,
                 )
                 upload_embedder_btn_click = upload_embedder_btn.click(
-                    partial(
-                        exception_harness(upload_custom_embedder_model),
-                        progress_bar=PROGRESS_BAR,
-                    ),
+                    exception_harness(upload_custom_embedder_model),
                     inputs=[embedder_files, local_embedder_name],
                     outputs=upload_embedder_msg,
                 ).success(
@@ -503,10 +490,7 @@ def render(
             delete_all_msg = gr.Textbox(label="Output message", interactive=False)
 
         delete_voice_btn_click = delete_voice_btn.click(
-            partial(
-                confirmation_harness(delete_voice_models),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_voice_models),
             inputs=[dummy_checkbox, voice_model_delete],
             outputs=delete_voice_msg,
             js=confirm_box_js(
@@ -519,10 +503,7 @@ def render(
         )
 
         delete_all_voice_btn_click = delete_all_voice_btn.click(
-            partial(
-                confirmation_harness(delete_all_models),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_all_models),
             inputs=dummy_checkbox,
             outputs=delete_voice_msg,
             js=confirm_box_js("Are you sure you want to delete all voice models?"),
@@ -533,10 +514,7 @@ def render(
         )
 
         delete_embedder_btn_click = delete_embedder_btn.click(
-            partial(
-                confirmation_harness(delete_custom_embedder_models),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_custom_embedder_models),
             inputs=[dummy_checkbox, embedder_delete],
             outputs=delete_embedder_msg,
             js=confirm_box_js(
@@ -552,10 +530,7 @@ def render(
         )
 
         delete_all_embedder_btn_click = delete_all_embedder_btn.click(
-            partial(
-                confirmation_harness(delete_all_custom_embedder_models),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_all_custom_embedder_models),
             inputs=dummy_checkbox,
             outputs=delete_embedder_msg,
             js=confirm_box_js(
@@ -568,10 +543,7 @@ def render(
         )
 
         delete_pretrained_btn_click = delete_pretrained_btn.click(
-            partial(
-                confirmation_harness(delete_custom_pretrained_models),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_custom_pretrained_models),
             inputs=[dummy_checkbox, pretrained_model_delete],
             outputs=delete_pretrained_msg,
             js=confirm_box_js(
@@ -588,10 +560,7 @@ def render(
         )
 
         delete_all_pretrained_btn_click = delete_all_pretrained_btn.click(
-            partial(
-                confirmation_harness(delete_all_custom_pretrained_models),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_all_custom_pretrained_models),
             inputs=dummy_checkbox,
             outputs=delete_pretrained_msg,
             js=confirm_box_js(
@@ -607,10 +576,7 @@ def render(
         )
 
         delete_train_btn_click = delete_train_btn.click(
-            partial(
-                confirmation_harness(delete_training_models),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_training_models),
             inputs=[dummy_checkbox, training_model_delete],
             outputs=delete_train_msg,
             js=confirm_box_js(
@@ -623,10 +589,7 @@ def render(
         )
 
         delete_all_train_btn_click = delete_all_train_btn.click(
-            partial(
-                confirmation_harness(delete_all_training_models),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_all_training_models),
             inputs=dummy_checkbox,
             outputs=delete_train_msg,
             js=confirm_box_js("Are you sure you want to delete all training models?"),
@@ -637,10 +600,7 @@ def render(
         )
 
         delete_all_click = delete_all_btn.click(
-            partial(
-                confirmation_harness(delete_all_models),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_all_models),
             inputs=dummy_checkbox,
             outputs=delete_all_msg,
             js=confirm_box_js("Are you sure you want to delete all models?"),

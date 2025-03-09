@@ -25,7 +25,6 @@ from ultimate_rvc.core.manage.audio import (
     get_saved_speech_audio,
 )
 from ultimate_rvc.web.common import (
-    PROGRESS_BAR,
     confirm_box_js,
     confirmation_harness,
     render_msg,
@@ -149,10 +148,7 @@ def render(
             all_audio_msg = gr.Textbox(label="Output message", interactive=False)
 
         intermediate_audio_click = intermediate_audio_btn.click(
-            partial(
-                confirmation_harness(delete_intermediate_audio),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_intermediate_audio),
             inputs=[dummy_checkbox, intermediate_audio],
             outputs=intermediate_audio_msg,
             js=confirm_box_js(
@@ -168,10 +164,7 @@ def render(
         )
 
         all_intermediate_audio_click = all_intermediate_audio_btn.click(
-            partial(
-                confirmation_harness(delete_all_intermediate_audio),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_all_intermediate_audio),
             inputs=dummy_checkbox,
             outputs=intermediate_audio_msg,
             js=confirm_box_js(
@@ -187,10 +180,7 @@ def render(
         )
 
         speech_audio_click = speech_audio_btn.click(
-            partial(
-                confirmation_harness(delete_speech_audio),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_speech_audio),
             inputs=[dummy_checkbox, speech_audio],
             outputs=speech_audio_msg,
             js=confirm_box_js(
@@ -206,10 +196,7 @@ def render(
         )
 
         all_speech_audio_click = all_speech_audio_btn.click(
-            partial(
-                confirmation_harness(delete_all_speech_audio),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_all_speech_audio),
             inputs=dummy_checkbox,
             outputs=speech_audio_msg,
             js=confirm_box_js(
@@ -222,10 +209,7 @@ def render(
         )
 
         output_audio_click = output_audio_btn.click(
-            partial(
-                confirmation_harness(delete_output_audio),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_output_audio),
             inputs=[dummy_checkbox, output_audio],
             outputs=output_audio_msg,
             js=confirm_box_js(
@@ -241,10 +225,7 @@ def render(
         )
 
         all_output_audio_click = all_output_audio_btn.click(
-            partial(
-                confirmation_harness(delete_all_output_audio),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_all_output_audio),
             inputs=dummy_checkbox,
             outputs=output_audio_msg,
             js=confirm_box_js(
@@ -257,10 +238,7 @@ def render(
         )
 
         dataset_audio_click = dataset_audio_btn.click(
-            partial(
-                confirmation_harness(delete_dataset_audio),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_dataset_audio),
             inputs=[dummy_checkbox, dataset_audio],
             outputs=dataset_audio_msg,
             js=confirm_box_js(
@@ -276,10 +254,7 @@ def render(
         )
 
         all_dataset_audio_click = all_dataset_audio_btn.click(
-            partial(
-                confirmation_harness(delete_all_dataset_audio),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_all_dataset_audio),
             inputs=dummy_checkbox,
             outputs=dataset_audio_msg,
             js=confirm_box_js(
@@ -292,10 +267,7 @@ def render(
         )
 
         all_audio_click = all_audio_btn.click(
-            partial(
-                confirmation_harness(delete_all_audio),
-                progress_bar=PROGRESS_BAR,
-            ),
+            confirmation_harness(delete_all_audio),
             inputs=dummy_checkbox,
             outputs=all_audio_msg,
             js=confirm_box_js("Are you sure you want to delete all audio files?"),

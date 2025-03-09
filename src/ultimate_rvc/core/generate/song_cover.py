@@ -141,7 +141,7 @@ def _get_audio_separator(
     )
 
 
-def initialize_audio_separator(progress_bar: gr.Progress | None = None) -> None:
+def initialize_audio_separator() -> None:
     """
     Initialize the audio separator by downloading the models it uses.
 
@@ -157,7 +157,6 @@ def initialize_audio_separator(progress_bar: gr.Progress | None = None) -> None:
             display_progress(
                 f"Downloading {separator_model}...",
                 i / len(SeparationModel),
-                progress_bar,
             )
             audio_separator.download_model_files(separator_model)
 
@@ -387,11 +386,7 @@ def _get_youtube_id(url: str, ignore_playlist: bool = True) -> str:
     return yt_id
 
 
-def init_song_dir(
-    source: str,
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
-) -> tuple[Path, SongSourceType]:
+def init_song_dir(source: str) -> tuple[Path, SongSourceType]:
     """
     Initialize a directory for a song provided by a given source.
 
@@ -411,10 +406,6 @@ def init_song_dir(
     ----------
     source : str
         The source providing the song to initialize a directory for.
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
 
     Returns
     -------
@@ -438,8 +429,6 @@ def init_song_dir(
         raise NotProvidedError(entity=Entity.SOURCE, ui_msg=UIMessage.NO_AUDIO_SOURCE)
     source_path = Path(source)
 
-    display_progress("[~] Initializing song directory...", percentage, progress_bar)
-
     # if source is a path to an existing song directory
     if source_path.is_dir():
         if source_path.parent != INTERMEDIATE_AUDIO_BASE_DIR:
@@ -448,11 +437,6 @@ def init_song_dir(
                 location=Location.INTERMEDIATE_AUDIO_ROOT,
                 path=source_path,
             )
-        display_progress(
-            "[~] Using existing song directory...",
-            percentage,
-            progress_bar,
-        )
         source_type = SongSourceType.SONG_DIR
         return source_path, source_type
 
@@ -529,12 +513,7 @@ def _get_youtube_audio(
     return Path(file).with_suffix(".wav")
 
 
-def retrieve_song(
-    source: str,
-    cookiefile: StrPath | None = None,
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
-) -> tuple[Path, Path]:
+def retrieve_song(source: str, cookiefile: StrPath | None = None) -> tuple[Path, Path]:
     """
     Retrieve a song from a source that can either be a YouTube URL, a
     local audio file or a song directory.
@@ -547,10 +526,6 @@ def retrieve_song(
     cookiefile: StrPath, optional
         The path to a file containing cookies to use when downloading
         audio from Youtube.
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
 
     Returns
     -------
@@ -568,17 +543,15 @@ def retrieve_song(
     if not source:
         raise NotProvidedError(entity=Entity.SOURCE, ui_msg=UIMessage.NO_AUDIO_SOURCE)
 
-    song_dir_path, source_type = init_song_dir(source, progress_bar, percentage)
+    song_dir_path, source_type = init_song_dir(source)
     song_path = _get_input_audio_path(song_dir_path)
 
     if not song_path:
         if source_type == SongSourceType.URL:
-            display_progress("[~] Downloading song...", percentage, progress_bar)
             song_url = source.split("&")[0]
             song_path = _get_youtube_audio(song_url, song_dir_path, cookiefile)
 
         else:
-            display_progress("[~] Copying song...", percentage, progress_bar)
             source_path = Path(source)
             song_name = f"00_{source_path.name}"
             song_path = song_dir_path / song_name
@@ -592,9 +565,6 @@ def separate_audio(
     song_dir: StrPath,
     model_name: SeparationModel,
     segment_size: int,
-    display_msg: str = "[~] Separating audio...",
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
 ) -> tuple[Path, Path]:
     """
     Separate an audio track into a primary stem and a secondary stem.
@@ -612,10 +582,6 @@ def separate_audio(
         The segment size to use for audio separation.
     display_msg : str
         The message to display when separating the audio track.
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
 
     Returns
     -------
@@ -655,7 +621,6 @@ def separate_audio(
     ) = paths
 
     if not all(path.exists() for path in paths):
-        display_progress(display_msg, percentage, progress_bar)
         audio_separator = _get_audio_separator(
             output_dir=song_dir_path,
             segment_size=segment_size,
@@ -742,8 +707,6 @@ def postprocess(
     wet_level: float = 0.2,
     dry_level: float = 0.8,
     damping: float = 0.7,
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
 ) -> Path:
     """
     Apply high-pass filter, compressor and reverb effects to a vocals
@@ -764,10 +727,6 @@ def postprocess(
         The dryness level of the reverb effect.
     damping : float, default=0.7
         The damping of the reverb effect.
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
 
     Returns
     -------
@@ -783,8 +742,6 @@ def postprocess(
         song_dir_path,
         "30_Input",
         accepted_formats={AudioExt.M4A, AudioExt.AAC},
-        progress_bar=progress_bar,
-        percentage=percentage,
     )
 
     args_dict = EffectedVocalsMetaData(
@@ -810,11 +767,6 @@ def postprocess(
     effected_vocals_path, effected_vocals_json_path = paths
 
     if not all(path.exists() for path in paths):
-        display_progress(
-            "[~] Applying audio effects to vocals...",
-            percentage,
-            progress_bar,
-        )
         _add_effects(
             vocals_path,
             effected_vocals_path,
@@ -853,14 +805,7 @@ def _pitch_shift(audio_track: StrPath, output_file: StrPath, n_semi_tones: int) 
     sf.write(output_file, y_shifted, sr)
 
 
-def pitch_shift(
-    audio_track: StrPath,
-    song_dir: StrPath,
-    n_semitones: int,
-    display_msg: str = "[~] Pitch-shifting audio...",
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
-) -> Path:
+def pitch_shift(audio_track: StrPath, song_dir: StrPath, n_semitones: int) -> Path:
     """
     Pitch shift an audio track by a given number of semi-tones.
 
@@ -894,8 +839,6 @@ def pitch_shift(
         song_dir_path,
         "40_Input",
         accepted_formats={AudioExt.M4A, AudioExt.AAC},
-        progress_bar=progress_bar,
-        percentage=percentage,
     )
 
     shifted_audio_path = audio_path
@@ -921,7 +864,6 @@ def pitch_shift(
         shifted_audio_path, shifted_audio_json_path = paths
 
         if not all(path.exists() for path in paths):
-            display_progress(display_msg, percentage, progress_bar)
             _pitch_shift(audio_path, shifted_audio_path, n_semitones)
             json_dump(args_dict, shifted_audio_json_path)
 
@@ -934,8 +876,6 @@ def mix_song(
     output_sr: int = 44100,
     output_format: AudioExt = AudioExt.MP3,
     output_name: str | None = None,
-    progress_bar: gr.Progress | None = None,
-    percentage: float = 0.5,
 ) -> Path:
     """
     Mix multiple audio tracks to create a song.
@@ -953,10 +893,6 @@ def mix_song(
         The audio format of the mixed song.
     output_name : str, optional
         The name of the mixed song.
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
 
     Returns
     -------
@@ -970,8 +906,6 @@ def mix_song(
         output_sr,
         output_format,
         content_type=MixedAudioType.SONG,
-        progress_bar=progress_bar,
-        percentage=percentage,
     )
     output_name = output_name or get_song_cover_name(
         audio_track_gain_pairs[0][0],
@@ -1104,41 +1038,34 @@ def run_pipeline(
     validate_model_exists(model_name, Entity.VOICE_MODEL)
     if embedder_model == EmbedderModel.CUSTOM:
         validate_model_exists(custom_embedder_model, Entity.CUSTOM_EMBEDDER_MODEL)
-    display_progress("[~] Starting song cover generation pipeline...", 0, progress_bar)
-    song, song_dir = retrieve_song(
-        source,
-        cookiefile=cookiefile,
-        progress_bar=progress_bar,
-        percentage=0 / 9,
-    )
+    display_progress("[~] Retrieving song...", 0 / 9, progress_bar)
+    song, song_dir = retrieve_song(source, cookiefile=cookiefile)
+    display_progress("[~] Separating vocals from instrumentals...", 1 / 9, progress_bar)
     vocals_track, instrumentals_track = separate_audio(
         song,
         song_dir,
         SeparationModel.UVR_MDX_NET_VOC_FT,
         SegmentSize.SEG_512,
-        display_msg="[~] Separating vocals from instrumentals...",
-        progress_bar=progress_bar,
-        percentage=1 / 9,
+    )
+    display_progress(
+        "[~] Separating main vocals from backup vocals...",
+        2 / 9,
+        progress_bar,
     )
     backup_vocals_track, main_vocals_track = separate_audio(
         vocals_track,
         song_dir,
         SeparationModel.UVR_MDX_NET_KARA_2,
         SegmentSize.SEG_512,
-        display_msg="[~] Separating main vocals from backup vocals...",
-        progress_bar=progress_bar,
-        percentage=2 / 9,
     )
-
+    display_progress("[~] De-reverbing vocals...", 3 / 9, progress_bar)
     reverb_track, vocals_dereverb_track = separate_audio(
         main_vocals_track,
         song_dir,
         SeparationModel.REVERB_HQ_BY_FOXJOY,
         SegmentSize.SEG_256,
-        display_msg="[~] De-reverbing vocals...",
-        progress_bar=progress_bar,
-        percentage=3 / 9,
     )
+    display_progress("[~] Converting vocals...", 4 / 9, progress_bar)
     converted_vocals_track = convert(
         audio_track=vocals_dereverb_track,
         directory=song_dir,
@@ -1160,9 +1087,8 @@ def run_pipeline(
         custom_embedder_model=custom_embedder_model,
         sid=sid,
         content_type=RVCContentType.VOCALS,
-        progress_bar=progress_bar,
-        percentage=4 / 9,
     )
+    display_progress("[~] Post-processing vocals...", 5 / 9, progress_bar)
     effected_vocals_track = postprocess(
         converted_vocals_track,
         song_dir,
@@ -1170,25 +1096,18 @@ def run_pipeline(
         wet_level,
         dry_level,
         damping,
-        progress_bar=progress_bar,
-        percentage=5 / 9,
     )
+    display_progress("[~] Pitch-shifting instrumentals...", 6 / 9, progress_bar)
     shifted_instrumentals_track = pitch_shift(
         instrumentals_track,
         song_dir,
         n_semitones,
-        display_msg="[~] Pitch-shifting instrumentals...",
-        progress_bar=progress_bar,
-        percentage=6 / 9,
     )
-
+    display_progress("[~] Pitch-shifting backup vocals...", 7 / 9, progress_bar)
     shifted_backup_vocals_track = pitch_shift(
         backup_vocals_track,
         song_dir,
         n_semitones,
-        display_msg="[~] Pitch-shifting backup vocals...",
-        progress_bar=progress_bar,
-        percentage=7 / 9,
     )
 
     song_cover = mix_song(
@@ -1201,8 +1120,6 @@ def run_pipeline(
         output_sr,
         output_format,
         output_name,
-        progress_bar=progress_bar,
-        percentage=8 / 9,
     )
     return (
         song_cover,

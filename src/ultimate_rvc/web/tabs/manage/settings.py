@@ -8,7 +8,6 @@ import gradio as gr
 
 from ultimate_rvc.core.manage.settings import delete_temp_files
 from ultimate_rvc.web.common import (
-    PROGRESS_BAR,
     confirm_box_js,
     confirmation_harness,
     render_msg,
@@ -27,10 +26,7 @@ def render() -> None:
             temporary_files_msg = gr.Textbox(label="Output message", interactive=False)
 
     temporary_files_btn.click(
-        partial(
-            confirmation_harness(delete_temp_files),
-            progress_bar=PROGRESS_BAR,
-        ),
+        confirmation_harness(delete_temp_files),
         inputs=dummy_checkbox,
         outputs=temporary_files_msg,
         js=confirm_box_js(

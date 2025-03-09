@@ -431,6 +431,9 @@ def validate_model_exists(name: str | None, entity: ModelEntity) -> Path:
         case Entity.CUSTOM_PRETRAINED_MODEL:
             ui_msg = UIMessage.NO_CUSTOM_PRETRAINED_MODEL
             directory = CUSTOM_PRETRAINED_MODELS_DIR
+        case Entity.MODEL:
+            ui_msg = UIMessage.NO_MODEL
+            directory = MODELS_DIR
 
     directory_path = Path(directory)
     if not name:

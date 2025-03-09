@@ -40,7 +40,6 @@ from ultimate_rvc.typing_extra import (
     Vocoder,
 )
 from ultimate_rvc.web.common import (
-    PROGRESS_BAR,
     exception_harness,
     render_msg,
     toggle_visibilities,
@@ -200,15 +199,12 @@ def render(
             )
 
             audio_files.upload(
-                partial(
-                    exception_harness(
-                        populate_dataset,
-                        info_msg=(
-                            "[+] Audio files successfully added to the dataset with the"
-                            " provided name!"
-                        ),
+                exception_harness(
+                    populate_dataset,
+                    info_msg=(
+                        "[+] Audio files successfully added to the dataset with the"
+                        " provided name!"
                     ),
-                    progress_bar=PROGRESS_BAR,
                 ),
                 inputs=[dataset_name, audio_files],
                 outputs=current_dataset,
@@ -347,10 +343,7 @@ def render(
                     scale=3,
                 )
                 preprocess_btn.click(
-                    partial(
-                        exception_harness(preprocess_dataset),
-                        progress_bar=PROGRESS_BAR,
-                    ),
+                    exception_harness(preprocess_dataset),
                     inputs=[
                         preprocess_model,
                         dataset,
@@ -538,10 +531,7 @@ def render(
                     scale=3,
                 )
                 extract_btn.click(
-                    partial(
-                        exception_harness(extract_features),
-                        progress_bar=PROGRESS_BAR,
-                    ),
+                    exception_harness(extract_features),
                     inputs=[
                         extract_model,
                         f0_method,
