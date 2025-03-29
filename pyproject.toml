@@ -30,8 +30,6 @@ dependencies = [
     "gradio==5.23.0",
     
     # Machine learning
-    "torch==2.6.0+cu124",
-    "torchaudio==2.6.0+cu124",
     "torchcrepe==0.0.23",
     "faiss-cpu==1.10.0",
     # Version of onnxruntime-gpu needs to align with what 
@@ -66,6 +64,16 @@ dependencies = [
     #"praat-parselmouth==0.4.5",
 ]
 
+[project.optional-dependencies]
+cuda = [
+    "torch==2.6.0+cu124",
+    "torchaudio==2.6.0+cu124",
+]
+rocm = [
+    "torch==2.6.0+rocm6.2.4 ; platform_system == 'linux'",
+    "torchaudio==2.6.0+rocm6.2.4 ; platform_system == 'linux'",
+    "pytorch-triton-rocm==3.2.0 ; platform_system == 'linux'",
+]
 [project.scripts]
 urvc = "ultimate_rvc.cli.main:app"
 urvc-web = "ultimate_rvc.web.main:app_wrapper"
@@ -74,13 +82,32 @@ urvc-web = "ultimate_rvc.web.main:app_wrapper"
 environments = ["sys_platform == 'win32'", "sys_platform == 'linux'"]
 cache-dir = "./uv/cache"
 compile-bytecode = true
-
+conflicts = [
+  [
+    { extra = "cuda" },
+    { extra = "rocm" },
+  ],
+]
 [tool.uv.sources]
-torch = { index = "torch-cu124"}
-torchaudio = { index = "torch-cu124"}
+torch = [
+    { index = "torch-rocm",  extra = "rocm", marker = "sys_platform == 'linux'"},
+    { index = "torch-cu124", extra = "cuda"},
+    ]
+torchaudio = [
+    { index = "torch-rocm",  extra = "rocm", marker = "sys_platform == 'linux'"},
+    { index = "torch-cu124", extra = "cuda"},
+    ] 
+pytorch-triton-rocm = [
+    { index = "torch-rocm",  extra = "rocm", marker = "sys_platform == 'linux'"},
+    ]
+
 [[tool.uv.index]]
 name = "torch-cu124"
 url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+[[tool.uv.index]]
+name = "torch-rocm"
+url = "https://download.pytorch.org/whl/rocm6.2.4"
 explicit = true
 
 [tool.pyright]
