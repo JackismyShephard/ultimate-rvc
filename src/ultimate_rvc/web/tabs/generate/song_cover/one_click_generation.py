@@ -11,13 +11,20 @@ from functools import partial
 
 import gradio as gr
 
+from ultimate_rvc.core.manage.config import load_config, save_song_generation_config, get_named_song_generation_configs
 from ultimate_rvc.core.generate.song_cover import (
     get_named_song_dirs,
     get_song_cover_name,
     run_pipeline,
 )
 from ultimate_rvc.core.manage.audio import get_saved_output_audio
-from ultimate_rvc.typing_extra import AudioExt, EmbedderModel, F0Method, SampleRate
+from ultimate_rvc.typing_extra import (
+    AudioExt,
+    EmbedderModel,
+    F0Method,
+    SampleRate,
+    SongGenerationConfig,
+)
 from ultimate_rvc.web.common import (
     PROGRESS_BAR,
     exception_harness,
@@ -33,6 +40,7 @@ from ultimate_rvc.web.typing_extra import ConcurrencyId, SongSourceType
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+DEFAULT_CONFIG = SongGenerationConfig()
 
 def render(
     voice_model: gr.Dropdown,
@@ -124,7 +132,7 @@ def render(
                 n_octaves = gr.Slider(
                     -3,
                     3,
-                    value=0,
+                    value=DEFAULT_CONFIG.n_octaves,
                     step=1,
                     label="Vocal pitch shift",
                     info=(
@@ -136,7 +144,7 @@ def render(
                 n_semitones = gr.Slider(
                     -12,
                     12,
-                    value=0,
+                    value=DEFAULT_CONFIG.n_semitones,
                     step=1,
                     label="Overall pitch shift",
                     info=(
@@ -152,7 +160,7 @@ def render(
                 with gr.Row():
                     f0_methods = gr.Dropdown(
                         list(F0Method),
-                        value=F0Method.RMVPE,
+                        value=DEFAULT_CONFIG.f0_methods,
                         label="Pitch extraction algorithm(s)",
                         info=(
                             "If more than one method is selected, then the median of"
@@ -165,7 +173,7 @@ def render(
                     index_rate = gr.Slider(
                         0,
                         1,
-                        value=0.5,
+                        value=DEFAULT_CONFIG.index_rate,
                         label="Index rate",
                         info=(
                             "Increase to bias the conversion towards the accent of the"
@@ -500,6 +508,7 @@ def render(
             reset_btn = gr.Button(value="Reset settings", scale=2)
             generate_btn = gr.Button("Generate", scale=2, variant="primary")
             song_cover = gr.Audio(label="Song cover", scale=3)
+    
 
         generate_btn.click(
             partial(
@@ -613,3 +622,5 @@ def render(
             ],
             show_progress="hidden",
         )
+    with gr.Sidebar("Other options", open = False):
+        

@@ -19,6 +19,7 @@ if TYPE_CHECKING:
 def get_named_items(
     directory: StrPath,
     exclude: str | None = None,
+    include_suffix: bool = True,
 ) -> list[tuple[str, str]]:
     """
     Get the names and paths of all items in the provided directory
@@ -30,6 +31,8 @@ def get_named_items(
         The path to the directory containing the items.
     exclude : str, optional
         The file extension to exclude from the list of items.
+    include_suffix : bool, optional
+        Whether to include the file extension in the names of the items.
 
     Returns
     -------
@@ -42,7 +45,7 @@ def get_named_items(
     if dir_path.is_dir():
         named_items = sorted(
             [
-                (item_path.name, str(item_path))
+                (item_path.name if include_suffix else item_path.stem, str(item_path))
                 for item_path in dir_path.iterdir()
                 if item_path.suffix != exclude
             ],

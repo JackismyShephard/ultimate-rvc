@@ -6,6 +6,8 @@ from collections.abc import Mapping, Sequence
 from enum import IntEnum, StrEnum
 from os import PathLike
 
+from pydantic import BaseModel
+
 type StrPath = str | PathLike[str]
 
 type Json = Mapping[str, Json] | Sequence[Json] | str | int | float | bool | None
@@ -148,3 +150,81 @@ class PretrainedType(StrEnum):
     NONE = "None"
     DEFAULT = "Default"
     CUSTOM = "Custom"
+
+
+class Config(BaseModel):
+    """Base class for configuration options."""
+
+    clean_strength: float = 0.7
+    hop_length: int = 128
+    embedder_model: EmbedderModel = EmbedderModel.CONTENTVEC
+
+
+class GenerationConfig(Config):
+    """Base class for generation configuration options."""
+
+    n_octaves: int = 0
+    n_semitones: int = 0
+    f0_methods: list[F0Method] = [F0Method.RMVPE]
+    index_rate: float = 0.5
+    rms_mix_rate: float = 0.25
+    protect_rate: float = 0.33
+    autotune_audio: bool = False
+    autotune_strength: float = 1.0
+    sid: int = 0
+    output_sr: SampleRate = SampleRate.HZ_44100
+    output_format: AudioExt = AudioExt.MP3
+
+
+class SongGenerationConfig(GenerationConfig):
+    """Configuration options for song generation."""
+
+    split_audio: bool = False
+    clean_audio: bool = False
+    room_size: float = 0.15
+    wet_level: float = 0.2
+    dry_level: float = 0.8
+    damping: float = 0.7
+    main_gain: int = 0
+    inst_gain: int = 0
+    backup_gain: int = 0
+
+
+class SpeechGenerationConfig(GenerationConfig):
+    """Configuration options for speech generation."""
+
+    tts_pitch_shift: int = 0
+    tts_speed_change: int = 0
+    tts_volume_change: int = 0
+    split_audio: bool = True
+    clean_audio: bool = True
+    output_gain: int = 0
+
+
+class TrainingConfig(Config):
+    """Configuration options for training."""
+
+    sample_rate: TrainingSampleRate = TrainingSampleRate.HZ_40K
+    filter_audio: bool = True
+    clean_audio: bool = False
+    split_method: AudioSplitMethod = AudioSplitMethod.AUTOMATIC
+    chunk_len: float = 3.0
+    overlap_len: float = 0.3
+    f0_method: TrainingF0Method = TrainingF0Method.RMVPE
+    include_mutes: int = 2
+    extraction_acceleration: DeviceType = DeviceType.AUTOMATIC
+    num_epochs: int = 500
+    batch_size: int = 8
+    detect_overtraining: bool = False
+    overtraining_threshold: int = 50
+    vocoder: Vocoder = Vocoder.HIFI_GAN
+    index_algorithm: IndexAlgorithm = IndexAlgorithm.AUTO
+    pretrained_type: PretrainedType = PretrainedType.DEFAULT
+    save_interval: int = 10
+    save_all_checkpoints: bool = False
+    save_all_weights: bool = False
+    clear_saved_data: bool = False
+    upload_model: bool = False
+    training_acceleration: DeviceType = DeviceType.AUTOMATIC
+    preload_dataset: bool = False
+    reduce_memory_usage: bool = False

@@ -57,6 +57,14 @@ class Entity(StrEnum):
     # GPU entities
     GPU_IDS = "GPU IDs"
 
+    # Config entities
+    CONFIG = "configuration"
+    CONFIG_NAME = "configuration name"
+    CONFIG_NAMES = "configuration names"
+    SONG_GENERATION_CONFIG = "song generation configuration"
+    SPEECH_GENERATION_CONFIG = "speech generation configuration"
+    TRAINING_CONFIG = "training configuration"
+
 
 AudioFileEntity = Literal[
     Entity.AUDIO_TRACK,
@@ -74,6 +82,13 @@ ModelEntity = Literal[
     Entity.TRAINING_MODEL,
     Entity.CUSTOM_EMBEDDER_MODEL,
     Entity.CUSTOM_PRETRAINED_MODEL,
+]
+
+ConfigEntity = Literal[
+    Entity.CONFIG,
+    Entity.SONG_GENERATION_CONFIG,
+    Entity.SPEECH_GENERATION_CONFIG,
+    Entity.TRAINING_CONFIG,
 ]
 
 
@@ -174,7 +189,7 @@ class NotProvidedError(ValueError):
 
 
 class NotFoundError(OSError):
-    """Raised when an entity is not found."""
+    """Raised when an entity is not found in a given location."""
 
     def __init__(
         self,
@@ -206,7 +221,29 @@ class NotFoundError(OSError):
         )
 
 
-class ModelNotFoundError(OSError):
+class EntityNotFoundError(OSError):
+    """Raised when an entity is not found."""
+
+    def __init__(self, entity: Entity, name: str) -> None:
+        r"""
+        Initialize an EntityNotFoundError instance.
+
+        Exception message will be formatted as:
+
+        "`<entity>` with name "`<name>`" not found."
+
+        Parameters
+        ----------
+        entity : Entity
+            The entity that was not found.
+        name : str
+            The name of the entity that was not found.
+
+        """
+        super().__init__(f"{entity.capitalize()} with name '{name}' not found.")
+
+
+class ModelNotFoundError(EntityNotFoundError):
     """Raised when an model with a given name is not found."""
 
     def __init__(self, entity: ModelEntity, name: str) -> None:
@@ -225,7 +262,29 @@ class ModelNotFoundError(OSError):
             The name of the model that was not found.
 
         """
-        super().__init__(f"{entity.capitalize()} with name '{name}' not found.")
+        super().__init__(entity, name)
+
+
+class ConfigNotFoundError(EntityNotFoundError):
+    """Raised when a configuration with a given name is not found."""
+
+    def __init__(self, entity: ConfigEntity, name: str) -> None:
+        r"""
+        Initialize a ConfigNotFoundError instance.
+
+        Exception message will be formatted as:
+
+        '`<entity>` with name "`<name>`" not found.'
+
+        Parameters
+        ----------
+        entity : str
+            The configuration entity that was not found.
+        name : str
+            The name of the configuration that was not found.
+
+        """
+        super().__init__(entity, name)
 
 
 class PretrainedModelNotAvailableError(OSError):
@@ -378,7 +437,33 @@ class ModelAsssociatedEntityNotFoundError(OSError):
         )
 
 
-class ModelExistsError(OSError):
+class EntityExistsError(OSError):
+    """Raised when an entity already exists."""
+
+    def __init__(self, entity: Entity, name: str) -> None:
+        r"""
+        Initialize an EntityExistsError instance.
+
+        Exception message will be formatted as:
+
+        '`<entity>` with name "`<name>`" already exists. Please provide
+        a different name for your {entity}.'
+
+        Parameters
+        ----------
+        entity : str
+            The entity that already exists.
+        name : str
+            The name of the entity that already exists.
+
+        """
+        super().__init__(
+            f"{entity.capitalize()} with name '{name}' already exists. Please provide a"
+            f" different name for your {entity}.",
+        )
+
+
+class ModelExistsError(EntityExistsError):
     """Raised when a model already exists."""
 
     def __init__(self, entity: ModelEntity, name: str) -> None:
@@ -398,10 +483,30 @@ class ModelExistsError(OSError):
             The name of the model that already exists.
 
         """
-        super().__init__(
-            f"{entity.capitalize()} with name '{name}' already exists. Please provide a"
-            f" different name for your {entity}.",
-        )
+        super().__init__(entity, name)
+
+
+class ConfigExistsError(EntityExistsError):
+    """Raised when a configuration already exists."""
+
+    def __init__(self, entity: ConfigEntity, name: str) -> None:
+        r"""
+        Initialize a ConfigExistsError instance.
+
+        Exception message will be formatted as:
+
+        '`<entity>` with name "`<name>`" already exists. Please provide
+        a different name for your {entity}.'
+
+        Parameters
+        ----------
+        entity : str
+            The configuration entity that already exists.
+        name : str
+            The name of the configuration that already exists.
+
+        """
+        super().__init__(entity, name)
 
 
 class PretrainedModelExistsError(OSError):
