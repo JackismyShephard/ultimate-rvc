@@ -746,8 +746,8 @@ def render(
                         )
                         upload_name = gr.Textbox(
                             label="Upload name",
-                            inputs=train_model,
                             info="The name to give the uploaded voice model.",
+                            inputs=train_model,
                             visible=False,
                         )
                     train_model.change(
