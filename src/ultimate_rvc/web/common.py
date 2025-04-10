@@ -18,6 +18,8 @@ if TYPE_CHECKING:
         ComponentVisibilityKwArgs,
         DropdownChoices,
         DropdownValue,
+        SongTransferOption,
+        SpeechTransferOption,
         TextBoxKwArgs,
         UpdateAudioKwArgs,
         UpdateDropdownKwArgs,
@@ -27,6 +29,7 @@ PROGRESS_BAR = gr.Progress()
 
 T = TypeVar("T")
 P = ParamSpec("P")
+U = TypeVar("U", bound=SongTransferOption | SpeechTransferOption)
 
 
 def exception_harness(  # noqa: UP047
@@ -98,6 +101,44 @@ def confirmation_harness(  # noqa: UP047
         raise gr.Error(err_msg)
 
     return _wrapped_fn
+
+
+def render_transfer_component(
+    value: list[U],
+    label_prefix: str,
+    option_type: type[U],
+) -> gr.Dropdown:
+    """
+    Render a dropdown for transferring tracks.
+
+    Parameters
+    ----------
+    value : list[U]
+        The default selected values for the dropdown.
+    label_prefix : str
+        The prefix for the dropdown label.
+    option_type : type[U]
+        The type of the transfer options.
+
+    Returns
+    -------
+    gr.Dropdown
+        A Gradio Dropdown component.
+
+    """
+    return gr.Dropdown(
+        choices=list(option_type),
+        label=f"{label_prefix} destination",
+        info=(
+            "Select the input track(s) to transfer the"
+            f" {label_prefix.lower()} to when the 'Transfer"
+            f" {label_prefix.lower()}' button is clicked."
+        ),
+        render=False,
+        type="index",
+        multiselect=True,
+        value=value,
+    )
 
 
 def render_msg(
