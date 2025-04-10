@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 import shutil
 from pathlib import Path
@@ -17,12 +17,13 @@ from ultimate_rvc.core.exceptions import (
     UIMessage,
 )
 from ultimate_rvc.core.manage.common import delete_directory, get_named_items
-from ultimate_rvc.typing_extra import (
-    TotalConfig,
-)
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+from pydantic import BaseModel
+
+T = TypeVar("T", bound=BaseModel)
 
 
 def get_named_configs() -> list[tuple[str, str]]:
@@ -40,7 +41,7 @@ def get_named_configs() -> list[tuple[str, str]]:
     return get_named_items(CONFIG_DIR, include_suffix=False)
 
 
-def load_config(name: str) -> TotalConfig:
+def load_config(name: str, model_class: type[T]) -> T:  # noqa: UP047
     """
     Load a configuration from a JSON file into a Pydantic model.
     If the file does not exist, create a default instance of the model.
@@ -49,6 +50,8 @@ def load_config(name: str) -> TotalConfig:
     ----------
     name: str
         The name of the configuration to load.
+    model_class: type[T]
+        The Pydantic model class to load the configuration into.
 
 
     Returns
@@ -61,14 +64,14 @@ def load_config(name: str) -> TotalConfig:
     file_path = CONFIG_DIR / f"{name}.json"
     if file_path.is_file():
         data = json_load(file_path)
-        model = TotalConfig.model_validate(data)
+        model = model_class.model_validate(data)
     else:
-        model = TotalConfig()
+        model = model_class()
 
     return model
 
 
-def save_config(name: str, model: TotalConfig) -> None:
+def save_config(name: str, model: BaseModel) -> None:
     """
     Save a configuration to a JSON file.
 

@@ -51,10 +51,11 @@ from ultimate_rvc.web.tabs.manage.settings import render as render_settings_tab
 from ultimate_rvc.web.tabs.train.multi_step_generation import (
     render as render_train_multi_step_tab,
 )
+from ultimate_rvc.web.typing_extra import TotalConfig
 
 app_wrapper = typer.Typer()
 
-default_config = load_config(os.getenv("MY_ENV_VAR", ""))
+default_config = load_config(os.getenv("URVC_CONFIG_FILE", ""), TotalConfig)
 
 
 def _init_app() -> list[gr.Dropdown]:

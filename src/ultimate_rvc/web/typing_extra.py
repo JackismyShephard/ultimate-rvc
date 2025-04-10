@@ -1295,6 +1295,10 @@ class ManageAudioConfig(BaseModel):
         value=DEFAULT_VALUE,
         multiselect=True,
     )
+    dummy_checkbox: CheckboxConfig = CheckboxConfig(
+        value=False,
+        visible=False,
+    )
 
 
 class TotalSongGenerationConfig(BaseModel):
