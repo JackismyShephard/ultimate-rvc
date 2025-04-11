@@ -7,12 +7,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Concatenate, ParamSpec, TypeVar
 
+from functools import partial
+
 import gradio as gr
 
 from ultimate_rvc.core.exceptions import NotProvidedError
+from ultimate_rvc.web.typing_extra import SongTransferOption, SpeechTransferOption
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
+
+    from gradio.components import Component
+    from gradio.events import Dependency
 
     from ultimate_rvc.web.typing_extra import (
         ComponentVisibilityKwArgs,
@@ -27,6 +33,7 @@ PROGRESS_BAR = gr.Progress()
 
 T = TypeVar("T")
 P = ParamSpec("P")
+U = TypeVar("U", bound=SongTransferOption | SpeechTransferOption)
 
 
 def exception_harness(  # noqa: UP047
@@ -100,6 +107,44 @@ def confirmation_harness(  # noqa: UP047
     return _wrapped_fn
 
 
+def render_transfer_component(
+    value: list[U],
+    label_prefix: str,
+    option_type: type[U],
+) -> gr.Dropdown:
+    """
+    Render a dropdown for transferring tracks.
+
+    Parameters
+    ----------
+    value : list[U]
+        The default selected values for the dropdown.
+    label_prefix : str
+        The prefix for the dropdown label.
+    option_type : type[U]
+        The type of the transfer options.
+
+    Returns
+    -------
+    gr.Dropdown
+        A Gradio Dropdown component.
+
+    """
+    return gr.Dropdown(
+        choices=list(option_type),
+        label=f"{label_prefix} destination",
+        info=(
+            "Select the input track(s) to transfer the"
+            f" {label_prefix.lower()} to when the 'Transfer"
+            f" {label_prefix.lower()}' button is clicked."
+        ),
+        render=False,
+        type="index",
+        multiselect=True,
+        value=value,
+    )
+
+
 def render_msg(
     template: str,
     *args: str,
@@ -155,6 +200,47 @@ def confirm_box_js(msg: str) -> str:
 
     """
     return f"(x, ...args) => [confirm('{msg}'), ...args]"
+
+
+def setup_delete_event(
+    button: gr.Button,
+    fn: Callable[..., None],
+    inputs: list[Component],
+    outputs: gr.Textbox,
+    confirm_msg: str,
+    success_msg: str,
+) -> Dependency:
+    """
+    Set up a delete event for a button component.
+
+    Parameters
+    ----------
+    button : gr.Button
+        Button component to set up the delete event for.
+    fn : Callable[..., None]
+        Function to call when the button is clicked.
+    inputs : list[Component]
+        List of input components to pass to the function.
+    outputs : gr.Textbox
+        Textbox component to update with the success message.
+    confirm_msg : str
+        Message to display in the confirmation box.
+    success_msg : str
+        Message to display in the textbox component upon success.
+
+
+    Returns
+    -------
+    Dependency
+        The delete event dependency.
+
+    """
+    return button.click(
+        confirmation_harness(fn),
+        inputs=inputs,
+        outputs=outputs,
+        js=confirm_box_js(confirm_msg),
+    ).success(partial(render_msg, success_msg), outputs=outputs, show_progress="hidden")
 
 
 def update_value(x: str | None) -> dict[str, Any]:
