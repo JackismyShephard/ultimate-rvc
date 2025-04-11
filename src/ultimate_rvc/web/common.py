@@ -7,19 +7,23 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Concatenate, ParamSpec, TypeVar
 
+from functools import partial
+
 import gradio as gr
 
 from ultimate_rvc.core.exceptions import NotProvidedError
+from ultimate_rvc.web.typing_extra import SongTransferOption, SpeechTransferOption
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
+
+    from gradio.components import Component
+    from gradio.events import Dependency
 
     from ultimate_rvc.web.typing_extra import (
         ComponentVisibilityKwArgs,
         DropdownChoices,
         DropdownValue,
-        SongTransferOption,
-        SpeechTransferOption,
         TextBoxKwArgs,
         UpdateAudioKwArgs,
         UpdateDropdownKwArgs,
@@ -196,6 +200,47 @@ def confirm_box_js(msg: str) -> str:
 
     """
     return f"(x, ...args) => [confirm('{msg}'), ...args]"
+
+
+def setup_delete_event(
+    button: gr.Button,
+    fn: Callable[..., None],
+    inputs: list[Component],
+    outputs: gr.Textbox,
+    confirm_msg: str,
+    success_msg: str,
+) -> Dependency:
+    """
+    Set up a delete event for a button component.
+
+    Parameters
+    ----------
+    button : gr.Button
+        Button component to set up the delete event for.
+    fn : Callable[..., None]
+        Function to call when the button is clicked.
+    inputs : list[Component]
+        List of input components to pass to the function.
+    outputs : gr.Textbox
+        Textbox component to update with the success message.
+    confirm_msg : str
+        Message to display in the confirmation box.
+    success_msg : str
+        Message to display in the textbox component upon success.
+
+
+    Returns
+    -------
+    Dependency
+        The delete event dependency.
+
+    """
+    return button.click(
+        confirmation_harness(fn),
+        inputs=inputs,
+        outputs=outputs,
+        js=confirm_box_js(confirm_msg),
+    ).success(partial(render_msg, success_msg), outputs=outputs, show_progress="hidden")
 
 
 def update_value(x: str | None) -> dict[str, Any]:

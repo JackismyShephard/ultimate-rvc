@@ -24,18 +24,10 @@ from ultimate_rvc.core.manage.audio import (
     get_saved_output_audio,
     get_saved_speech_audio,
 )
-from ultimate_rvc.web.common import (
-    confirm_box_js,
-    confirmation_harness,
-    render_msg,
-    update_dropdowns,
-)
+from ultimate_rvc.web.common import setup_delete_event, update_dropdowns
+from ultimate_rvc.web.typing_extra import ManageAudioEventState
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
-    from gradio.components import Component
-    from gradio.events import Dependency
 
     from ultimate_rvc.web.typing_extra import ManageAudioConfig, TotalConfig
 
@@ -53,20 +45,14 @@ def render(total_config: TotalConfig) -> None:
     """
     tab_config = total_config.management.audio
     tab_config.dummy_checkbox.instantiate()
+    event_state = ManageAudioEventState()
+
     with gr.Tab("Delete audio"):
-        intermediate_audio_click, all_intermediate_audio_click = (
-            _render_intermediate_audio_accordion(tab_config)
-        )
-        speech_audio_click, all_speech_audio_click = _render_speech_audio_accordion(
-            tab_config,
-        )
-        output_audio_click, all_output_audio_click = _render_output_audio_accordion(
-            tab_config,
-        )
-        dataset_audio_click, all_dataset_audio_click = _render_dataset_audio_accordion(
-            tab_config,
-        )
-        all_audio_click = _render_all_audio_accordion(tab_config)
+        _render_intermediate_audio_accordion(tab_config, event_state)
+        _render_speech_audio_accordion(tab_config, event_state)
+        _render_output_audio_accordion(tab_config, event_state)
+        _render_dataset_audio_accordion(tab_config, event_state)
+        _render_all_audio_accordion(tab_config, event_state)
 
         _, _, all_audio_update = [
             click_event.success(
@@ -86,9 +72,9 @@ def render(total_config: TotalConfig) -> None:
                 show_progress="hidden",
             )
             for click_event in [
-                intermediate_audio_click,
-                all_intermediate_audio_click,
-                all_audio_click,
+                event_state.delete_intermediate_click.instance,
+                event_state.delete_all_intermediate_click.instance,
+                event_state.delete_all_click.instance,
             ]
         ]
 
@@ -99,8 +85,8 @@ def render(total_config: TotalConfig) -> None:
                 show_progress="hidden",
             )
             for click_event in [
-                speech_audio_click,
-                all_speech_audio_click,
+                event_state.delete_speech_click.instance,
+                event_state.delete_all_speech_click.instance,
                 all_audio_update,
             ]
         ]
@@ -112,15 +98,15 @@ def render(total_config: TotalConfig) -> None:
                 show_progress="hidden",
             )
             for click_event in [
-                output_audio_click,
-                all_output_audio_click,
+                event_state.delete_output_click.instance,
+                event_state.delete_all_output_click.instance,
                 all_audio_update,
             ]
         ]
 
         for click_event in [
-            dataset_audio_click,
-            all_dataset_audio_click,
+            event_state.delete_dataset_click.instance,
+            event_state.delete_all_dataset_click.instance,
             all_audio_update,
         ]:
             click_event.success(
@@ -136,7 +122,8 @@ def render(total_config: TotalConfig) -> None:
 
 def _render_intermediate_audio_accordion(
     tab_config: ManageAudioConfig,
-) -> tuple[Dependency, Dependency]:
+    event_state: ManageAudioEventState,
+) -> None:
     with gr.Accordion("Intermediate audio", open=False), gr.Row():
         with gr.Column():
             tab_config.intermediate_audio.instance.render()
@@ -153,7 +140,7 @@ def _render_intermediate_audio_accordion(
                 label="Output message",
                 interactive=False,
             )
-        intermediate_audio_click = _click(
+        event_state.delete_intermediate_click.instance = setup_delete_event(
             intermediate_audio_btn,
             delete_intermediate_audio,
             [
@@ -164,7 +151,7 @@ def _render_intermediate_audio_accordion(
             "Are you sure you want to delete the selected song directories?",
             "[-] Successfully deleted the selected song directories!",
         )
-        all_intermediate_audio_click = _click(
+        event_state.delete_all_intermediate_click.instance = setup_delete_event(
             all_intermediate_audio_btn,
             delete_all_intermediate_audio,
             [tab_config.dummy_checkbox.instance],
@@ -172,12 +159,12 @@ def _render_intermediate_audio_accordion(
             "Are you sure you want to delete all intermediate audio files?",
             "[-] Successfully deleted all intermediate audio files!",
         )
-        return intermediate_audio_click, all_intermediate_audio_click
 
 
 def _render_speech_audio_accordion(
     tab_config: ManageAudioConfig,
-) -> tuple[Dependency, Dependency]:
+    event_state: ManageAudioEventState,
+) -> None:
     with gr.Accordion("Speech audio", open=False), gr.Row():
         with gr.Column():
             tab_config.speech_audio.instance.render()
@@ -195,7 +182,7 @@ def _render_speech_audio_accordion(
                 interactive=False,
             )
 
-        speech_audio_click = _click(
+        event_state.delete_speech_click.instance = setup_delete_event(
             speech_audio_btn,
             delete_speech_audio,
             [tab_config.dummy_checkbox.instance, tab_config.speech_audio.instance],
@@ -204,7 +191,7 @@ def _render_speech_audio_accordion(
             "[-] Successfully deleted the selected speech audio files!",
         )
 
-        all_speech_audio_click = _click(
+        event_state.delete_all_speech_click.instance = setup_delete_event(
             all_speech_audio_btn,
             delete_all_speech_audio,
             [tab_config.dummy_checkbox.instance],
@@ -212,12 +199,12 @@ def _render_speech_audio_accordion(
             "Are you sure you want to delete all speech audio files?",
             "[-] Successfully deleted all speech audio files!",
         )
-    return speech_audio_click, all_speech_audio_click
 
 
 def _render_output_audio_accordion(
     tab_config: ManageAudioConfig,
-) -> tuple[Dependency, Dependency]:
+    event_state: ManageAudioEventState,
+) -> None:
 
     with gr.Accordion("Output audio", open=False), gr.Row():
         with gr.Column():
@@ -235,7 +222,7 @@ def _render_output_audio_accordion(
                 label="Output message",
                 interactive=False,
             )
-        output_audio_click = _click(
+        event_state.delete_output_click.instance = setup_delete_event(
             output_audio_btn,
             delete_output_audio,
             [tab_config.dummy_checkbox.instance, tab_config.output_audio.instance],
@@ -243,7 +230,7 @@ def _render_output_audio_accordion(
             "Are you sure you want to delete the selected output audio files?",
             "[-] Successfully deleted the selected output audio files!",
         )
-        all_output_audio_click = _click(
+        event_state.delete_all_output_click.instance = setup_delete_event(
             all_output_audio_btn,
             delete_all_output_audio,
             [tab_config.dummy_checkbox.instance],
@@ -251,12 +238,12 @@ def _render_output_audio_accordion(
             "Are you sure you want to delete all output audio files?",
             "[-] Successfully deleted all output audio files!",
         )
-    return output_audio_click, all_output_audio_click
 
 
 def _render_dataset_audio_accordion(
     tab_config: ManageAudioConfig,
-) -> tuple[Dependency, Dependency]:
+    event_state: ManageAudioEventState,
+) -> None:
 
     with gr.Accordion("Dataset audio", open=False), gr.Row():
         with gr.Column():
@@ -275,7 +262,7 @@ def _render_dataset_audio_accordion(
                 interactive=False,
             )
 
-        dataset_audio_click = _click(
+        event_state.delete_dataset_click.instance = setup_delete_event(
             dataset_audio_btn,
             delete_dataset_audio,
             [tab_config.dummy_checkbox.instance, tab_config.dataset_audio.instance],
@@ -283,7 +270,7 @@ def _render_dataset_audio_accordion(
             "Are you sure you want to delete the selected dataset audio files?",
             "[-] Successfully deleted the selected dataset audio files!",
         )
-        all_dataset_audio_click = _click(
+        event_state.delete_all_dataset_click.instance = setup_delete_event(
             all_dataset_audio_btn,
             delete_all_dataset_audio,
             [tab_config.dummy_checkbox.instance],
@@ -291,16 +278,18 @@ def _render_dataset_audio_accordion(
             "Are you sure you want to delete all dataset audio files?",
             "[-] Successfully deleted all dataset audio files!",
         )
-    return dataset_audio_click, all_dataset_audio_click
 
 
-def _render_all_audio_accordion(tab_config: ManageAudioConfig) -> Dependency:
+def _render_all_audio_accordion(
+    tab_config: ManageAudioConfig,
+    event_state: ManageAudioEventState,
+) -> None:
 
     with gr.Accordion("All audio", open=True), gr.Row(equal_height=True):
         all_audio_btn = gr.Button("Delete", variant="primary")
         all_audio_msg = gr.Textbox(label="Output message", interactive=False)
 
-    return _click(
+    event_state.delete_all_click.instance = setup_delete_event(
         all_audio_btn,
         delete_all_audio,
         [tab_config.dummy_checkbox.instance],
@@ -308,19 +297,3 @@ def _render_all_audio_accordion(tab_config: ManageAudioConfig) -> Dependency:
         "Are you sure you want to delete all audio files?",
         "[-] Successfully deleted all audio files!",
     )
-
-
-def _click(
-    button: gr.Button,
-    fn: Callable[..., None],
-    inputs: list[Component],
-    outputs: gr.Textbox,
-    confirm_msg: str,
-    success_msg: str,
-) -> Dependency:
-    return button.click(
-        confirmation_harness(fn),
-        inputs=inputs,
-        outputs=outputs,
-        js=confirm_box_js(confirm_msg),
-    ).success(partial(render_msg, success_msg), outputs=outputs, show_progress="hidden")

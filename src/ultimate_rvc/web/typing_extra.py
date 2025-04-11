@@ -16,6 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field
 import gradio as gr
 from gradio.components import Component
 from gradio.components.dropdown import DEFAULT_VALUE, DefaultValue
+from gradio.events import Dependency  # noqa: TC002
 
 from ultimate_rvc.typing_extra import (
     AudioExt,
@@ -1265,6 +1266,10 @@ class ManageModelConfig(BaseModel):
         value=DEFAULT_VALUE,
         multiselect=True,
     )
+    dummy_checkbox: CheckboxConfig = CheckboxConfig(
+        value=False,
+        visible=False,
+    )
 
 
 class ManageAudioConfig(BaseModel):
@@ -1325,3 +1330,45 @@ class TotalConfig(BaseModel):
     speech: TotalSpeechGenerationConfig = TotalSpeechGenerationConfig()
     training: TotalTrainingConfig = TotalTrainingConfig()
     management: TotalManagementConfig = TotalManagementConfig()
+
+
+class ClickEvent(BaseModel):
+    _instance: Dependency | None = None
+
+    @property
+    def instance(self) -> Dependency:
+        if self._instance is None:
+            raise ValueError("Click event instance has not been instantiated yet.")
+        return self._instance
+
+    @instance.setter
+    def instance(self, value: Dependency) -> None:
+        self._instance = value
+
+
+class ManageAudioEventState(BaseModel):
+    delete_intermediate_click: ClickEvent = ClickEvent()
+    delete_all_intermediate_click: ClickEvent = ClickEvent()
+    delete_speech_click: ClickEvent = ClickEvent()
+    delete_all_speech_click: ClickEvent = ClickEvent()
+    delete_output_click: ClickEvent = ClickEvent()
+    delete_all_output_click: ClickEvent = ClickEvent()
+    delete_dataset_click: ClickEvent = ClickEvent()
+    delete_all_dataset_click: ClickEvent = ClickEvent()
+    delete_all_click: ClickEvent = ClickEvent()
+
+
+class ManageModelEventState(BaseModel):
+    delete_voice_click: ClickEvent = ClickEvent()
+    delete_all_voices_click: ClickEvent = ClickEvent()
+    delete_embedder_click:  ClickEvent = ClickEvent()
+    delete_all_embedders_click:  ClickEvent = ClickEvent()
+    delete_pretrained_click:  ClickEvent = ClickEvent()
+    delete_all_pretraineds_click: ClickEvent = ClickEvent()
+    delete_trained_click: ClickEvent = ClickEvent()
+    delete_all_trained_click: ClickEvent = ClickEvent()
+    delete_all_click: ClickEvent = ClickEvent()
+    download_voice_click: ClickEvent = ClickEvent()
+    upload_voice_click: ClickEvent = ClickEvent()
+    download_pretrained_click: ClickEvent = ClickEvent()
+    upload_embedder_click: ClickEvent = ClickEvent()
