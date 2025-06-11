@@ -37,7 +37,7 @@ dependencies = [
     "onnxruntime-gpu==1.20.1",
     "local-attention==1.11.1",
     "einops==0.8.1",
-    "transformers==4.49.0",
+    "transformers==4.50.0",
     "tensorboardX==2.6.2.2",
     "tensorboard==2.19.0",
     "torch-tb-profiler==0.4.3",
