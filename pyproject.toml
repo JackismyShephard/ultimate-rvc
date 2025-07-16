@@ -17,7 +17,7 @@ dependencies = [
   "typer==0.16.0",
 
   # Networking
-  "requests==2.32.3",
+  "requests==2.32.4",
   "yt_dlp>=2025.1.26",
   "nodejs-wheel-binaries==22.14.0",
   "wget==3.2",
@@ -27,7 +27,7 @@ dependencies = [
   "scipy==1.15.2",
   "matplotlib==3.10.1",
   "tqdm==4.67.1",
-  "gradio==5.25.2",
+  "gradio==5.31.0",
   "pandas-stubs==2.3.0.250703",
 
   # Machine learning
@@ -38,7 +38,7 @@ dependencies = [
   "onnxruntime-gpu==1.20.1",
   "local-attention==1.11.1",
   "einops==0.8.1",
-  "transformers==4.49.0",
+  "transformers==4.52.1",
   "tensorboardX==2.6.2.2",
   "tensorboard==2.19.0",
   "torch-tb-profiler==0.4.3",
