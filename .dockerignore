@@ -1,0 +1,24 @@
+# Ignore Git-related files
+.git
+.gitignore
+.gitattributes
+
+# Ignore dev/test tools and configs
+.pre-commit-config.yaml
+.markdownlint.json
+.yamlfmt.yaml
+.yamllint.yaml
+
+# Ignore documentation files that aren’t needed in container
+README.md
+FUNDING.yaml
+CLAUDE.md
+LICENSE
+notes/
+notebooks/
+
+# Ignore local data and logs
+logs/
+temp/
+audio/
+models/

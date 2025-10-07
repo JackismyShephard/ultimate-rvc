@@ -27,9 +27,9 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Clone the repository
-RUN git clone https://github.com/RedsAnalysis/ultimate-rvc.git
+RUN git clone https://github.com/JackismyShephard/ultimate-rvc
 
-# --- FIX: Change WORKDIR into the cloned repository ---
+# Moving into ultimate-rvc Dir  ---
 WORKDIR /app/ultimate-rvc
 
 # Set up UV environment variables relative to the new WORKDIR
