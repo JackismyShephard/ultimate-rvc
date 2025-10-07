@@ -148,6 +148,15 @@ def run_pitch_extraction(
 
     remove_sox_libmso6_from_ld_preload()
 
+    if f0_method == "crepe":
+        actual_threads = 1  # crepe method cannot handle multiple threads
+        logger.info(
+            "crepe detected: using single-threaded processing (was %d threads). "
+            "crepe requires single-threaded operation due to GPU limitations.",
+            threads,
+        )
+    else:
+        actual_threads = threads
     with concurrent.futures.ProcessPoolExecutor(max_workers=len(devices)) as executor:
         tasks = [
             executor.submit(
@@ -156,11 +165,12 @@ def run_pitch_extraction(
                 f0_method,
                 hop_length,
                 devices[i],
-                threads // len(devices),
+                actual_threads // len(devices),
             )
             for i in range(len(devices))
         ]
-        concurrent.futures.wait(tasks)
+        for future in concurrent.futures.as_completed(tasks):
+            future.result()  # Properly waits and propagates exceptions
 
     logger.info("Pitch extraction completed in %.2f seconds.", time.time() - start_time)
 
@@ -225,7 +235,8 @@ def run_embedding_extraction(
             )
             for i in range(len(devices))
         ]
-        concurrent.futures.wait(tasks)
+        for future in concurrent.futures.as_completed(tasks):
+            future.result()  # Properly waits and propagates exceptions
     logger.info(
         "Embedding extraction completed in %.2f seconds.",
         time.time() - start_time,

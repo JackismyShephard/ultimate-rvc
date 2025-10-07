@@ -2,15 +2,12 @@
 
 [![PyPI version](https://badge.fury.io/py/ultimate-rvc.svg)](https://badge.fury.io/py/ultimate-rvc)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/JackismyShephard/ultimate-rvc/blob/main/notebooks/ultimate_rvc_colab.ipynb)
-[![Open In Huggingface](https://huggingface.co/datasets/huggingface/badges/resolve/main/open-in-hf-spaces-md.svg)](https://huggingface.co/spaces/JackismyShephard/ultimate-rvc)
+[![](https://dcbadge.limes.pink/api/server/https://discord.gg/T4ejEz8HtX?style=flat&compact=true&theme=default-inverted)](https://discord.gg/https://discord.gg/T4ejEz8HtX)
+[![Open In Huggingface](https://huggingface.co/datasets/huggingface/badges/resolve/main/open-in-hf-spaces-sm.svg)](https://huggingface.co/spaces/JackismyShephard/ultimate-rvc)
 
-An extension of [AiCoverGen](https://github.com/SociallyIneptWeeb/AICoverGen), which provides several new features and improvements, enabling users to generate audio-related content using RVC with ease. Ideal for people who want to incorporate singing functionality into their AI assistant/chatbot/vtuber, hear their favourite characters sing their favourite song or have their favorite character read their favorite books aloud.
-
-<!-- Showcase: TBA -->
+An extension of [AiCoverGen](https://github.com/SociallyIneptWeeb/AICoverGen), which provides several new features and improvements, enabling users to generate audio-related content using RVC with ease. Ideal for people who want to incorporate singing functionality into their AI assistant/chatbot/vtuber, hear their favourite character sing their favourite song or have their favorite character read their favorite books aloud.
 
 ![ ](images/webui_generate.png?raw=true)
-
-Ultimate RVC is under constant development and testing, but you can try it out right now locally or on Google Colab!
 
 ## Youtube Showcase
 
@@ -36,6 +33,7 @@ Courtesy of [Social & Apps](https://www.youtube.com/@socialapps1194)
 ## Online Platforms
 
 For those without a powerful enough NVIDIA GPU, you may try out Ultimate RV using [Google Colab](https://colab.research.google.com/github/JackismyShephard/ultimate-rvc/blob/main/notebooks/ultimate_rvc_colab.ipynb). Additionally, Ultimate RVC is also hosted on [Huggingface Spaces](https://huggingface.co/spaces/JackismyShephard/ultimate-rvc), although GPU acceleration is not available there. For those who want to run Ultimate RVC locally, follow the setup guide below.
+
 
 ## Local Setup
 
@@ -171,6 +169,10 @@ The behaviour of the Ultimate RVC project can be customized via a number of envi
 * `YT_COOKIEFILE`: The path to a file containing cookies to use when downloading audio from YouTube via the web UI. If not set, no cookies will be used.
 * `URVC_ACCELERATOR`: The type of hardware accelerator to use when running Ultimate RVC directly via the shell scripts in this repository. Currently supported options are `cuda` and `rocm`, with `cuda` being the default. Note that `rocm` is not supported on Windows and experimental on linux.
 * `URVC_CONFIG`: The name of a configuration with custom values for settings to load when starting the Ultimate RVC web application. If not set, the default configuration for Ultimate RVC will be used. The configuration should be located in the `configs` directory of the Ultimate RVC project. If it does not exist, an error will be raised.
+
+## Help & Community
+
+If you experience (reproducible) bugs or have specific feature requests we encourage you to file a new issue here on GitHub. For broader discussions on the development of Ultimate RVC, as well as connecting with other users, we encourage you to join our Discord [server](https://discord.gg/T4ejEz8HtX) or check out the [Discussions](https://github.com/JackismyShephard/ultimate-rvc/discussions) page here on GitHub.
 
 ## Terms of Use
 

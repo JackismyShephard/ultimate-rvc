@@ -1,5 +1,7 @@
 # TODO
 
+* num threads has been hardcoded to be 1 for crepe as it fails with multiple threads. But this is not reflected in documentation for core API and CLI and UI still shows slider for number of threads. Consider whether we need to update documentation and or have UI disable slider and set num threads to 1 when crepe is selected.
+
 * figure out a way of safely storing PyPI credentials
 * promote dependencies to latest versions
   * and do proper testing before committing
