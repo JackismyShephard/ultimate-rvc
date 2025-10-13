@@ -40,6 +40,8 @@ CLAUDE.md
 LICENSE
 notes/
 notebooks/
+tests/
+images/
 
 # Ignore local data and logs
 logs/
