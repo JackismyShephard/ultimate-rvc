@@ -91,6 +91,31 @@ When developing new features or debugging, it is recommended to run the app in d
 ./urvc dev
 ```
 
+## DOCKER SETUP
+
+Make sure you have Docker/Docker Desktop and Docker Compose installed on your system and is running. [Docker Installation](https://www.docker.com/products/docker-desktop/)
+
+### Clone Ultimate RVC repository
+
+```console
+git clone https://github.com/JackismyShephard/ultimate-rvc
+cd ultimate-rvc
+```
+### Start the container
+
+First time it will download the models required along with the example voice models and place them in the `models` directory. Second time onwards it will start the container skipping the download which will be faster.
+
+```console
+docker-compose up
+```
+### Start the container
+
+To stop the container, run:
+
+```console
+docker-compose down
+```
+
 ## Usage
 
 ### Manage models
