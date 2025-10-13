@@ -26,11 +26,8 @@ RUN apt-get update && apt-get install -y \
 # Set working directory for the initial setup
 WORKDIR /app
 
-# Clone the repository
-RUN git clone https://github.com/JackismyShephard/ultimate-rvc
-
-# Moving into ultimate-rvc Dir  ---
-WORKDIR /app/ultimate-rvc
+# --- MODIFICATION START: Replace 'git clone' with 'COPY' ---
+COPY . .
 
 # Set up UV environment variables relative to the new WORKDIR
 ENV UV_PATH=./uv
@@ -44,17 +41,35 @@ ENV UV_PROJECT_ENVIRONMENT=$VENV_PATH
 ENV UV_TOOL_DIR="$UV_PATH/tools"
 ENV UV_TOOL_BIN_DIR="$UV_PATH/tools/bin"
 ENV GRADIO_NODE_PATH="$VENV_PATH/lib/python3.12/site-packages/nodejs_wheel/bin/node"
+ENV MODELS_DIR=/app/models
+
 # Note: The ./uv/bin will be added to the PATH by the install script itself,
 # but we ensure the parent uv directory is in the path.
-ENV PATH="/app/ultimate-rvc/uv:${PATH}"
+ENV PATH="/app/uv:${PATH}"
 
 # Install uv using the official script
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
     ln -s /root/.cargo/bin/uv /usr/local/bin/uv
 
+
+# --- DEBUGGING SCRIPT ---
+# This will show us exactly what the file system looks like in this layer.
+RUN \
+    echo "--- STARTING DEBUG SCRIPT -v1 ---" && \
+    echo "Current user: $(whoami)" && \
+    echo "Current directory (pwd): $(pwd)" && \
+    echo "--- Listing contents of current directory recursively ---" && \
+    ls -laR . && \
+    echo "--- DEBUG SCRIPT FINISHED ---"
+
+# --- FAILING INSTALLATION STEP (for confirmation) ---    
 # Install dependencies using the project script
-# Now ./urvc correctly refers to /app/ultimate-rvc/urvc
-RUN ./urvc install
+RUN uv venv ./uv/.venv && \
+    uv pip install -e ".[cuda]"
+
+
+# Make the entrypoint script from your project directory executable
+RUN chmod +x docker-entrypoint.sh
 
 # Expose port for web interface
 EXPOSE 7860

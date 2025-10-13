@@ -14,7 +14,7 @@ services:
       
     # Mount local directories for your persistent data.
     volumes:
-      - ./models/rvc/voice_models:/app/models/rvc/voice_models
+      - ./models:/app/models
       - ./audio:/app/audio
       - ./logs:/app/logs
       - ./temp:/app/temp
