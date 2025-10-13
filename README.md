@@ -108,7 +108,9 @@ First time it will download the models required along with the example voice mod
 ```console
 docker-compose up
 ```
-### Start the container
+It will be Running on local URL:  (http://127.0.0.1:7860)
+
+### Stop the container
 
 To stop the container, run:
 
