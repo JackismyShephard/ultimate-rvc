@@ -1,7 +1,12 @@
 services:
   ultimate-rvc:
     # This tells Compose to build the image using our Dockerfile.
-    build: .
+    build:
+      # The 'context' is the source of all files for the build.
+      # '..' tells Docker to look in the parent directory (your project root).
+      context: ..
+      # 'dockerfile' is the path to the Dockerfile, relative to the context.
+      dockerfile: docker/Dockerfile
 
     image: ultimate-rvc-app:1.0
     
@@ -14,10 +19,10 @@ services:
       
     # Mount local directories for your persistent data.
     volumes:
-      - ./models:/app/models
-      - ./audio:/app/audio
-      - ./logs:/app/logs
-      - ./temp:/app/temp
+      - ../models:/app/models
+      - ../audio:/app/audio
+      - ../logs:/app/logs
+      - ../temp:/app/temp
       
     # Enable GPU access.
     deploy:

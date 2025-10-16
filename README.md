@@ -100,6 +100,7 @@ Make sure you have Docker/Docker Desktop and Docker Compose installed on your sy
 ```console
 git clone https://github.com/JackismyShephard/ultimate-rvc
 cd ultimate-rvc
+cd docker
 ```
 ### Start the container
 
