@@ -1,7 +1,30 @@
+# Ignore dev/test tools and configs
+.pre-commit-config.yaml
+.markdownlint.json
+.yamlfmt.yaml
+.yamllint.yaml
+
+# Ignore documentation files that aren’t needed in container(PS : Do Not add Readme.md it is needed by pyproject.toml for dependency installation)
+FUNDING.yaml
+CLAUDE.md
+LICENSE
+notes/
+notebooks/
+tests/
+images/
+
+# Ignore local data and logs
+logs/
+temp/
+audio/
+models/
+docker/
+
 # Ignore Git-related files
 .git
 .gitignore
 .gitattributes
+.dockerignore
 
 # --- Python-Specific Files ---
 __pycache__/  # Python bytecode cache
@@ -27,29 +50,3 @@ build/       # Build directories (used by some build systems)
 # --- Operating System and System Files (rare, but good to include) ---
 .DS_Store    # macOS metadata
 Thumbs.db    # Windows thumbnail cache
-
-# Ignore dev/test tools and configs
-.pre-commit-config.yaml
-.markdownlint.json
-.yamlfmt.yaml
-.yamllint.yaml
-
-# Ignore documentation files that aren’t needed in container(PS : Do Not add Readme.md it is needed by pyproject.toml for dependency installation)
-FUNDING.yaml
-CLAUDE.md
-LICENSE
-notes/
-notebooks/
-tests/
-images/
-
-# Ignore local data and logs
-logs/
-temp/
-audio/
-models/
-
-# --- Docker and Compose Files (You almost never want these in the image) ---
-Dockerfile
-docker-compose.yml
-.dockerignore

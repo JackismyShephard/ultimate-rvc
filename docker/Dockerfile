@@ -26,8 +26,10 @@ RUN apt-get update && apt-get install -y \
 # Set working directory for the initial setup
 WORKDIR /app
 
-# --- MODIFICATION START: Replace 'git clone' with 'COPY' ---
+# The .dockerignore file will correctly exclude the 'docker' directory,
 COPY . .
+# Explicitly copy the entrypoint script from the 'docker' directory
+COPY docker/docker-entrypoint.sh .
 
 # Set up UV environment variables relative to the new WORKDIR
 ENV UV_PATH=./uv
@@ -53,9 +55,14 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
 # Install dependencies using the project script
 RUN uv venv ./uv/.venv && \
     uv pip install -e ".[cuda]"
+# Make the entrypoint script from your project directory executable inside the image.
+RUN chmod +x docker-entrypoint.sh 
 
 # Expose port for web interface
 EXPOSE 7860
+
+# Set the entrypoint script to run on container start.
+ENTRYPOINT ["./docker-entrypoint.sh"]
 
 # Set default command to run the web interface
 ENTRYPOINT ["./urvc", "run", "--listen", "--listen-host", "0.0.0.0"]
