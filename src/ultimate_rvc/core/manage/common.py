@@ -64,11 +64,13 @@ def get_items(
     Parameters
     ----------
     directory : str
-        The path to the directory containing the files.
+        The path to the directory containing the items.
     only_stem : bool, optional
         Whether to return only the stem of the items or their paths.
+        For directories, returns the full name. For files, returns the
+        name without the file extension.
     exclude : str, optional
-        The file extension to exclude from the list of files.
+        The file extension to exclude from the list of items.
 
     Returns
     -------
@@ -80,7 +82,11 @@ def get_items(
     if dir_path.is_dir():
         return sorted(
             [
-                item_path.stem if only_stem else str(item_path)
+                (
+                    (item_path.name if item_path.is_dir() else item_path.stem)
+                    if only_stem
+                    else str(item_path)
+                )
                 for item_path in dir_path.iterdir()
                 if item_path.suffix != exclude
             ],

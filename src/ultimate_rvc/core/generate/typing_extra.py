@@ -299,11 +299,14 @@ class MixedAudioType(StrEnum):
 EdgeTTSVoiceTable = list[list[str]]
 EdgeTTSVoiceKey = Literal[
     "Name",
-    "FriendlyName",
     "ShortName",
+    "DisplayName",
+    "LocalName",
+    "LocaleName",
     "Locale",
+    "Gender",
+    "WordsPerMinute",
     "Status",
-    "SuggestedCodec",
 ]
 EdgeTTSVoiceTagKey = Literal[
     "ContentCategories",

@@ -132,10 +132,6 @@ def wavify(
     accepted_formats : set[AudioExt], optional
         The audio formats to accept for conversion. If None, the
         accepted formats are mp3, ogg, flac, m4a and aac.
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
 
     Returns
     -------
@@ -531,10 +527,6 @@ def mix_audio(
     content_type: MixedAudioType, default=MixedAudioType.AUDIO
         The type of mixed audio. Determines what is shown in display
         messages and saved file names.
-    progress_bar : gr.Progress, optional
-        Gradio progress bar to update.
-    percentage : float, default=0.5
-        Percentage to display in the progress bar.
 
     Returns
     -------
