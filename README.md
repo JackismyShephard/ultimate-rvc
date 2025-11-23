@@ -2,12 +2,12 @@
 
 [![PyPI version](https://badge.fury.io/py/ultimate-rvc.svg)](https://badge.fury.io/py/ultimate-rvc)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/JackismyShephard/ultimate-rvc/blob/main/notebooks/ultimate_rvc_colab.ipynb)
-[![](https://dcbadge.limes.pink/api/server/https://discord.gg/T4ejEz8HtX?style=flat&compact=true&theme=default-inverted)](https://discord.gg/https://discord.gg/T4ejEz8HtX)
+[![Discord Server](https://dcbadge.limes.pink/api/server/https://discord.gg/T4ejEz8HtX?style=flat&compact=true&theme=default-inverted)](https://discord.gg/https://discord.gg/T4ejEz8HtX)
 [![Open In Huggingface](https://huggingface.co/datasets/huggingface/badges/resolve/main/open-in-hf-spaces-sm.svg)](https://huggingface.co/spaces/JackismyShephard/ultimate-rvc)
 
 An extension of [AiCoverGen](https://github.com/SociallyIneptWeeb/AICoverGen), which provides several new features and improvements, enabling users to generate audio-related content using RVC with ease. Ideal for people who want to incorporate singing functionality into their AI assistant/chatbot/vtuber, hear their favourite character sing their favourite song or have their favorite character read their favorite books aloud.
 
-![ ](images/webui_generate.png?raw=true)
+![Ultimate RVC Web Interface](images/webui_generate.png?raw=true)
 
 ## Youtube Showcase
 
@@ -33,7 +33,6 @@ Courtesy of [Social & Apps](https://www.youtube.com/@socialapps1194)
 ## Online Platforms
 
 For those without a powerful enough NVIDIA GPU, you may try out Ultimate RV using [Google Colab](https://colab.research.google.com/github/JackismyShephard/ultimate-rvc/blob/main/notebooks/ultimate_rvc_colab.ipynb). Additionally, Ultimate RVC is also hosted on [Huggingface Spaces](https://huggingface.co/spaces/JackismyShephard/ultimate-rvc), although GPU acceleration is not available there. For those who want to run Ultimate RVC locally, follow the setup guide below.
-
 
 ## Local Setup
 
