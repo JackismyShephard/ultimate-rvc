@@ -2,6 +2,7 @@
 
 * also test on windows
 * Test if custom embeddder models stil work
+* test if built package works
 
 * fix issue with models table in UI auto scrolling and being unresponsive
 
