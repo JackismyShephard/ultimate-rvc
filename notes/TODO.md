@@ -1,7 +1,6 @@
 # TODO
 
 * also test on windows
-* also test cli
 * Test if custom embeddder models stil work
 
 * fix issue with models table in UI auto scrolling and being unresponsive
