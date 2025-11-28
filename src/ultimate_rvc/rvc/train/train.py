@@ -3,6 +3,7 @@ import glob
 import json
 import logging
 import os
+import pathlib
 import shutil
 import signal
 import sys
@@ -157,7 +158,7 @@ def main(
     global_gen_loss = manager.list([0] * total_epoch)
     global_disc_loss = manager.list([0] * total_epoch)
 
-    with open(config_save_path) as f:
+    with pathlib.Path(config_save_path).open() as f:
         config = json.load(f)
     config = HParams(**config)
     config.data.training_files = os.path.join(experiment_dir, "filelist.txt")
@@ -194,13 +195,13 @@ def main(
         """Start the training process with multi-GPU support or CPU."""
         children = []
         pid_data = {"process_pids": []}
-        with open(config_save_path) as pid_file:
+        with pathlib.Path(config_save_path).open() as pid_file:
             try:
                 existing_data = json.load(pid_file)
                 pid_data.update(existing_data)
             except json.JSONDecodeError:
                 pass
-        with open(config_save_path, "w") as pid_file:
+        with pathlib.Path(config_save_path).open("w") as pid_file:
             for rank, device_id in enumerate(gpus):
                 subproc = mp.Process(
                     target=run,
@@ -261,7 +262,7 @@ def main(
             if entry.is_file():
                 _, file_extension = os.path.splitext(entry.name)
                 if file_extension in {".0", ".pth", ".index"}:
-                    os.remove(entry.path)
+                    pathlib.Path(entry.path).unlink()
             elif entry.is_dir() and entry.name == "eval":
                 shutil.rmtree(entry.path)
 
@@ -514,8 +515,11 @@ def run(
     cache = []
     # get the first sample as reference for tensorboard evaluation
     # custom reference temporarily disabled
-    if True == False and os.path.isfile(
-        os.path.join(RVC_TRAINING_MODELS_DIR, "reference", f"ref{sample_rate}.wav"),
+    if (
+        True == False
+        and pathlib.Path(
+            os.path.join(RVC_TRAINING_MODELS_DIR, "reference", f"ref{sample_rate}.wav")
+        ).is_file()
     ):
         phone = np.load(
             os.path.join(
@@ -575,6 +579,8 @@ def run(
                 )
             break
 
+    if epoch_str > custom_total_epoch:
+        cleanup_training_processes(experiment_dir)
     for epoch in range(epoch_str, custom_total_epoch + 1):
         train_and_evaluate(
             rank,
@@ -986,10 +992,15 @@ def train_and_evaluate(
         with torch.no_grad():
             torch.cuda.empty_cache()
         if done:
-            pid_file_path = os.path.join(experiment_dir, "config.json")
-            with open(pid_file_path) as pid_file:
-                pid_data = json.load(pid_file)
-            with open(pid_file_path, "w") as pid_file:
-                pid_data.pop("process_pids", None)
-                json.dump(pid_data, pid_file, indent=4)
+            cleanup_training_processes(experiment_dir)
             os._exit(0)
+
+
+def cleanup_training_processes(experiment_dir) -> None:
+    dist.destroy_process_group()
+    pid_file_path = os.path.join(experiment_dir, "config.json")
+    with pathlib.Path(pid_file_path).open() as pid_file:
+        pid_data = json.load(pid_file)
+    with pathlib.Path(pid_file_path).open("w") as pid_file:
+        pid_data.pop("process_pids", None)
+        json.dump(pid_data, pid_file, indent=4)

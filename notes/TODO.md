@@ -4,26 +4,17 @@
 * also test cli
 * Test if custom embeddder models stil work
 
-* check in uv.lock?
-* upgrade cuda version
-* incorporate latest changes from applio
-* support python 3.13
-* upgrade gradio to 6 and fix warnings
 * fix warning from onnx runtime
   * 2025-11-23 17:10:20.043523274 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"
 * fix issue with models table in UI auto scrolling and being unresponsive
+* support python 3.13
 
-* error during training:
+* upgrade cuda version
 
-  ```console
-  Lowest average generator loss: 23.149 at epoch 2
-  terminate called without an active exception
-  [rank0]:[W1123 14:28:02.099659614 ProcessGroupNCCL.cpp:1524] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
-  ```
+* incorporate latest changes from applio
 
-  Seems to happen after continuing training, or at least is not an error if you set "clear saved data"
-
-  Also seems to be leaks that cause shutdown and slowdowns locally
+* upgrade gradio to 6 and fix warnings
+* check in uv.lock?
   
 * num threads has been hardcoded to be 1 for crepe as it fails with multiple threads. But this is not reflected in documentation for core API and CLI and UI still shows slider for number of threads. Consider whether we need to update documentation and or have UI disable slider and set num threads to 1 when crepe is selected.
 
