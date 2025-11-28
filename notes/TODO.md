@@ -7,9 +7,6 @@
 * fix warning from onnx runtime
   * 2025-11-23 17:10:20.043523274 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"
 * fix issue with models table in UI auto scrolling and being unresponsive
-* support python 3.13
-
-* upgrade cuda version
 
 * incorporate latest changes from applio
 

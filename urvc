@@ -20,7 +20,7 @@ export VIRTUAL_ENV=$VENV_PATH
 export UV_PROJECT_ENVIRONMENT=$VENV_PATH
 export UV_TOOL_DIR="$UV_PATH/tools"
 export UV_TOOL_BIN_DIR="$UV_PATH/tools/bin"
-export GRADIO_NODE_PATH="$VENV_PATH/lib/python3.12/site-packages/nodejs_wheel/bin/node"
+export GRADIO_NODE_PATH="$VENV_PATH/lib/python3.13/site-packages/nodejs_wheel/bin/node"
 export PATH="$UV_PATH:$PATH"
 
 main() {

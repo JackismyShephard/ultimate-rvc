@@ -148,7 +148,7 @@ src/ultimate_rvc/
 
 ## Technology Stack
 
-- **Package Management**: uv with Python 3.12
+- **Package Management**: uv with Python 3.13
 - **ML Framework**: PyTorch 2.7+ with CUDA 12.8/ROCm support
 - **Web UI**: Gradio 5.25+
 - **CLI**: Typer with rich markup

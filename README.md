@@ -26,8 +26,8 @@ Courtesy of [Social & Apps](https://www.youtube.com/@socialapps1194)
 * Caching system which saves intermediate audio files as needed, thereby reducing inference time as much as possible. For example, if song A has already been converted using model B and now you want to convert song A using model C, then vocal extraction can be skipped and inference time reduced drastically
 * Ability to listen to intermediate audio files in the UI. This is useful for getting an idea of what is happening in each step of a given generation pipeline.
 * "multi-step" generation tabs: Here you can try out each step of a given generation pipeline in isolation. For example, if you already have extracted vocals available and only want to convert these using your voice model, then you can do that in a dedicated "multi-step" tab for song cover generation. Besides, these "multi-step" generation tabs are also useful for experimenting with settings for each step in a given generation pipeline.
-* Lots of visual and performance improvements resulting from updating from Gradio 3 to Gradio 5 and from python 3.9 to python 3.12
-* A redistributable package on PyPI, which allows you to easily access the Ultimate RVC project from any python 3.12 environment.
+* Lots of visual and performance improvements resulting from updating from Gradio 3 to Gradio 5 and from python 3.9 to python 3.13
+* A redistributable package on PyPI, which allows you to easily access the Ultimate RVC project from any python 3.13 environment.
 * Support for saving and loading of custom configurations for the Ultimate RVC web application. This allows you to easily switch between different configurations without having to manually change settings each time.
 
 ## Online Platforms
@@ -131,7 +131,7 @@ The Ultimate RVC project is also available as a [distributable package](https://
 
 ### Installation
 
-The package can be installed with pip in a **Python 3.12**-based environment. To do so requires first installing PyTorch with CUDA support:
+The package can be installed with pip in a **Python 3.13**-based environment. To do so requires first installing PyTorch with CUDA support:
 
 ```console
 pip install torch==2.7.0+cu128 torchaudio==2.7.0+cu128 --index-url https://download.pytorch.org/whl/cu128

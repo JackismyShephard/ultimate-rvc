@@ -25,5 +25,5 @@ TEMP_DIR = Path(os.getenv("URVC_TEMP_DIR") or BASE_DIR / "temp")
 CONFIG_DIR = Path(os.getenv("URVC_CONFIG_DIR") or BASE_DIR / "config")
 NODE_PATH = Path(
     os.getenv("GRADIO_NODE_PATH")
-    or VENV_DIR / "lib/python3.12/site-packages/nodejs_wheel/bin/node"
+    or VENV_DIR / "lib/python3.13/site-packages/nodejs_wheel/bin/node"
 )
