@@ -83,7 +83,7 @@ function Main {
 
     switch ($Command) {
         "install" {
-            Invoke-RestMethod https://astral.sh/uv/0.6.3/install.ps1 | Invoke-Expression
+            Invoke-RestMethod https://astral.sh/uv/0.9.11/install.ps1 | Invoke-Expression
             uv run --extra $urvcAccelerator ./src/ultimate_rvc/core/main.py
         }
         "update" {

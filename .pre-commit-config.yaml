@@ -1,7 +1,7 @@
 repos:
   # 1) Markdown linting (markdownlint-cli2)
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.18.1
+    rev: v0.19.1
     hooks:
       - id: markdownlint-cli2
         args: [--fix]
@@ -15,7 +15,7 @@ repos:
 
   # 3) YAML formatting and linting
   - repo: https://github.com/google/yamlfmt
-    rev: v0.17.2
+    rev: v0.20.0
     hooks:
       - id: yamlfmt
 
@@ -27,7 +27,7 @@ repos:
 
   # 4) Python linting and formatting pipeline
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.3
+    rev: v0.14.6
     hooks:
       - id: ruff-check
         args: [--fix]
@@ -35,14 +35,14 @@ repos:
 
   # 5) Black for experimental string processing
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 25.1.0
+    rev: 25.11.0
     hooks:
       - id: black
-        language_version: python3.12
+        language_version: python3.13
 
   # 6) Type checking
   - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.403
+    rev: v1.1.407
     hooks:
       - id: pyright
         # NOTE: does not support jupyter notebooks, contrary to vscode

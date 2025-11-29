@@ -143,12 +143,6 @@ def list_edge_tts_voices(
             help="Include status information for each Edge TTS voice.",
         ),
     ] = False,
-    include_codec_info: Annotated[
-        bool,
-        typer.Option(
-            help="Include codec information for each Edge TTS voice.",
-        ),
-    ] = False,
 ) -> None:
     """List Edge TTS voices based on provided filters."""
     start_time = time.perf_counter()
@@ -163,7 +157,6 @@ def list_edge_tts_voices(
         offset=offset,
         limit=limit,
         include_status_info=include_status_info,
-        include_codec_info=include_codec_info,
     )
 
     table = Table()

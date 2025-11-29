@@ -24,6 +24,14 @@ AUDIO_DIR = Path(os.getenv("URVC_AUDIO_DIR") or BASE_DIR / "audio")
 TEMP_DIR = Path(os.getenv("URVC_TEMP_DIR") or BASE_DIR / "temp")
 CONFIG_DIR = Path(os.getenv("URVC_CONFIG_DIR") or BASE_DIR / "config")
 NODE_PATH = Path(
-    os.getenv("GRADIO_NODE_PATH")
-    or VENV_DIR / "lib/python3.12/site-packages/nodejs_wheel/bin/node"
+    (
+        os.getenv("GRADIO_NODE_PATH")
+        or (
+            VENV_DIR
+            / f"lib/python{sys.version_info.major}.{sys.version_info.minor}"
+            / "site-packages/nodejs_wheel/bin/node"
+        )
+        if sys.platform == "linux"
+        else VENV_DIR / "Lib/site-packages/nodejs_wheel/node.exe"
+    ),
 )

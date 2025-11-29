@@ -67,7 +67,6 @@ def list_edge_tts_voices(
     offset: int = 0,
     limit: int | None = None,
     include_status_info: bool = False,
-    include_codec_info: bool = False,
 ) -> tuple[EdgeTTSVoiceTable, EdgeTTSKeys]:
     """
     List Edge TTS voices based on provided filters.
@@ -92,9 +91,6 @@ def list_edge_tts_voices(
     include_status_info : bool, default=False
         Include status information for each Edge TTS voice.
 
-    include_codec_info : bool, default=False
-        Include codec information for each Edge TTS voice.
-
     Returns
     -------
         table : list[list[str]]
@@ -107,15 +103,13 @@ def list_edge_tts_voices(
     """
     keys: list[EdgeTTSVoiceKey] = [
         "Name",
-        "FriendlyName",
+        "DisplayName",
         "ShortName",
         "Locale",
     ]
 
     if include_status_info:
         keys.append("Status")
-    if include_codec_info:
-        keys.append("SuggestedCodec")
     voice_tag_keys: list[EdgeTTSVoiceTagKey] = [
         "ContentCategories",
         "VoicePersonalities",

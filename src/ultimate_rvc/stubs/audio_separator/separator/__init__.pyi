@@ -66,6 +66,7 @@ class Separator:
         sample_rate: int = 44100,
         use_soundfile: bool = False,
         use_autocast: bool = False,
+        use_directml: bool = False,
         mdx_params: MDXParams = {
             "hop_length": 1024,
             "segment_size": 256,
@@ -103,7 +104,7 @@ class Separator:
     ) -> tuple[str, str, str, str, str | None]: ...
     def load_model(
         self,
-        model_filename: str = "model_mel_band_roformer_ep_3005_sdr_11.4360.ckpt",
+        model_filename: str = "model_bs_roformer_ep_317_sdr_12.9755.ckpt",
     ) -> None: ...
     def separate(
         self,

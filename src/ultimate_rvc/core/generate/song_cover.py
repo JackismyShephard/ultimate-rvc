@@ -625,10 +625,10 @@ def separate_audio(
             str(audio_path),
             custom_output_names={
                 audio_separator.model_instance.primary_stem_name: str(
-                    primary_path.with_suffix(""),
+                    primary_path.stem
                 ),
                 audio_separator.model_instance.secondary_stem_name: str(
-                    secondary_path.with_suffix(""),
+                    secondary_path.stem,
                 ),
             },
         )

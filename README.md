@@ -2,12 +2,12 @@
 
 [![PyPI version](https://badge.fury.io/py/ultimate-rvc.svg)](https://badge.fury.io/py/ultimate-rvc)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/JackismyShephard/ultimate-rvc/blob/main/notebooks/ultimate_rvc_colab.ipynb)
-[![](https://dcbadge.limes.pink/api/server/https://discord.gg/T4ejEz8HtX?style=flat&compact=true&theme=default-inverted)](https://discord.gg/https://discord.gg/T4ejEz8HtX)
+[![Discord Server](https://dcbadge.limes.pink/api/server/https://discord.gg/T4ejEz8HtX?style=flat&compact=true&theme=default-inverted)](https://discord.gg/https://discord.gg/T4ejEz8HtX)
 [![Open In Huggingface](https://huggingface.co/datasets/huggingface/badges/resolve/main/open-in-hf-spaces-sm.svg)](https://huggingface.co/spaces/JackismyShephard/ultimate-rvc)
 
 An extension of [AiCoverGen](https://github.com/SociallyIneptWeeb/AICoverGen), which provides several new features and improvements, enabling users to generate audio-related content using RVC with ease. Ideal for people who want to incorporate singing functionality into their AI assistant/chatbot/vtuber, hear their favourite character sing their favourite song or have their favorite character read their favorite books aloud.
 
-![ ](images/webui_generate.png?raw=true)
+![Ultimate RVC Web Interface](images/webui_generate.png?raw=true)
 
 ## Youtube Showcase
 
@@ -26,14 +26,13 @@ Courtesy of [Social & Apps](https://www.youtube.com/@socialapps1194)
 * Caching system which saves intermediate audio files as needed, thereby reducing inference time as much as possible. For example, if song A has already been converted using model B and now you want to convert song A using model C, then vocal extraction can be skipped and inference time reduced drastically
 * Ability to listen to intermediate audio files in the UI. This is useful for getting an idea of what is happening in each step of a given generation pipeline.
 * "multi-step" generation tabs: Here you can try out each step of a given generation pipeline in isolation. For example, if you already have extracted vocals available and only want to convert these using your voice model, then you can do that in a dedicated "multi-step" tab for song cover generation. Besides, these "multi-step" generation tabs are also useful for experimenting with settings for each step in a given generation pipeline.
-* Lots of visual and performance improvements resulting from updating from Gradio 3 to Gradio 5 and from python 3.9 to python 3.12
-* A redistributable package on PyPI, which allows you to easily access the Ultimate RVC project from any python 3.12 environment.
+* Lots of visual and performance improvements resulting from updating from Gradio 3 to Gradio 5 and from python 3.9 to python 3.13
+* A redistributable package on PyPI, which allows you to easily access the Ultimate RVC project from any python 3.13 environment.
 * Support for saving and loading of custom configurations for the Ultimate RVC web application. This allows you to easily switch between different configurations without having to manually change settings each time.
 
 ## Online Platforms
 
 For those without a powerful enough NVIDIA GPU, you may try out Ultimate RV using [Google Colab](https://colab.research.google.com/github/JackismyShephard/ultimate-rvc/blob/main/notebooks/ultimate_rvc_colab.ipynb). Additionally, Ultimate RVC is also hosted on [Huggingface Spaces](https://huggingface.co/spaces/JackismyShephard/ultimate-rvc), although GPU acceleration is not available there. For those who want to run Ultimate RVC locally, follow the setup guide below.
-
 
 ## Local Setup
 
@@ -132,10 +131,10 @@ The Ultimate RVC project is also available as a [distributable package](https://
 
 ### Installation
 
-The package can be installed with pip in a **Python 3.12**-based environment. To do so requires first installing PyTorch with CUDA support:
+The package can be installed with pip in a **Python 3.12-3.13**-based environment. To do so requires first installing PyTorch with CUDA support:
 
 ```console
-pip install torch==2.7.0+cu128 torchaudio==2.7.0+cu128 --index-url https://download.pytorch.org/whl/cu128
+pip install torch==2.7.1+cu128 torchaudio==2.7.1+cu128 --index-url https://download.pytorch.org/whl/cu128
 ```
 
 The Ultimate RVC project package can then be installed as follows:
