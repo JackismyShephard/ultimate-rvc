@@ -1,9 +1,18 @@
 # TODO
 
-* also test on windows
 * Test if custom embeddder models stil work
-* test if built package works
-
+* fix issue with lazy loader for package on windows:
+c:\Users\Jacki\test-project\.venv\Lib\site-packages\lazy_loader\__init__.py:202: RuntimeWarning: subpackages can technically be lazily loaded, but it causes the package to be eagerly loaded even if it is already lazily loaded.So, you probably shouldn't use subpackages with this lazy feature.
+  warnings.warn(msg, RuntimeWarning)
+* fix issue with async network on windows:
+2025-11-30 23:09:50 - ERROR - asyncio - Exception in callback _ProactorBasePipeTransport._call_connection_lost(None)
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost(None)>
+Traceback (most recent call last):
+  File "C:\Users\Jacki\AppData\Local\Programs\Python\Python312\Lib\asyncio\events.py", line 88, in _run
+    self._context.run(self._callback, *self._args)
+  File "C:\Users\Jacki\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py", line 165, in_call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
 * fix issue with models table in UI auto scrolling and being unresponsive
 
 * incorporate latest changes from applio
