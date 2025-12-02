@@ -1,6 +1,7 @@
 # TODO
 
 * Test if custom embeddder models stil work
+* incorporate latest changes from applio
 * fix issue with lazy loader for package on windows:
 c:\Users\Jacki\test-project\.venv\Lib\site-packages\lazy_loader\__init__.py:202: RuntimeWarning: subpackages can technically be lazily loaded, but it causes the package to be eagerly loaded even if it is already lazily loaded.So, you probably shouldn't use subpackages with this lazy feature.
   warnings.warn(msg, RuntimeWarning)
@@ -14,8 +15,6 @@ Traceback (most recent call last):
     self._sock.shutdown(socket.SHUT_RDWR)
 ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
 * fix issue with models table in UI auto scrolling and being unresponsive
-
-* incorporate latest changes from applio
 
 * upgrade gradio to 6 and fix warnings
 * check in uv.lock?
