@@ -20,7 +20,6 @@ export VIRTUAL_ENV=$VENV_PATH
 export UV_PROJECT_ENVIRONMENT=$VENV_PATH
 export UV_TOOL_DIR="$UV_PATH/tools"
 export UV_TOOL_BIN_DIR="$UV_PATH/tools/bin"
-export GRADIO_NODE_PATH="$VENV_PATH/lib/python3.13/site-packages/nodejs_wheel/bin/node"
 export PATH="$UV_PATH:$PATH"
 
 main() {
@@ -130,6 +129,12 @@ check_dependencies() {
         echo "Dependencies not found. Please run './urvc install' first."
         exit 1
     fi
+    python_path=$(find "$VENV_PATH/lib" -maxdepth 1 -name "python3.*" -type d 2>/dev/null | head -1)
+    if [ ! -d "$python_path" ]; then
+        echo "Python environment not found in virtual environment. Please run './urvc install' to reinstall."
+        exit 1
+    fi
+    export GRADIO_NODE_PATH="$python_path/site-packages/nodejs_wheel/bin/node"
 }
 
 show_help() {
