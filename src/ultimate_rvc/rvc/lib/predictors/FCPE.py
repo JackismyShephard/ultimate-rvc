@@ -772,7 +772,7 @@ class FCPEInfer:
         ckpt = torch.load(
             model_path,
             map_location=torch.device(self.device),
-            weights_only=False,
+            weights_only=True,
         )
         self.args = DotDict(ckpt["config"])
         self.dtype = dtype

@@ -115,7 +115,7 @@ class SineGenerator(torch.nn.Module):
         noise_std: float = 0.003,
         voiced_threshold: float = 0,
     ):
-        super(SineGenerator, self).__init__()
+        super().__init__()
         self.sine_amp = sine_amp
         self.noise_std = noise_std
         self.harmonic_num = harmonic_num
@@ -212,7 +212,7 @@ class SourceModuleHnNSF(torch.nn.Module):
         add_noise_std: float = 0.003,
         voiced_threshold: float = 0,
     ):
-        super(SourceModuleHnNSF, self).__init__()
+        super().__init__()
 
         self.sine_amp = sine_amp
         self.noise_std = add_noise_std
@@ -365,12 +365,7 @@ class HiFiGANMRFGenerator(torch.nn.Module):
         if gin_channels != 0:
             self.cond = torch.nn.Conv1d(gin_channels, upsample_initial_channel, 1)
 
-    def forward(
-        self,
-        x: torch.Tensor,
-        f0: torch.Tensor,
-        g: torch.Tensor | None = None,
-    ):
+    def forward(self, x: torch.Tensor, f0: torch.Tensor, g: torch.Tensor | None = None):
         f0 = self.f0_upsample(f0[:, None, :]).transpose(-1, -2)
         har_source, _, _ = self.m_source(f0)
         har_source = har_source.transpose(-1, -2)

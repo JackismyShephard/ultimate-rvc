@@ -39,6 +39,7 @@ dependencies = [
   "local-attention==1.11.2",
   "einops==0.8.1",
   "transformers==4.57.3",
+  "torchfcpe==0.0.4",
   "tensorboardX==2.6.4",
   "tensorboard==2.20.0",
   "torch-tb-profiler==0.4.3",
