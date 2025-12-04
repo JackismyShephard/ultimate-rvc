@@ -158,6 +158,8 @@ def wavify(
     logger.info("Audio info:\n%s", json_dumps(audio_info))
     if any(
         (
+            # M4A format needs special handling because FFmpeg reports
+            # it as "mov,mp4,m4a,3gp,3g2,mj2" rather than just "m4a"
             accepted_format in audio_info["format_name"]
             if accepted_format == AudioExt.M4A
             else accepted_format == audio_info["format_name"]
@@ -199,6 +201,9 @@ def _get_rvc_files(model_name: str) -> tuple[Path, Path | None]:
     """
     Get the RVC model file and potential index file of a voice model.
 
+    If multiple .pth or .index files exist in the model directory,
+    the first one alphabetically is selected and a warning is logged.
+
     Parameters
     ----------
     model_name : str
@@ -219,22 +224,41 @@ def _get_rvc_files(model_name: str) -> tuple[Path, Path | None]:
 
     """
     model_dir_path = validate_model(model_name, Entity.VOICE_MODEL)
-    file_path_map = {
-        ext: path
-        for path in model_dir_path.iterdir()
-        for ext in [".pth", ".index"]
-        if ext == path.suffix
-    }
 
-    if ".pth" not in file_path_map:
+    # Get all .pth and .index files, sorted alphabetically for
+    # deterministic selection
+    pth_files = sorted([p for p in model_dir_path.iterdir() if p.suffix == ".pth"])
+    index_files = sorted([p for p in model_dir_path.iterdir() if p.suffix == ".index"])
+
+    if not pth_files:
         raise NotFoundError(
             entity=Entity.MODEL_FILE,
             location=model_dir_path,
             is_path=False,
         )
 
-    model_file = file_path_map[".pth"]
-    index_file = file_path_map.get(".index")
+    # Log warning if multiple model files found, select first
+    # alphabetically
+    if len(pth_files) > 1:
+        logger.warning(
+            "Multiple .pth files found in %s. Using %s (first alphabetically)."
+            " Found: %s",
+            model_dir_path,
+            pth_files[0].name,
+            [f.name for f in pth_files],
+        )
+
+    if len(index_files) > 1:
+        logger.warning(
+            "Multiple .index files found in %s. Using %s (first alphabetically)."
+            " Found: %s",
+            model_dir_path,
+            index_files[0].name,
+            [f.name for f in index_files],
+        )
+
+    model_file = pth_files[0]
+    index_file = index_files[0] if index_files else None
     return model_file, index_file
 
 
@@ -334,6 +358,11 @@ def convert(
     Path
         The path to the converted audio track.
 
+    Raises
+    ------
+    ValueError
+        If n_octaves or n_semitones are outside valid ranges.
+
     """
     match content_type:
         case RVCContentType.VOCALS:
@@ -366,6 +395,14 @@ def convert(
         "20_Input",
         accepted_formats={AudioExt.M4A, AudioExt.AAC},
     )
+
+    # Validate pitch shift parameters to prevent audio processing errors
+    if not -5 <= n_octaves <= 5:  # noqa: PLR2004
+        msg = f"n_octaves must be between -5 and 5, got {n_octaves}"
+        raise ValueError(msg)
+    if not -12 <= n_semitones <= 12:  # noqa: PLR2004
+        msg = f"n_semitones must be between -12 and 12, got {n_semitones}"
+        raise ValueError(msg)
 
     n_semitones = n_octaves * 12 + n_semitones
     f0_methods_set = set(f0_methods) if f0_methods else {F0Method.RMVPE}
