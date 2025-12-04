@@ -1,18 +1,18 @@
 import os
+import pathlib
 import re
 import shutil
 import sys
 import zipfile
 from urllib.parse import unquote
 
-import six
 from bs4 import BeautifulSoup
 
 import requests
 
 from tqdm import tqdm
 
-now_dir = os.getcwd()
+now_dir = pathlib.Path.cwd()
 sys.path.append(now_dir)
 
 from ultimate_rvc.rvc.lib.tools import gdown
@@ -20,19 +20,20 @@ from ultimate_rvc.rvc.lib.utils import format_title
 
 file_path = os.path.join(now_dir, "logs")
 zips_path = os.path.join(file_path, "zips")
-os.makedirs(zips_path, exist_ok=True)
+pathlib.Path(zips_path).mkdir(exist_ok=True, parents=True)
 
 
 def search_pth_index(folder):
     pth_paths = [
         os.path.join(folder, file)
         for file in os.listdir(folder)
-        if os.path.isfile(os.path.join(folder, file)) and file.endswith(".pth")
+        if pathlib.Path(os.path.join(folder, file)).is_file() and file.endswith(".pth")
     ]
     index_paths = [
         os.path.join(folder, file)
         for file in os.listdir(folder)
-        if os.path.isfile(os.path.join(folder, file)) and file.endswith(".index")
+        if pathlib.Path(os.path.join(folder, file)).is_file()
+        and file.endswith(".index")
     ]
     return pth_paths, index_paths
 
@@ -99,7 +100,7 @@ def save_response_content(response):
     chunk_size = 1024
 
     with (
-        open(os.path.join(zips_path, file_name), "wb") as file,
+        pathlib.Path(os.path.join(zips_path, file_name)).open("wb") as file,
         tqdm(
             total=total_size,
             unit="B",
@@ -147,14 +148,16 @@ def rename_downloaded_files():
         for file in zipFiles:
             file_name, extension = os.path.splitext(file)
             real_path = os.path.join(currentPath, file)
-            os.rename(real_path, file_name.replace(os.path.sep, "_") + extension)
+            pathlib.Path(real_path).rename(
+                file_name.replace(os.path.sep, "_") + extension
+            )
 
 
 def extract(zipfile_path, unzips_path):
     try:
         with zipfile.ZipFile(zipfile_path, "r") as zip_ref:
             zip_ref.extractall(unzips_path)
-        os.remove(zipfile_path)
+        pathlib.Path(zipfile_path).unlink()
         return True
     except Exception as error:
         print(f"An error occurred extracting the zip file: {error}")
@@ -166,7 +169,7 @@ def unzip_file(zip_path, zip_file_name):
     extract_path = os.path.join(file_path, zip_file_name)
     with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
         zip_ref.extractall(extract_path)
-    os.remove(zip_file_path)
+    pathlib.Path(zip_file_path).unlink()
 
 
 def model_download_pipeline(url: str):
@@ -203,13 +206,13 @@ def handle_extraction_process():
 
 def clean_extracted_files(extract_folder_path, model_name):
     macosx_path = os.path.join(extract_folder_path, "__MACOSX")
-    if os.path.exists(macosx_path):
+    if pathlib.Path(macosx_path).exists():
         shutil.rmtree(macosx_path)
 
     subfolders = [
         f
         for f in os.listdir(extract_folder_path)
-        if os.path.isdir(os.path.join(extract_folder_path, f))
+        if pathlib.Path(os.path.join(extract_folder_path, f)).is_dir()
     ]
     if len(subfolders) == 1:
         subfolder_path = os.path.join(extract_folder_path, subfolders[0])
@@ -218,7 +221,7 @@ def clean_extracted_files(extract_folder_path, model_name):
                 os.path.join(subfolder_path, item),
                 os.path.join(extract_folder_path, item),
             )
-        os.rmdir(subfolder_path)
+        pathlib.Path(subfolder_path).rmdir()
 
     for item in os.listdir(extract_folder_path):
         source_path = os.path.join(extract_folder_path, item)
@@ -230,5 +233,5 @@ def clean_extracted_files(extract_folder_path, model_name):
             continue
 
         destination_path = os.path.join(extract_folder_path, new_file_name)
-        if not os.path.exists(destination_path):
-            os.rename(source_path, destination_path)
+        if not pathlib.Path(destination_path).exists():
+            pathlib.Path(source_path).rename(destination_path)

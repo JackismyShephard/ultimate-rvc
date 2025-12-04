@@ -1,7 +1,8 @@
-from typing import TYPE_CHECKING, Unpack
+from typing import TYPE_CHECKING
 
 import logging
 import os
+import pathlib
 import sys
 import time
 import traceback
@@ -28,9 +29,8 @@ from pedalboard import (
     Reverb,
 )
 
-now_dir = os.getcwd()
+now_dir = pathlib.Path.cwd()
 sys.path.append(now_dir)
-
 import lazy_loader as lazy
 
 from ultimate_rvc.rvc.configs.config import Config
@@ -221,12 +221,10 @@ class VoiceConverter:
         model_path: str,
         index_path: str,
         pitch: int = 0,
-        f0_file: str | None = None,
-        f0_methods: set[F0Method] | None = None,
+        f0_method: str = "rmvpe",
         index_rate: float = 0.75,
-        volume_envelope: float = 1,
+        volume_envelope: float = 1.0,
         protect: float = 0.5,
-        hop_length: int = 128,
         split_audio: bool = False,
         f0_autotune: bool = False,
         f0_autotune_strength: float = 1,
@@ -235,10 +233,11 @@ class VoiceConverter:
         clean_audio: bool = False,
         clean_strength: float = 0.5,
         export_format: str = "WAV",
-        upscale_audio: bool = False,
         post_process: bool = False,
         resample_sr: int = 0,
         sid: int = 0,
+        proposed_pitch: bool = False,
+        proposed_pitch_threshold: float = 155.0,
         **kwargs: Unpack[ConvertAudioKwArgs],
     ):
         """
@@ -249,8 +248,7 @@ class VoiceConverter:
             index_rate (float): Rate for index matching.
             volume_envelope (int): RMS mix rate.
             protect (float): Protection rate for certain audio segments.
-            hop_length (int): Hop length for audio processing.
-            f0_methods (set[F0Method], optional): Methods for F0 extraction.
+            f0_method (str): Method for F0 extraction.
             audio_input_path (str): Path to the input audio file.
             audio_output_path (str): Path to the output audio file.
             model_path (str): Path to the voice conversion model.
@@ -260,8 +258,6 @@ class VoiceConverter:
             clean_audio (bool): Whether to clean the audio.
             clean_strength (float): Strength of the audio cleaning.
             export_format (str): Format for exporting the audio.
-            upscale_audio (bool): Whether to upscale the audio.
-            f0_file (str): Path to the F0 file.
             embedder_model (str): Path to the embedder model.
             embedder_model_custom (str): Path to the custom embedder model.
             resample_sr (int, optional): Resample sampling rate. Default is 0.
@@ -269,6 +265,10 @@ class VoiceConverter:
             **kwargs: Additional keyword arguments.
 
         """
+        if not model_path:
+            logger.info("No model path provided. Aborting conversion.")
+            return
+
         self.get_vc(model_path, sid)
         start_time = time.time()
         logger.info("Converting audio '%s'...", audio_input_path)
@@ -314,17 +314,17 @@ class VoiceConverter:
                 sid=sid,
                 audio=c,
                 pitch=pitch,
-                f0_methods=f0_methods or {F0Method.RMVPE},
+                f0_method=f0_method or F0Method.RMVPE,
                 file_index=file_index,
                 index_rate=index_rate,
                 pitch_guidance=self.use_f0,
                 volume_envelope=volume_envelope,
                 version=self.version,
                 protect=protect,
-                hop_length=hop_length,
                 f0_autotune=f0_autotune,
                 f0_autotune_strength=f0_autotune_strength,
-                f0_file=f0_file,
+                proposed_pitch=proposed_pitch,
+                proposed_pitch_threshold=proposed_pitch_threshold,
             )
             converted_chunks.append(audio_opt)
             if split_audio:
@@ -394,9 +394,8 @@ class VoiceConverter:
         """
         pid = os.getpid()
         try:
-            with open(
-                os.path.join(now_dir, "assets", "infer_pid.txt"),
-                "w",
+            with pathlib.Path(os.path.join(now_dir, "assets", "infer_pid.txt")).open(
+                "w"
             ) as pid_file:
                 pid_file.write(str(pid))
             start_time = time.time()
@@ -404,7 +403,7 @@ class VoiceConverter:
             audio_files = [
                 f
                 for f in os.listdir(audio_input_paths)
-                if f.endswith(
+                if f.lower().endswith(
                     (
                         "wav",
                         "mp3",
@@ -419,7 +418,7 @@ class VoiceConverter:
                         "aiff",
                         "webm",
                         "ac3",
-                    ),
+                    )
                 )
             ]
             print(f"Detected {len(audio_files)} audio files for inference.")
@@ -427,7 +426,7 @@ class VoiceConverter:
                 new_input = os.path.join(audio_input_paths, a)
                 new_output = os.path.splitext(a)[0] + "_output.wav"
                 new_output = os.path.join(audio_output_path, new_output)
-                if os.path.exists(new_output):
+                if pathlib.Path(new_output).exists():
                     continue
                 self.convert_audio(
                     audio_input_path=new_input,
@@ -441,7 +440,7 @@ class VoiceConverter:
             print(f"An error occurred during audio batch conversion: {error}")
             print(traceback.format_exc())
         finally:
-            os.remove(os.path.join(now_dir, "assets", "infer_pid.txt"))
+            pathlib.Path(os.path.join(now_dir, "assets", "infer_pid.txt")).unlink()
 
     def get_vc(self, weight_root, sid):
         """
@@ -462,7 +461,10 @@ class VoiceConverter:
             if self.cpt is not None:
                 self.setup_network()
                 self.setup_vc_instance()
-            self.loaded_model = weight_root
+                self.loaded_model = weight_root
+            else:
+                self.vc = None
+                self.loaded_model = None
 
     def cleanup_model(self):
         """
@@ -488,8 +490,8 @@ class VoiceConverter:
 
         """
         self.cpt = (
-            torch.load(weight_root, map_location="cpu", weights_only=False)
-            if os.path.isfile(weight_root)
+            torch.load(weight_root, map_location="cpu", weights_only=True)
+            if pathlib.Path(weight_root).is_file()
             else None
         )
 

@@ -64,12 +64,9 @@ if torch.cuda.is_available() and torch.cuda.get_device_name().endswith("[ZLUDA]"
                 window,
             )
         # simply do the operation on CPU
-        return _torch_stft(
-            input=input.cpu(),
-            window=window.cpu(),
-            *args,
-            **kwargs,
-        ).to(input.device)
+        return _torch_stft(input=input.cpu(), window=window.cpu(), *args, **kwargs).to(
+            input.device
+        )
 
     def z_jit(f, *_, **__):
         f.graph = torch._C.Graph()
