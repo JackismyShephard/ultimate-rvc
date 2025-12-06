@@ -3,12 +3,15 @@ from typing import TYPE_CHECKING
 import concurrent.futures
 import hashlib
 import json
+import multiprocessing
 import os
+import pathlib
 import shutil
 import sys
 import time
 
 import soxr
+from distutils.util import strtobool
 
 import numpy as np
 from scipy import signal
@@ -18,7 +21,7 @@ from tqdm import tqdm
 import librosa
 import noisereduce as nr
 
-now_directory = os.getcwd()
+now_directory = pathlib.Path.cwd()
 sys.path.append(now_directory)
 
 import lazy_loader as lazy
@@ -72,12 +75,12 @@ class PreProcess:
         self.device = "cpu"
         self.gt_wavs_dir = os.path.join(exp_dir, "sliced_audios")
         self.wavs16k_dir = os.path.join(exp_dir, "sliced_audios_16k")
-        if os.path.exists(self.gt_wavs_dir):
+        if pathlib.Path(self.gt_wavs_dir).exists():
             shutil.rmtree(self.gt_wavs_dir)
-        if os.path.exists(self.wavs16k_dir):
+        if pathlib.Path(self.wavs16k_dir).exists():
             shutil.rmtree(self.wavs16k_dir)
-        os.makedirs(self.gt_wavs_dir)
-        os.makedirs(self.wavs16k_dir)
+        pathlib.Path(self.gt_wavs_dir).mkdir(parents=True)
+        pathlib.Path(self.wavs16k_dir).mkdir(parents=True)
 
     def _normalize_audio(self, audio: np.ndarray):
         tmp_max = np.abs(audio).max()
@@ -91,10 +94,13 @@ class PreProcess:
         sid: int,
         idx0: int,
         idx1: int,
+        normalization_mode: str,
     ):
         if normalized_audio is None:
             logger.info("%d-%d-%d-filtered", sid, idx0, idx1)
             return
+        if normalization_mode == "post":
+            normalized_audio = self._normalize_audio(normalized_audio)
         wavfile.write(
             os.path.join(self.gt_wavs_dir, f"{sid}_{idx0}_{idx1}.wav"),
             self.sr,
@@ -119,12 +125,15 @@ class PreProcess:
         idx0: int,
         chunk_len: float,
         overlap_len: float,
+        normalization_mode: str,
     ):
         chunk_length = int(self.sr * chunk_len)
         overlap_length = int(self.sr * overlap_len)
         i = 0
         while i < len(audio):
             chunk = audio[i : i + chunk_length]
+            if normalization_mode == "post":
+                chunk = self._normalize_audio(chunk)
             if len(chunk) == chunk_length:
                 # full SR for training
                 wavfile.write(
@@ -163,6 +172,7 @@ class PreProcess:
         reduction_strength: float,
         chunk_len: float,
         overlap_len: float,
+        normalization_mode: str,
     ):
         audio_length = 0
         try:
@@ -171,6 +181,7 @@ class PreProcess:
 
             if process_effects:
                 audio = signal.lfilter(self.b_high, self.a_high, audio)
+            if normalization_mode == "pre":
                 audio = self._normalize_audio(audio)
             if noise_reduction:
                 audio = nr.reduce_noise(
@@ -185,10 +196,18 @@ class PreProcess:
                     sid,
                     idx0,
                     0,
+                    normalization_mode,
                 )
             elif cut_preprocess == "Simple":
                 # simple
-                self.simple_cut(audio, sid, idx0, chunk_len, overlap_len)
+                self.simple_cut(
+                    audio,
+                    sid,
+                    idx0,
+                    chunk_len,
+                    overlap_len,
+                    normalization_mode,
+                )
             elif cut_preprocess == "Automatic":
                 idx1 = 0
                 # legacy
@@ -209,6 +228,7 @@ class PreProcess:
                                 sid,
                                 idx0,
                                 idx1,
+                                normalization_mode,
                             )
                             idx1 += 1
                         else:
@@ -218,9 +238,11 @@ class PreProcess:
                                 sid,
                                 idx0,
                                 idx1,
+                                normalization_mode,
                             )
                             idx1 += 1
                             break
+
         except Exception as error:
             logger.error(  # noqa: TRY400
                 "Error processing audio: %s. One or more audio files may not be"
@@ -243,7 +265,7 @@ def save_dataset_duration_and_sample_rate(
     sample_rate,
 ) -> None:
     try:
-        with open(file_path) as f:
+        with pathlib.Path(file_path).open() as f:
             data = json.load(f)
     except FileNotFoundError:
         data = {}
@@ -256,7 +278,7 @@ def save_dataset_duration_and_sample_rate(
     }
     data.update(new_data)
 
-    with open(file_path, "w") as f:
+    with pathlib.Path(file_path).open("w") as f:
         json.dump(data, f, indent=4)
 
 
@@ -270,6 +292,7 @@ def process_audio_wrapper(args):
         reduction_strength,
         chunk_len,
         overlap_len,
+        normalization_mode,
     ) = args
     file_path, idx0, sid = file
     return pp.process_audio(
@@ -282,12 +305,13 @@ def process_audio_wrapper(args):
         reduction_strength,
         chunk_len,
         overlap_len,
+        normalization_mode,
     )
 
 
 def get_file_hash(file: str, size: int = 5) -> str:
 
-    with open(file, "rb") as fp:
+    with pathlib.Path(file).open("rb") as fp:
         file_hash = hashlib.file_digest(
             fp,
             lambda: hashlib.blake2b(digest_size=size),  # type: ignore[reportArgumentType]
@@ -306,6 +330,7 @@ def preprocess_training_set(
     reduction_strength: float,
     chunk_len: float,
     overlap_len: float,
+    normalization_mode: str,
 ):
 
     static_ffmpeg.add_paths(weak=True)
@@ -340,7 +365,7 @@ def preprocess_training_set(
                     base_path = os.path.splitext(f_path)[0]
                     file_hash = get_file_hash(f_path)
                     wav_path = f"{base_path}_{file_hash}.wav"
-                    if not os.path.exists(wav_path):
+                    if not pathlib.Path(wav_path).exists():
                         logger.info("[~] Converting audio file: %s to wav format...", f)
                         _, stderr = (
                             ffmpeg.input(f_path)
@@ -373,30 +398,30 @@ def preprocess_training_set(
     audio_length = []
 
     remove_sox_libmso6_from_ld_preload()
-
-    with tqdm(total=len(files)) as pbar:
-        with concurrent.futures.ProcessPoolExecutor(
-            max_workers=num_processes,
-        ) as executor:
-            futures = [
-                executor.submit(
-                    process_audio_wrapper,
-                    (
-                        pp,
-                        file,
-                        cut_preprocess,
-                        process_effects,
-                        noise_reduction,
-                        reduction_strength,
-                        chunk_len,
-                        overlap_len,
-                    ),
-                )
-                for file in files
-            ]
-            for future in concurrent.futures.as_completed(futures):
-                audio_length.append(future.result())
-                pbar.update(1)
+    with (
+        tqdm(total=len(files)) as pbar,
+        concurrent.futures.ProcessPoolExecutor(max_workers=num_processes) as executor,
+    ):
+        futures = [
+            executor.submit(
+                process_audio_wrapper,
+                (
+                    pp,
+                    file,
+                    cut_preprocess,
+                    process_effects,
+                    noise_reduction,
+                    reduction_strength,
+                    chunk_len,
+                    overlap_len,
+                    normalization_mode,
+                ),
+            )
+            for file in files
+        ]
+        for future in concurrent.futures.as_completed(futures):
+            audio_length.append(future.result())
+            pbar.update(1)
 
     audio_length = sum(audio_length)
     save_dataset_duration_and_sample_rate(

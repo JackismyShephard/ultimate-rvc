@@ -4,6 +4,7 @@ import json
 import logging
 import multiprocessing as mp
 import os
+import pathlib
 import sys
 import time
 
@@ -11,17 +12,20 @@ import numpy as np
 import tqdm
 
 import torch
-import torchcrepe
 
-now_dir = os.getcwd()
+now_dir = pathlib.Path.cwd()
 sys.path.append(os.path.join(now_dir))
 
 # Zluda hijack
+import pathlib
+
+from rvc.train.extract.preparing_files import generate_config, generate_filelist
+
 import ultimate_rvc.rvc.lib.zluda
 from ultimate_rvc.common import RVC_MODELS_DIR
 from ultimate_rvc.rvc.configs.config import Config
-from ultimate_rvc.rvc.lib.predictors.RMVPE import RMVPE0Predictor
-from ultimate_rvc.rvc.lib.utils import load_audio, load_embedding
+from ultimate_rvc.rvc.lib.predictors.f0 import CREPE, FCPE, RMVPE
+from ultimate_rvc.rvc.lib.utils import load_audio_16k, load_embedding
 from ultimate_rvc.rvc.train.utils import remove_sox_libmso6_from_ld_preload
 
 logger = logging.getLogger(__name__)
@@ -32,52 +36,39 @@ mp.set_start_method("spawn", force=True)
 
 
 class FeatureInput:
-
-    def __init__(self, sample_rate=16000, hop_size=160, device="cpu"):
-        self.fs = sample_rate
-        self.hop = hop_size
+    def __init__(self, f0_method="rmvpe", device="cpu"):
+        self.hop_size = 160  # default
+        self.sample_rate = 16000  # default
         self.f0_bin = 256
         self.f0_max = 1100.0
         self.f0_min = 50.0
         self.f0_mel_min = 1127 * np.log(1 + self.f0_min / 700)
         self.f0_mel_max = 1127 * np.log(1 + self.f0_max / 700)
         self.device = device
-        self.model_rmvpe = None
+        if f0_method in ("crepe", "crepe-tiny"):
+            self.model = CREPE(
+                device=self.device, sample_rate=self.sample_rate, hop_size=self.hop_size
+            )
+        elif f0_method == "rmvpe":
+            self.model = RMVPE(
+                device=self.device, sample_rate=self.sample_rate, hop_size=self.hop_size
+            )
+        elif f0_method == "fcpe":
+            self.model = FCPE(
+                device=self.device, sample_rate=self.sample_rate, hop_size=self.hop_size
+            )
+        self.f0_method = f0_method
 
-    def compute_f0(self, audio_array, method, hop_length):
-        if method == "crepe":
-            return self._get_crepe(audio_array, hop_length, type="full")
-        if method == "crepe-tiny":
-            return self._get_crepe(audio_array, hop_length, type="tiny")
-        if method == "rmvpe":
-            return self.model_rmvpe.infer_from_audio(audio_array, thred=0.03)
-        raise ValueError(f"Unknown F0 method: {method}")
-
-    def _get_crepe(self, x, hop_length, type):
-        audio = torch.from_numpy(x.astype(np.float32)).to(self.device)
-        audio /= torch.quantile(torch.abs(audio), 0.999)
-        audio = audio.unsqueeze(0)
-        pitch = torchcrepe.predict(
-            audio,
-            self.fs,
-            hop_length,
-            self.f0_min,
-            self.f0_max,
-            type,
-            batch_size=hop_length * 2,
-            device=audio.device,
-            pad=True,
-        )
-        source = pitch.squeeze(0).cpu().float().numpy()
-        source[source < 0.001] = np.nan
-        return np.nan_to_num(
-            np.interp(
-                np.arange(0, len(source) * (x.size // self.hop), len(source))
-                / (x.size // self.hop),
-                np.arange(0, len(source)),
-                source,
-            ),
-        )
+    def compute_f0(self, x, p_len=None):
+        if self.f0_method == "crepe":
+            f0 = self.model.get_f0(x, self.f0_min, self.f0_max, p_len, "full")
+        elif self.f0_method == "crepe-tiny":
+            f0 = self.model.get_f0(x, self.f0_min, self.f0_max, p_len, "tiny")
+        elif self.f0_method == "rmvpe":
+            f0 = self.model.get_f0(x, filter_radius=0.03)
+        elif self.f0_method == "fcpe":
+            f0 = self.model.get_f0(x, p_len, filter_radius=0.006)
+        return f0
 
     def coarse_f0(self, f0):
         f0_mel = 1127.0 * np.log(1.0 + f0 / 700.0)
@@ -91,15 +82,17 @@ class FeatureInput:
         )
         return np.rint(f0_mel).astype(int)
 
-    def process_file(self, file_info, f0_method, hop_length):
+    def process_file(self, file_info):
         inp_path, opt_path_coarse, opt_path_full, _ = file_info
-
-        if os.path.exists(opt_path_coarse) and os.path.exists(opt_path_full):
+        if (
+            pathlib.Path(opt_path_coarse).exists()
+            and pathlib.Path(opt_path_full).exists()
+        ):
             return
 
         try:
-            np_arr = load_audio(inp_path, self.fs)
-            feature_pit = self.compute_f0(np_arr, f0_method, hop_length)
+            np_arr = load_audio_16k(inp_path)
+            feature_pit = self.compute_f0(np_arr)
             np.save(opt_path_full, feature_pit, allow_pickle=False)
             coarse_pit = self.coarse_f0(feature_pit)
             np.save(opt_path_coarse, coarse_pit, allow_pickle=False)
@@ -111,31 +104,16 @@ class FeatureInput:
                 error,
             )
 
-    def process_files(self, files, f0_method, hop_length, device, threads):
-        self.device = device
-        if f0_method == "rmvpe":
-            self.model_rmvpe = RMVPE0Predictor(
-                os.path.join(str(RVC_MODELS_DIR), "predictors", "rmvpe.pt"),
-                device=device,
-            )
 
-        def worker(file_info):
-            self.process_file(file_info, f0_method, hop_length)
-
-        with tqdm.tqdm(total=len(files), leave=True) as pbar:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
-                futures = [executor.submit(worker, f) for f in files]
-                for _ in concurrent.futures.as_completed(futures):
-                    pbar.update(1)
+def process_files(files, f0_method, device, threads):
+    fe = FeatureInput(f0_method=f0_method, device=device)
+    with tqdm.tqdm(total=len(files), leave=True) as pbar:
+        for file_info in files:
+            fe.process_file(file_info)
+            pbar.update(1)
 
 
-def run_pitch_extraction(
-    files: list[list[str]],
-    devices: list[str],
-    f0_method: str,
-    hop_length: int,
-    threads: int,
-) -> None:
+def run_pitch_extraction(files, devices, f0_method, threads):
     devices_str = ", ".join(devices)
     logger.info(
         "Starting pitch extraction with %d cores on %s using %s...",
@@ -144,8 +122,6 @@ def run_pitch_extraction(
         f0_method,
     )
     start_time = time.time()
-    fe = FeatureInput()
-
     remove_sox_libmso6_from_ld_preload()
 
     if f0_method == "crepe":
@@ -160,10 +136,9 @@ def run_pitch_extraction(
     with concurrent.futures.ProcessPoolExecutor(max_workers=len(devices)) as executor:
         tasks = [
             executor.submit(
-                fe.process_files,
+                process_files,
                 files[i :: len(devices)],
                 f0_method,
-                hop_length,
                 devices[i],
                 actual_threads // len(devices),
             )
@@ -189,9 +164,9 @@ def process_file_embedding(
 
     def worker(file_info):
         wav_file_path, _, _, out_file_path = file_info
-        if os.path.exists(out_file_path):
+        if pathlib.Path(out_file_path).exists():
             return
-        feats = torch.from_numpy(load_audio(wav_file_path, 16000)).to(device).float()
+        feats = torch.from_numpy(load_audio_16k(wav_file_path)).to(device).float()
         feats = feats.view(1, -1)
         with torch.no_grad():
             result = model(feats)["last_hidden_state"]
@@ -249,11 +224,14 @@ def initialize_extraction(
     embedder_model: str,
 ) -> list[list[str]]:
     wav_path = os.path.join(exp_dir, "sliced_audios_16k")
-    os.makedirs(os.path.join(exp_dir, f"f0_{f0_method}"), exist_ok=True)
-    os.makedirs(os.path.join(exp_dir, f"f0_{f0_method}_voiced"), exist_ok=True)
-    os.makedirs(
-        os.path.join(exp_dir, f"{embedder_model}_extracted"),
-        exist_ok=True,
+    pathlib.Path(os.path.join(exp_dir, f"f0_{f0_method}")).mkdir(
+        exist_ok=True, parents=True
+    )
+    pathlib.Path(os.path.join(exp_dir, f"f0_{f0_method}_voiced")).mkdir(
+        exist_ok=True, parents=True
+    )
+    pathlib.Path(os.path.join(exp_dir, f"{embedder_model}_extracted")).mkdir(
+        exist_ok=True, parents=True
     )
 
     files: list[list[str]] = []
@@ -280,12 +258,12 @@ def update_model_info(
     custom_embedder_model_hash: str | None,
 ) -> None:
     file_path = os.path.join(exp_dir, "model_info.json")
-    if os.path.exists(file_path):
-        with open(file_path) as f:
+    if pathlib.Path(file_path).exists():
+        with pathlib.Path(file_path).open() as f:
             data = json.load(f)
     else:
         data = {}
     data["embedder_model"] = embedder_model
     data["custom_embedder_model_hash"] = custom_embedder_model_hash
-    with open(file_path, "w") as f:
+    with pathlib.Path(file_path).open("w") as f:
         json.dump(data, f, indent=4)

@@ -1,4 +1,5 @@
 import os
+import pathlib
 
 import numpy as np
 
@@ -39,7 +40,9 @@ class TextAudioLoaderMultiNSFsid(torch.utils.data.Dataset):
         for audiopath, text, pitch, pitchf, dv in self.audiopaths_and_text:
             if self.min_text_len <= len(text) and len(text) <= self.max_text_len:
                 audiopaths_and_text_new.append([audiopath, text, pitch, pitchf, dv])
-                lengths.append(os.path.getsize(audiopath) // (3 * self.hop_length))
+                lengths.append(
+                    pathlib.Path(audiopath).stat().st_size // (3 * self.hop_length)
+                )
         self.audiopaths_and_text = audiopaths_and_text_new
         self.lengths = lengths
 
@@ -130,7 +133,7 @@ class TextAudioLoaderMultiNSFsid(torch.utils.data.Dataset):
         audio_norm = audio
         audio_norm = audio_norm.unsqueeze(0)
         spec_filename = filename.replace(".wav", ".spec.pt")
-        if os.path.exists(spec_filename):
+        if pathlib.Path(spec_filename).exists():
             try:
                 spec = torch.load(spec_filename, weights_only=False)
             except Exception as error:
