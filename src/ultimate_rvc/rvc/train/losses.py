@@ -136,6 +136,3 @@ def kl_loss(z_p, logs_q, m_p, logs_p, z_mask):
     kl = (kl * z_mask).sum()
     loss = kl / z_mask.sum()
     return loss
-
-
-MaxPool = torch.nn.MaxPool1d(160)

@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import pathlib
 from multiprocessing import cpu_count
 
 from sklearn.cluster import MiniBatchKMeans
@@ -15,7 +16,9 @@ logger = logging.getLogger(__name__)
 def main(exp_dir: str, index_algorithm: str) -> None:
 
     try:
-        model_info = json.load(open(os.path.join(exp_dir, "model_info.json")))
+        model_info = json.load(
+            pathlib.Path(os.path.join(exp_dir, "model_info.json")).open()
+        )
         embedder_model = model_info["embedder_model"]
         custom_embedder_model_hash = model_info.get("custom_embedder_model_hash", None)
         if custom_embedder_model_hash is not None:
@@ -26,7 +29,7 @@ def main(exp_dir: str, index_algorithm: str) -> None:
         index_filename_added = f"{model_name}.index"
         index_filepath_added = os.path.join(exp_dir, index_filename_added)
 
-        if os.path.exists(index_filepath_added):
+        if pathlib.Path(index_filepath_added).exists():
             pass
         else:
             npys = []

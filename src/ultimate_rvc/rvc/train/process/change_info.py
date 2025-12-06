@@ -1,4 +1,5 @@
 import os
+import pathlib
 
 import torch
 
@@ -12,7 +13,7 @@ def change_info(path, info, name):
             name = os.path.splitext(os.path.basename(path))[0]
 
         target_dir = os.path.join("logs", name)
-        os.makedirs(target_dir, exist_ok=True)
+        pathlib.Path(target_dir).mkdir(exist_ok=True, parents=True)
 
         torch.save(ckpt, os.path.join(target_dir, f"{name}.pth"))
 
