@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
 
+import logging
 from pathlib import Path
 
 import anyio
@@ -52,12 +53,17 @@ from ultimate_rvc.typing_extra import (
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    import aiohttp
+
     import gradio as gr
 
     import edge_tts
 
 else:
     edge_tts = lazy.load("edge_tts")
+    aiohttp = lazy.load("aiohttp")
+
+logger = logging.getLogger(__name__)
 
 
 def list_edge_tts_voices(
@@ -115,8 +121,12 @@ def list_edge_tts_voices(
         "VoicePersonalities",
     ]
     all_keys: EdgeTTSKeys = keys + voice_tag_keys
+    try:
+        voices = anyio.run(edge_tts.list_voices)
+    except (OSError, aiohttp.ClientError):
+        logger.exception("Failed to fetch Edge TTS voices")
+        return [], all_keys
 
-    voices = anyio.run(edge_tts.list_voices)
     filtered_voices = [
         v
         for v in voices

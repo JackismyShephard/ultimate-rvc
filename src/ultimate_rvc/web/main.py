@@ -12,6 +12,7 @@ from __future__ import annotations
 from typing import Annotated
 
 import os
+from pathlib import Path
 
 import gradio as gr
 
@@ -79,7 +80,7 @@ def render_app() -> gr.Blocks:
 
     with gr.Blocks(
         title="Ultimate RVC",
-        theme="JackismyShephard/ultimate-rvc-theme",
+        theme=gr.Theme.load(str(Path(__file__).parent / "config/theme.json")),
         css=css,
         delete_cache=(cache_delete_frequency, cache_delete_cutoff),
     ) as app:
