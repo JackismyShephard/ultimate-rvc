@@ -1,0 +1,129 @@
+
+ ▐▛███▜▌   Claude Code v2.0.22
+▝▜█████▛▘  Sonnet 4.5 · Claude Pro
+  ▘▘ ▝▝    /home/jackismyshephard/ultimate-rvc
+
+> having trouble with the vscode pull request extension:
+2025-10-19 20:35:16.909 [warning] /home/jackismyshephard/.ssh/config: ENOENT: no such file or directory, open '/home/jackismyshephard/.ssh/config'
+2025-10-19 20:35:16.909 [info] [Activation] Extension version: 0.120.1
+2025-10-19 20:35:17.282 [info] [Authentication] Creating hub for .com
+2025-10-19 20:35:18.511 [info] [Activation] Looking for git repository
+2025-10-19 20:35:18.511 [info] [Activation] Found 0 repositories during activation
+2025-10-19 20:35:18.511 [info] [Activation] Git repository found, initializing review manager and pr tree view.
+2025-10-19 20:35:19.072 [info] [GitAPI] Registering git provider
+2025-10-19 20:35:19.229 [info] [GitAPI] Repository file:///home/jackismyshephard/ultimate-rvc has been opened
+2025-10-19 20:35:19.262 [info] [RepositoryFileSystemProvider] Waiting for repositories.
+2025-10-19 20:35:19.306 [info] [Review+0] Validate state in progress
+2025-10-19 20:35:19.306 [info] [Review+0] Validating state...
+2025-10-19 20:35:19.306 [info] [FolderRepositoryManager+0] Cannot updates repositories as git is uninitialized
+2025-10-19 20:35:19.306 [info] [Activation] Repo state for file:///home/jackismyshephard/ultimate-rvc changed.
+2025-10-19 20:35:19.306 [info] [Activation] Repo file:///home/jackismyshephard/ultimate-rvc has already been setup.
+2025-10-19 20:35:19.470 [info] [Activation] Git initialization state changed: state=initialized
+2025-10-19 20:35:19.470 [info] [Review+0] Validate state in progress
+2025-10-19 20:35:19.470 [info] [Review+0] Validating state...
+2025-10-19 20:35:19.575 [info] [FolderRepositoryManager+0] Found GitHub remote for folder /home/jackismyshephard/ultimate-rvc
+2025-10-19 20:35:23.276 [info] [RepositoryFileSystemProvider] Timed out while waiting for repositories.
+2025-10-19 20:35:23.277 [info] [FolderRepositoryManager+0] Found GitHub repo for pr #214: yes
+2025-10-19 20:35:23.538 [info] [FolderRepositoryManager+0] Trying to use globalState for assignableUsers.
+2025-10-19 20:35:23.768 [info] [Review+0] No matching pull request metadata found locally for current branch main
+2025-10-19 20:35:24.078 [info] [FolderRepositoryManager+0] GlobalState does not exist for assignableUsers.
+2025-10-19 20:35:24.203 [info] [FolderRepositoryManager+0] GitHubRepository not found: huggingface/diffusers
+2025-10-19 20:35:24.204 [info] [FolderRepositoryManager+0] GitHubRepository not found: ycombinaattor/-co
+2025-10-19 20:35:24.204 [info] [FolderRepositoryManager+0] GitHubRepository not found: facebookresearch/fairseq
+2025-10-19 20:35:24.204 [info] [FolderRepositoryManager+0] GitHubRepository not found: blaisewf/rvc-cli
+2025-10-19 20:35:24.204 [info] [FolderRepositoryManager+0] GitHubRepository not found: JackismyShephard/munin
+2025-10-19 20:35:24.207 [info] [FolderRepositoryManager+0] Found GitHub repo for pr #87: yes
+2025-10-19 20:35:24.208 [info] [FolderRepositoryManager+0] Found GitHub repo for pr #8: yes
+2025-10-19 20:35:24.770 [info] [FolderRepositoryManager+0] Found GitHub pr repo for pr #214: yes
+2025-10-19 20:35:25.052 [error] [GitHubRepository+0.2] Error querying GraphQL API (IssueWithComments): GraphQL error: Could not resolve to a Repository with the
+ name 'ycombinaattor/-co'.. 
+2025-10-19 20:35:25.052 [error] [GitHubRepository+0.2] Unable to fetch issue: Error: GraphQL error: Could not resolve to a Repository with the name 
+'ycombinaattor/-co'.
+2025-10-19 20:35:25.067 [info] [FolderRepositoryManager+0] Using in-memory cached assignable users.
+2025-10-19 20:35:25.076 [info] [Review+0] No matching pull request metadata found on GitHub for current branch main
+2025-10-19 20:35:25.090 [info] [FolderRepositoryManager+0] Found GitHub pr repo for pr #87: yes
+2025-10-19 20:35:25.091 [info] [FolderRepositoryManager+0] Found GitHub pr repo for pr #8: yes
+2025-10-19 20:36:26.049 [info] [FolderRepositoryManager+0] Found GitHub repo for pr #214: yes
+2025-10-19 20:36:26.843 [info] [FolderRepositoryManager+0] Found GitHub pr repo for pr #214: yes 
+  ⎿  ⧉ Selected 39 lines from GitHub.vscode-pull-request-github.GitHub Pull Request in Visual Studio Code
+
+● Looking at the VS Code Pull Request extension logs, I can see a few issues, Chris:
+
+  Main Issues
+
+  1. Missing SSH config (line 1):
+  /home/jackismyshephard/.ssh/config: ENOENT: no such file or directory
+  1. This is just a warning - the extension is looking for an SSH config file that doesn't exist. Not critical unless you need SSH authentication.
+  2. Invalid repository reference (lines 35-38):
+  GitHubRepository not found: ycombinaattor/-co
+  GraphQL error: Could not resolve to a Repository with the name 'ycombinaattor/-co'
+  2. This looks like corrupted data - ycombinaattor/-co isn't a valid GitHub repo name. It seems like it might be a truncated or mangled reference.
+  3. Git initialization timing (line 15):
+  Cannot updates repositories as git is uninitialized
+  3. The extension tried to access git before it was ready, but this resolved itself shortly after.
+
+  What's Actually Wrong
+
+  The real issue appears to be the invalid repository reference ycombinaattor/-co. This could be from:
+  - A malformed git remote URL
+  - Corrupted VS Code workspace state
+  - A broken reference in .git/config or VS Code's global state
+
+  Suggested Fixes
+
+  Option 1: Check your git remotes
+  git remote -v
+  Look for any malformed URLs that might match ycombinaattor/-co.
+
+  Option 2: Check VS Code's stored references
+  The extension stores repo info in VS Code's global state. You might need to clear it.
+
+  Option 3: Create SSH config (optional)
+  If you want to eliminate the warning:
+  mkdir -p ~/.ssh && touch ~/.ssh/config
+
+  Which would you like me to help investigate first? The git remotes seem most likely to be the culprit.
+
+> git remote -v
+origin  https://github.com/JackismyShephard/ultimate-rvc.git (fetch)
+origin  https://github.com/JackismyShephard/ultimate-rvc.git (push)
+upstream        https://github.com/SociallyIneptWeeb/AICoverGen.git (fetch)
+upstream        https://github.com/SociallyIneptWeeb/AICoverGen.git (push)
+jackismyshephard@Christians-Desktop:~/ultimate-rvc$ 
+
+● Your git remotes look perfectly fine - both are valid GitHub URLs. The ycombinaattor/-co reference isn't coming from your git config.
+
+  This is likely corrupted VS Code extension state from a previously opened repository or workspace. The extension is trying to fetch data for repos it
+  remembers from past sessions.
+
+  Quick Fix
+
+  Try reloading VS Code's window to clear the in-memory state:
+
+  In VS Code:
+  1. Open Command Palette (Ctrl+Shift+P)
+  2. Type "Developer: Reload Window"
+  3. Press Enter
+
+  This will restart the extension and hopefully clear the bad reference.
+
+  If That Doesn't Work
+
+  The corrupted state might be persisted. You'd need to:
+
+  1. Clear the extension's global state:
+    - Close VS Code completely
+    - Delete the extension's storage:
+    rm -rf ~/.vscode-server/data/User/globalStorage/github.vscode-pull-request-github/
+    - Restart VS Code
+  2. Or just reinstall the extension (nuclear option)
+
+  The warning about missing SSH config is harmless - you're using HTTPS authentication which works fine.
+
+  Want me to help with any of these approaches, or does the reload fix it?
+
+> /export 
+  ⎿  Conversation copied to clipboard
+
+
+

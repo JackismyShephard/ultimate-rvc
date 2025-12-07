@@ -128,6 +128,9 @@ Based on my analysis of the project structure, CLAUDE.md guidance, and research 
   - Alternatively, run linting and type checking directly on the test files
 - **Never claim tests are "fixed" or "done" without running pre-commit successfully**
   - This includes both type checking (pyright) and linting (ruff) validation
+- **NEVER add noqa directives without EXPLICIT permission from user**
+  - Always ask before suppressing any linting warnings or errors
+  - Fix the underlying issue instead of suppressing it when possible
 
 ### Parallel Task Execution
 

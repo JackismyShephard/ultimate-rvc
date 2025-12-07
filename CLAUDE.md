@@ -269,6 +269,9 @@ Based on research from Google, Microsoft, and the Testing Pyramid, ALWAYS follow
    - Alternatively, run linting and type checking directly on test files
    - **Never claim tests are "fixed" or "done" without running pre-commit successfully**
    - This includes both type checking (pyright) and linting (ruff) validation
+   - **NEVER add noqa directives without EXPLICIT permission from user**
+     - Always ask before suppressing any linting warnings or errors
+     - Fix the underlying issue instead of suppressing it when possible
 
 3. **Test Development Process**
    - **Read the test plan THOROUGHLY between writing tests** (located in `notes/test_plan.md`)
