@@ -1,0 +1,58 @@
+# -----------------START OF PROJECT FILES----------------------
+
+# Ignore dev/test tools and configs
+.pre-commit-config.yaml
+.markdownlint.json
+.yamlfmt.yaml
+.yamllint.yaml
+
+# Ignore documentation files that aren’t needed in container(PS : Do Not add Readme.md it is needed by pyproject.toml for dependency installation)
+FUNDING.yaml
+CLAUDE.md
+LICENSE
+urvc.ps1
+
+# Ignore local data and logs
+notes/
+notebooks/
+tests/
+images/
+logs/
+temp/
+audio/
+models/
+docker/Dockerfile
+docker/docker-compose.yml
+
+# Ignore Git-related files
+.git
+.gitignore
+.gitattributes
+.dockerignore
+
+# -----------------END OF PROJECT FILES----------------------
+
+# --- Python-Specific Files ---
+__pycache__/  # Python bytecode cache
+*.pyc        # Python bytecode files
+*.pyo        # Optimized Python bytecode files
+*.pyd        # Compiled Python extension modules (Windows)
+*.egg-info/  # Setuptools metadata (older packaging systems)
+*.egg        # Older Python egg distribution files
+
+# --- Local Environment and Build Artifacts ---
+.venv/       # Virtual environment (created by tools like venv, virtualenv)
+venv/        # Another common virtual environment directory
+uv/          # The cache and venv created by uv
+*/venv/      # Handles if you have venv inside a directory
+*/uv/        # Handles if you have uv inside a directory
+dist/        # Distribution packages (created by tools like setuptools, flit)
+build/       # Build directories (used by some build systems)
+*.whl        # Python wheel files (distribution packages)
+*.tar.gz     # Python source distributions (tarballs)
+*.zip        # Python zip files (distribution packages)
+*.cache      # Various cache files created during build or runtime
+
+# --- Operating System and System Files (rare, but good to include) ---
+.DS_Store    # macOS metadata
+Thumbs.db    # Windows thumbnail cache
