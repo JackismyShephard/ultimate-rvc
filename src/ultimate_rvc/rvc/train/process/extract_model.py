@@ -10,8 +10,9 @@ from collections import OrderedDict
 import torch
 
 logger = logging.getLogger(__name__)
+
 now_dir = pathlib.Path.cwd()
-sys.path.append(now_dir)
+sys.path.append(str(now_dir))
 
 
 def replace_keys_in_dict(d, old_key_part, new_key_part):
@@ -41,6 +42,7 @@ def extract_model(
     version="v2",
 ):
     try:
+
         model_dir = os.path.dirname(model_path)
         pathlib.Path(model_dir).mkdir(exist_ok=True, parents=True)
 

@@ -365,7 +365,12 @@ class HiFiGANMRFGenerator(torch.nn.Module):
         if gin_channels != 0:
             self.cond = torch.nn.Conv1d(gin_channels, upsample_initial_channel, 1)
 
-    def forward(self, x: torch.Tensor, f0: torch.Tensor, g: torch.Tensor | None = None):
+    def forward(
+        self,
+        x: torch.Tensor,
+        f0: torch.Tensor,
+        g: torch.Tensor | None = None,
+    ):
         f0 = self.f0_upsample(f0[:, None, :]).transpose(-1, -2)
         har_source, _, _ = self.m_source(f0)
         har_source = har_source.transpose(-1, -2)

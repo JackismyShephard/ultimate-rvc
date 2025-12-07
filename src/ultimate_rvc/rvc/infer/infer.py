@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Unpack
 
 import logging
 import os
@@ -30,7 +30,7 @@ from pedalboard import (
 )
 
 now_dir = pathlib.Path.cwd()
-sys.path.append(now_dir)
+sys.path.append(str(now_dir))
 import lazy_loader as lazy
 
 from ultimate_rvc.rvc.configs.config import Config
@@ -221,9 +221,9 @@ class VoiceConverter:
         model_path: str,
         index_path: str,
         pitch: int = 0,
-        f0_method: str = "rmvpe",
+        f0_method: F0Method = "rmvpe",
         index_rate: float = 0.75,
-        volume_envelope: float = 1.0,
+        volume_envelope: float = 1,
         protect: float = 0.5,
         split_audio: bool = False,
         f0_autotune: bool = False,
@@ -395,7 +395,7 @@ class VoiceConverter:
         pid = os.getpid()
         try:
             with pathlib.Path(os.path.join(now_dir, "assets", "infer_pid.txt")).open(
-                "w"
+                "w",
             ) as pid_file:
                 pid_file.write(str(pid))
             start_time = time.time()
@@ -418,7 +418,7 @@ class VoiceConverter:
                         "aiff",
                         "webm",
                         "ac3",
-                    )
+                    ),
                 )
             ]
             print(f"Detected {len(audio_files)} audio files for inference.")
@@ -490,7 +490,7 @@ class VoiceConverter:
 
         """
         self.cpt = (
-            torch.load(weight_root, map_location="cpu", weights_only=True)
+            torch.load(weight_root, map_location="cpu", weights_only=False)
             if pathlib.Path(weight_root).is_file()
             else None
         )
