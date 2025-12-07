@@ -24,10 +24,6 @@ from ultimate_rvc.common import RVC_MODELS_DIR
 from ultimate_rvc.rvc.configs.config import Config
 from ultimate_rvc.rvc.lib.predictors.f0 import CREPE, FCPE, RMVPE
 from ultimate_rvc.rvc.lib.utils import load_audio_16k, load_embedding
-from ultimate_rvc.rvc.train.extract.preparing_files import (
-    generate_config,
-    generate_filelist,
-)
 from ultimate_rvc.rvc.train.utils import remove_sox_libmso6_from_ld_preload
 
 logger = logging.getLogger(__name__)

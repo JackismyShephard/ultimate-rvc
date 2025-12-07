@@ -10,7 +10,7 @@
 # buffer dtypes.
 # Optional Kahan summation is used to offset precision reduction for
 # the weight updates. This allows full training in BFloat16 (equal or
-# better than FP32 results in many cases) due to high precision weight upates.
+# better than FP32 results in many cases) due to high precision weight updates.
 
 import torch
 from torch.optim.optimizer import Optimizer
@@ -24,8 +24,8 @@ class AnyPrecisionAdamW(Optimizer):
         betas=(0.9, 0.999),
         eps=1e-8,
         weight_decay=0.0,
-        use_kahan_summation=True,
-        momentum_dtype=torch.bfloat16,
+        use_kahan_summation=True,  # NOTE default upstream is True
+        momentum_dtype=torch.bfloat16,  # NOTE default upstream is torch.float32,
         variance_dtype=torch.bfloat16,
         compensation_buffer_dtype=torch.bfloat16,
     ):
@@ -42,17 +42,17 @@ class AnyPrecisionAdamW(Optimizer):
 
             # Any Precision specific
             use_kahan_summation = creates auxiliary buffer to ensure high precision
-            model param updates (default: False)
-            momentum_dtype = dtype for momentum  (default: BFloat32)
-            variance_dtype = dtype for uncentered variance (default: BFloat16)
+            model param updates (default: True)
+            momentum_dtype = dtype for momentum  (default: torch.bfloat16)
+            variance_dtype = dtype for uncentered variance (default: torch.bfloat16)
             compensation_buffer_dtype  = dtype for Kahan summation
-                                         buffer (default: BFloat16). Only used if
+                                         buffer (default: torch.bfloat16). Only used if
                                          ``use_kahan_summation=True``.
 
             # Usage
             This optimizer implements optimizer states, and Kahan summation
             for high precision updates, all in user controlled dtypes.
-            Defaults are variance in BF16, Momentum in FP32.
+            Defaults are variance in BF16, Momentum in BF16.
             This can be run in FSDP mixed precision, amp, or full precision,
             depending on what training pipeline you wish to work with.
 

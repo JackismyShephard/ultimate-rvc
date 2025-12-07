@@ -31,7 +31,7 @@ class CREPE:
         self.hop_size = hop_size
 
     def get_f0(self, x, f0_min=50, f0_max=1100, p_len=None, model="full"):
-        if p_len is None:
+        if p_len is None:  # TODO p_len unused
             p_len = x.shape[0] // self.hop_size
 
         if not torch.is_tensor(x):
@@ -70,7 +70,7 @@ class FCPE:
         )
 
     def get_f0(self, x, p_len=None, filter_radius=0.006):
-        if p_len is None:
+        if p_len is None:  # TODO p_len unused
             p_len = x.shape[0] // self.hop_size
 
         if not torch.is_tensor(x):

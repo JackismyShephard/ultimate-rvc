@@ -22,7 +22,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 now_dir = pathlib.Path.cwd()
-sys.path.append(os.path.join(now_dir))
+sys.path.append(os.path.join(str(now_dir)))
 
 # Zluda hijack
 import ultimate_rvc.rvc.lib.zluda
