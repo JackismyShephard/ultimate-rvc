@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import pathlib
+import sys
 from multiprocessing import cpu_count
 
 from sklearn.cluster import MiniBatchKMeans
@@ -24,6 +25,14 @@ def main(exp_dir: str, index_algorithm: str) -> None:
         if custom_embedder_model_hash is not None:
             embedder_model = f"custom_{custom_embedder_model_hash}"
         feature_dir = os.path.join(exp_dir, f"{embedder_model}_extracted")
+
+        if not pathlib.Path(feature_dir).exists():
+            logger.error(
+                "Feature to generate index file not found at %s. Did you run"
+                " preprocessing and feature extraction steps?",
+                feature_dir,
+            )
+            sys.exit(1)
         model_name = os.path.basename(exp_dir)
 
         index_filename_added = f"{model_name}.index"
