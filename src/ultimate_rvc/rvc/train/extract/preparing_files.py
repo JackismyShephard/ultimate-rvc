@@ -47,9 +47,6 @@ def generate_filelist(
         raise ValueError(
             "Sample rate must be provided either as argument or in model_info.json"
         )
-    embedder_name = data.get(
-        "embedder_model", "contentvec"
-    )  # TODO we should just use embedder_model_id directly
 
     gt_wavs_dir = os.path.join(model_path, "sliced_audios")
     feature_dir = os.path.join(
@@ -69,9 +66,9 @@ def generate_filelist(
     names = gt_wavs_files & feature_files & f0_files & f0nsf_files
 
     options = []
-    if embedder_name == "spin":
+    if embedder_model_id == "spin":
         mute_base_path = os.path.join(RVC_TRAINING_MODELS_DIR, "mute_spin")
-    elif embedder_name == "spin-v2":
+    elif embedder_model_id == "spin-v2":
         mute_base_path = os.path.join(RVC_TRAINING_MODELS_DIR, "mute_spin-v2")
     else:
         mute_base_path = os.path.join(RVC_TRAINING_MODELS_DIR, "mute")

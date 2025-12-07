@@ -13,7 +13,7 @@ import requests
 from tqdm import tqdm
 
 now_dir = pathlib.Path.cwd()
-sys.path.append(now_dir)
+sys.path.append(str(now_dir))
 
 from ultimate_rvc.rvc.lib.tools import gdown
 from ultimate_rvc.rvc.lib.utils import format_title

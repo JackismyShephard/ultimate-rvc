@@ -187,7 +187,12 @@ class HiFiGANNSFGenerator(torch.nn.Module):
         self.upp = math.prod(upsample_rates)
         self.lrelu_slope = LRELU_SLOPE
 
-    def forward(self, x: torch.Tensor, f0: torch.Tensor, g: torch.Tensor | None = None):
+    def forward(
+        self,
+        x: torch.Tensor,
+        f0: torch.Tensor,
+        g: torch.Tensor | None = None,
+    ):
         har_source, _, _ = self.m_source(f0, self.upp)
         har_source = har_source.transpose(1, 2)
         # new tensor

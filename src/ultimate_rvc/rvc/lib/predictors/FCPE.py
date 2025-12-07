@@ -1,5 +1,3 @@
-from typing import Union
-
 import math
 import os
 from functools import partial
@@ -772,7 +770,7 @@ class FCPEInfer:
         ckpt = torch.load(
             model_path,
             map_location=torch.device(self.device),
-            weights_only=True,
+            weights_only=False,
         )
         self.args = DotDict(ckpt["config"])
         self.dtype = dtype

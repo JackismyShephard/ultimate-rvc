@@ -6,10 +6,6 @@ import os
 import pathlib
 from concurrent.futures import ThreadPoolExecutor
 
-import requests
-
-from tqdm import tqdm
-
 from ultimate_rvc.common import (
     EMBEDDER_MODELS_DIR,
     PRETRAINED_MODELS_DIR,
@@ -24,6 +20,8 @@ if TYPE_CHECKING:
 else:
     tqdm = lazy.load("tqdm")
     requests = lazy.load("requests")
+
+
 url_base = "https://huggingface.co/JackismyShephard/ultimate-rvc/resolve/main/Resources"
 
 pretraineds_hifigan_list = [
@@ -39,25 +37,35 @@ pretraineds_hifigan_list = [
         ],
     ),
 ]
-pretraineds_refinegan_list = [
-    (
-        "refinegan/",
-        [
-            "f0D32k.pth",
-            "f0G32k.pth",
-        ],
-    ),
-]
+pretraineds_refinegan_list = ["refinegan/", ["f0D32k.pth", "f0G32k.pth"]]
 models_list = [("predictors/", ["rmvpe.pt", "fcpe.pt"])]
-embedders_list = [("embedders/contentvec/", ["pytorch_model.bin", "config.json"])]
+embedders_list = [
+    ("embedders/contentvec/", ["pytorch_model.bin", "config.json"]),
+    ("embedders/chinese_hubert_base/", ["pytorch_model.bin", "config.json"]),
+    ("embedders/japanese_hubert_base/", ["pytorch_model.bin", "config.json"]),
+    ("embedders/korean_hubert_base/", ["pytorch_model.bin", "config.json"]),
+    ("embedders/spin/", ["pytorch_model.bin", "config.json"]),
+    ("embedders/spin-v2/", ["pytorch_model.bin", "config.json"]),
+]
 executables_list = [
     ("", ["ffmpeg.exe", "ffprobe.exe"]),
 ]
 
 folder_mapping_list = {
     "pretrained_v2/": str(PRETRAINED_MODELS_DIR / "hifi-gan/"),
-    "refinegan/": str(PRETRAINED_MODELS_DIR / "refinegang/"),
+    "refinegan/": str(PRETRAINED_MODELS_DIR / "refinegan/"),
     "embedders/contentvec/": str(EMBEDDER_MODELS_DIR / "contentvec/"),
+    "embedders/chinese_hubert_base/": str(
+        EMBEDDER_MODELS_DIR / "chinese_hubert_base/",
+    ),
+    "embedders/japanese_hubert_base/": str(
+        EMBEDDER_MODELS_DIR / "japanese_hubert_base/",
+    ),
+    "embedders/korean_hubert_base/": str(
+        EMBEDDER_MODELS_DIR / "korean_hubert_base/",
+    ),
+    "embedders/spin/": str(EMBEDDER_MODELS_DIR / "spin/"),
+    "embedders/spin-v2/": str(EMBEDDER_MODELS_DIR / "spin-v2/"),
     "predictors/": str(RVC_MODELS_DIR / "predictors/"),
     "formant/": str(RVC_MODELS_DIR / "formant/"),
 }
@@ -170,7 +178,7 @@ def prequisites_download_pipeline(
     )
 
     if total_size > 0:
-        with tqdm(
+        with tqdm.tqdm(
             total=total_size,
             unit="iB",
             unit_scale=True,

@@ -1,4 +1,4 @@
-from typing import IO, Optional, Union
+from typing import IO
 
 import json
 import os

@@ -29,7 +29,7 @@ logging.getLogger("transformers").setLevel(logging.ERROR)
 logging.getLogger("torch").setLevel(logging.ERROR)
 
 now_dir = pathlib.Path.cwd()
-sys.path.append(now_dir)
+sys.path.append(str(now_dir))
 
 base_path = os.path.join(str(RVC_MODELS_DIR), "formant", "stftpitchshift")
 stft = base_path + ".exe" if sys.platform == "win32" else base_path

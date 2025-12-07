@@ -19,13 +19,15 @@ sys.path.append(os.path.join(now_dir))
 # Zluda hijack
 import pathlib
 
-from rvc.train.extract.preparing_files import generate_config, generate_filelist
-
 import ultimate_rvc.rvc.lib.zluda
 from ultimate_rvc.common import RVC_MODELS_DIR
 from ultimate_rvc.rvc.configs.config import Config
 from ultimate_rvc.rvc.lib.predictors.f0 import CREPE, FCPE, RMVPE
 from ultimate_rvc.rvc.lib.utils import load_audio_16k, load_embedding
+from ultimate_rvc.rvc.train.extract.preparing_files import (
+    generate_config,
+    generate_filelist,
+)
 from ultimate_rvc.rvc.train.utils import remove_sox_libmso6_from_ld_preload
 
 logger = logging.getLogger(__name__)
@@ -45,7 +47,7 @@ class FeatureInput:
         self.f0_mel_min = 1127 * np.log(1 + self.f0_min / 700)
         self.f0_mel_max = 1127 * np.log(1 + self.f0_max / 700)
         self.device = device
-        if f0_method in ("crepe", "crepe-tiny"):
+        if f0_method in {"crepe", "crepe-tiny"}:
             self.model = CREPE(
                 device=self.device, sample_rate=self.sample_rate, hop_size=self.hop_size
             )
@@ -105,7 +107,7 @@ class FeatureInput:
             )
 
 
-def process_files(files, f0_method, device, threads):
+def process_files(files, f0_method, device):
     fe = FeatureInput(f0_method=f0_method, device=device)
     with tqdm.tqdm(total=len(files), leave=True) as pbar:
         for file_info in files:
@@ -113,7 +115,12 @@ def process_files(files, f0_method, device, threads):
             pbar.update(1)
 
 
-def run_pitch_extraction(files, devices, f0_method, threads):
+def run_pitch_extraction(
+    files: list[list[str]],
+    devices: list[str],
+    f0_method: str,
+    threads: int,
+) -> None:
     devices_str = ", ".join(devices)
     logger.info(
         "Starting pitch extraction with %d cores on %s using %s...",
@@ -124,15 +131,6 @@ def run_pitch_extraction(files, devices, f0_method, threads):
     start_time = time.time()
     remove_sox_libmso6_from_ld_preload()
 
-    if f0_method == "crepe":
-        actual_threads = 1  # crepe method cannot handle multiple threads
-        logger.info(
-            "crepe detected: using single-threaded processing (was %d threads). "
-            "crepe requires single-threaded operation due to GPU limitations.",
-            threads,
-        )
-    else:
-        actual_threads = threads
     with concurrent.futures.ProcessPoolExecutor(max_workers=len(devices)) as executor:
         tasks = [
             executor.submit(
@@ -140,7 +138,6 @@ def run_pitch_extraction(files, devices, f0_method, threads):
                 files[i :: len(devices)],
                 f0_method,
                 devices[i],
-                actual_threads // len(devices),
             )
             for i in range(len(devices))
         ]

@@ -43,8 +43,8 @@ class MultiPeriodDiscriminator(torch.nn.Module):
         self.checkpointing = checkpointing
         self.discriminators = torch.nn.ModuleList(
             [DiscriminatorS(use_spectral_norm=use_spectral_norm)]
-            + [DiscriminatorP(p, use_spectral_norm=use_spectral_norm) for p in periods],
-            +[
+            + [DiscriminatorP(p, use_spectral_norm=use_spectral_norm) for p in periods]
+            + [
                 DiscriminatorR(r, use_spectral_norm=use_spectral_norm)
                 for r in resolutions
             ],
@@ -145,7 +145,7 @@ class DiscriminatorP(torch.nn.Module):
                         (kernel_size, 1),
                         (s, 1),
                         padding=(get_padding(kernel_size, 1), 0),
-                    )
+                    ),
                 )
                 for in_ch, out_ch, s in zip(
                     in_channels, out_channels, strides, strict=False

@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 import concurrent.futures
 import hashlib
 import json
-import multiprocessing
 import os
 import pathlib
 import shutil
@@ -11,7 +10,6 @@ import sys
 import time
 
 import soxr
-from distutils.util import strtobool
 
 import numpy as np
 from scipy import signal
@@ -22,7 +20,7 @@ import librosa
 import noisereduce as nr
 
 now_directory = pathlib.Path.cwd()
-sys.path.append(now_directory)
+sys.path.append(str(now_directory))
 
 import lazy_loader as lazy
 
@@ -242,7 +240,6 @@ class PreProcess:
                             )
                             idx1 += 1
                             break
-
         except Exception as error:
             logger.error(  # noqa: TRY400
                 "Error processing audio: %s. One or more audio files may not be"

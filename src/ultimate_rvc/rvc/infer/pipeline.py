@@ -1,7 +1,3 @@
-from typing import TYPE_CHECKING
-
-import gc
-import os
 import pathlib
 import sys
 
@@ -11,24 +7,17 @@ from scipy import signal
 import faiss
 import torch
 import torch.nn.functional as F
-from torch import Tensor
 
 import librosa
 
 now_dir = pathlib.Path.cwd()
-sys.path.append(now_dir)
+sys.path.append(str(now_dir))
 
 import lazy_loader as lazy
 
 import logging
 
-from ultimate_rvc.common import RVC_MODELS_DIR
 from ultimate_rvc.rvc.lib.predictors.f0 import CREPE, FCPE, RMVPE
-
-if TYPE_CHECKING:
-    import torchcrepe
-else:
-    torchcrepe = lazy.load("torchcrepe")
 
 # logging.getLogger("faiss").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -296,7 +285,7 @@ class Pipeline:
                             ),
                         ),
                     )
-            logger.info("calculated pitch offset:", up_key)
+            logger.info("calculated pitch offset: %d", up_key)
             f0 *= pow(2, (pitch + up_key) / 12)
         else:
             f0 *= pow(2, pitch / 12)

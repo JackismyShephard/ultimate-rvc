@@ -317,13 +317,7 @@ class RefineGANGenerator(nn.Module):
         # expanded f0 sinegen -> match mel_conv
         # (8, 1, 17280) -> (8, 16, 17280)
         self.pre_conv = weight_norm(
-            nn.Conv1d(
-                1,
-                16,
-                7,
-                1,
-                padding=3,
-            )
+            nn.Conv1d(1, 16, 7, 1, padding=3),
         )
 
         # (8,  16, 17280) = 4th upscale
@@ -346,7 +340,15 @@ class RefineGANGenerator(nn.Module):
 
             new_channels = channels * 2
             self.downsample_blocks.append(
-                weight_norm(nn.Conv1d(channels, new_channels, 7, 1, padding=3))
+                weight_norm(
+                    nn.Conv1d(
+                        channels,
+                        new_channels,
+                        7,
+                        1,
+                        padding=3,
+                    ),
+                ),
             )
             channels = new_channels
 
@@ -354,13 +356,7 @@ class RefineGANGenerator(nn.Module):
         channels = upsample_initial_channel
 
         self.mel_conv = weight_norm(
-            nn.Conv1d(
-                num_mels,
-                channels // 2,
-                7,
-                1,
-                padding=3,
-            )
+            nn.Conv1d(num_mels, channels // 2, 7, 1, padding=3),
         )
 
         self.mel_conv.apply(init_weights)
@@ -396,7 +392,11 @@ class RefineGANGenerator(nn.Module):
     def forward(self, mel: torch.Tensor, f0: torch.Tensor, g: torch.Tensor = None):
         f0_size = mel.shape[-1]
         # change f0 helper to full size
-        f0 = F.interpolate(f0.unsqueeze(1), size=f0_size * self.upp, mode="linear")
+        f0 = F.interpolate(
+            f0.unsqueeze(1),
+            size=f0_size * self.upp,
+            mode="linear",
+        )
         # get f0 turned into sines harmonics
         har_source = self.m_source(f0.transpose(1, 2)).transpose(1, 2)
         # prepare for fusion to mel
@@ -420,6 +420,7 @@ class RefineGANGenerator(nn.Module):
 
         # expanding spectrogram from 192 to 256 channels
         mel = self.mel_conv(mel)
+
         if g is not None:
             # adding expanded speaker embedding
             mel = mel + self.cond(g)
