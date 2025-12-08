@@ -910,11 +910,10 @@ def run_pipeline(
     model_name: str,
     n_octaves: int = 0,
     n_semitones: int = 0,
-    f0_methods: Sequence[F0Method] | None = None,
+    f0_method: F0Method | None = None,
     index_rate: float = 0.3,
     rms_mix_rate: float = 1.0,
     protect_rate: float = 0.33,
-    hop_length: int = 128,
     split_vocals: bool = False,
     autotune_vocals: bool = False,
     autotune_strength: float = 1.0,
@@ -923,6 +922,8 @@ def run_pipeline(
     embedder_model: EmbedderModel = EmbedderModel.CONTENTVEC,
     custom_embedder_model: str | None = None,
     sid: int = 0,
+    proposed_pitch: bool = False,
+    proposed_pitch_threshold: float = 155.0,
     room_size: float = 0.15,
     wet_level: float = 0.2,
     dry_level: float = 0.8,
@@ -951,8 +952,8 @@ def run_pipeline(
     n_semitones : int, default=0
         The number of semi-tones to pitch-shift the converted vocals,
         instrumentals, and backup vocals by.
-    f0_methods : Sequence[F0Method], optional
-        The methods to use for pitch extraction during vocal
+    f0_method: F0Method | None = None,
+        The method to use for pitch extraction during vocal
         conversion. If None, the method used is rmvpe.
     index_rate : float, default=0.3
         The influence of the index file on the vocal conversion.
@@ -962,8 +963,6 @@ def run_pipeline(
     protect_rate : float, default=0.33
         The protect rate for consonants and breathing sounds during
         vocal conversion.
-    hop_length : int, default=128
-        The hop length to use for crepe-based pitch detection.
     split_vocals : bool, default=False
         Whether to perform audio splitting before converting the main
         vocals.
@@ -984,6 +983,10 @@ def run_pipeline(
     sid : int, default=0
         The speaker id to use for multi-speaker models during vocal
         conversion.
+    proposed_pitch: bool = False,
+        Whether to use proposed pitch correction during conversion.
+    proposed_pitch_threshold: float = 155.0,
+        The threshold for proposed pitch correction.
     room_size : float, default=0.15
         The room size of the reverb effect to apply to the converted
         vocals.
@@ -1058,11 +1061,10 @@ def run_pipeline(
         model_name=model_name,
         n_octaves=n_octaves,
         n_semitones=n_semitones,
-        f0_methods=f0_methods,
+        f0_method=f0_method,
         index_rate=index_rate,
         rms_mix_rate=rms_mix_rate,
         protect_rate=protect_rate,
-        hop_length=hop_length,
         split_audio=split_vocals,
         autotune_audio=autotune_vocals,
         autotune_strength=autotune_strength,
@@ -1071,6 +1073,8 @@ def run_pipeline(
         embedder_model=embedder_model,
         custom_embedder_model=custom_embedder_model,
         sid=sid,
+        proposed_pitch=proposed_pitch,
+        proposed_pitch_threshold=proposed_pitch_threshold,
         content_type=RVCContentType.VOCALS,
     )
     display_progress("[~] Post-processing vocals...", 5 / 9, progress_bar)
