@@ -118,8 +118,8 @@ class RVCAudioMetaData(BaseModel):
     n_semitones : int
         The number of semitones the converted audio was pitch-shifted
         by.
-    f0_methods : list[F0Method]
-        The methods used for pitch extraction.
+    f0_method : F0Method
+        The method used for pitch extraction.
     index_rate : float
         The influence of the index file on the voice conversion.
     rms_mix_rate : float
@@ -128,8 +128,6 @@ class RVCAudioMetaData(BaseModel):
     protect_rate : float
         The protection rate for consonants and breathing sounds used
         for the audio conversion.
-    hop_length : int
-        The hop length used for CREPE-based pitch extraction.
     split_audio : bool
         Whether the audio track was split before it was converted.
     autotune_audio : bool
@@ -149,17 +147,20 @@ class RVCAudioMetaData(BaseModel):
         embeddings.
     sid : int
         The speaker id used for multi-speaker conversion.
+    proposed_pitch : bool
+        Whether proposed pitch correction was used during conversion.
+    proposed_pitch_threshold : float
+        The threshold for proposed pitch correction.
 
     """
 
     audio_track: FileMetaData
     model_name: str
     n_semitones: int
-    f0_methods: list[F0Method]
+    f0_method: F0Method
     index_rate: float
     rms_mix_rate: float
     protect_rate: float
-    hop_length: int
     split_audio: bool
     autotune_audio: bool
     autotune_strength: float
@@ -168,6 +169,8 @@ class RVCAudioMetaData(BaseModel):
     embedder_model: EmbedderModel
     custom_embedder_model: str | None
     sid: int
+    proposed_pitch: bool
+    proposed_pitch_threshold: float
 
     model_config = ConfigDict(protected_namespaces=())
 

@@ -81,11 +81,10 @@ def render(total_config: TotalConfig, cookiefile: str | None = None) -> None:
                 tab_config.voice_model.instance,
                 tab_config.n_octaves.instance,
                 tab_config.n_semitones.instance,
-                tab_config.f0_methods.instance,
+                tab_config.f0_method.instance,
                 tab_config.index_rate.instance,
                 tab_config.rms_mix_rate.instance,
                 tab_config.protect_rate.instance,
-                tab_config.hop_length.instance,
                 tab_config.split_voice.instance,
                 tab_config.autotune_voice.instance,
                 tab_config.autotune_strength.instance,
@@ -94,6 +93,8 @@ def render(total_config: TotalConfig, cookiefile: str | None = None) -> None:
                 tab_config.embedder_model.instance,
                 tab_config.custom_embedder_model.instance,
                 tab_config.sid.instance,
+                tab_config.proposed_pitch.instance,
+                tab_config.proposed_pitch_threshold.instance,
                 tab_config.room_size.instance,
                 tab_config.wet_level.instance,
                 tab_config.dry_level.instance,
@@ -126,11 +127,10 @@ def render(total_config: TotalConfig, cookiefile: str | None = None) -> None:
             lambda: [
                 tab_config.n_octaves.value,
                 tab_config.n_semitones.value,
-                tab_config.f0_methods.value,
+                tab_config.f0_method.value,
                 tab_config.index_rate.value,
                 tab_config.rms_mix_rate.value,
                 tab_config.protect_rate.value,
-                tab_config.hop_length.value,
                 tab_config.split_voice.value,
                 tab_config.autotune_voice.value,
                 tab_config.autotune_strength.value,
@@ -138,6 +138,8 @@ def render(total_config: TotalConfig, cookiefile: str | None = None) -> None:
                 tab_config.clean_strength.value,
                 tab_config.embedder_model.value,
                 tab_config.sid.value,
+                tab_config.proposed_pitch.value,
+                tab_config.proposed_pitch_threshold.value,
                 tab_config.room_size.value,
                 tab_config.wet_level.value,
                 tab_config.dry_level.value,
@@ -152,11 +154,10 @@ def render(total_config: TotalConfig, cookiefile: str | None = None) -> None:
             outputs=[
                 tab_config.n_octaves.instance,
                 tab_config.n_semitones.instance,
-                tab_config.f0_methods.instance,
+                tab_config.f0_method.instance,
                 tab_config.index_rate.instance,
                 tab_config.rms_mix_rate.instance,
                 tab_config.protect_rate.instance,
-                tab_config.hop_length.instance,
                 tab_config.split_voice.instance,
                 tab_config.autotune_voice.instance,
                 tab_config.autotune_strength.instance,
@@ -164,6 +165,8 @@ def render(total_config: TotalConfig, cookiefile: str | None = None) -> None:
                 tab_config.clean_strength.instance,
                 tab_config.embedder_model.instance,
                 tab_config.sid.instance,
+                tab_config.proposed_pitch.instance,
+                tab_config.proposed_pitch_threshold.instance,
                 tab_config.room_size.instance,
                 tab_config.wet_level.instance,
                 tab_config.dry_level.instance,
@@ -231,12 +234,11 @@ def _render_conversion_options(tab_config: OneClickSongGenerationConfig) -> None
         gr.Markdown("")
         with gr.Accordion("Voice synthesis", open=False):
             with gr.Row():
-                tab_config.f0_methods.instantiate()
+                tab_config.f0_method.instantiate()
                 tab_config.index_rate.instantiate()
             with gr.Row():
                 tab_config.rms_mix_rate.instantiate()
                 tab_config.protect_rate.instantiate()
-                tab_config.hop_length.instantiate()
         with gr.Accordion("Vocal enrichment", open=False):
             with gr.Row():
                 with gr.Column():
@@ -247,6 +249,9 @@ def _render_conversion_options(tab_config: OneClickSongGenerationConfig) -> None
                 with gr.Column():
                     tab_config.clean_voice.instantiate()
                     tab_config.clean_strength.instantiate()
+                with gr.Column():
+                    tab_config.proposed_pitch.instantiate()
+                    tab_config.proposed_pitch_threshold.instantiate()
             tab_config.autotune_voice.instance.change(
                 partial(toggle_visibility, targets={True}),
                 inputs=tab_config.autotune_voice.instance,

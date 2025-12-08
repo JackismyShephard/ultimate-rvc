@@ -64,8 +64,8 @@ class GenerationConfig(BaseTabConfig):
 
     voice_model : DropdownConfig
         Configuration settings for a voice model dropdown component.
-    f0_methods : DropdownConfig
-        Configuration settings for a pitch extraction algorithms
+    f0_method : DropdownConfig
+        Configuration settings for a pitch extraction algorithm
         dropdown component.
     index_rate : SliderConfig
         Configuration settings for an index rate slider component.
@@ -82,6 +82,11 @@ class GenerationConfig(BaseTabConfig):
         component.
     sid : NumberConfig
         Configuration settings for a speaker ID number component.
+    proposed_pitch: CheckboxConfig
+        Configuration settings for a proposed pitch checkbox component.
+    proposed_pitch_threshold: SliderConfig
+        Configuration settings for a proposed pitch threshold slider
+        component.
     output_sr : DropdownConfig
         Configuration settings for an output sample rate dropdown
         component.
@@ -106,16 +111,15 @@ class GenerationConfig(BaseTabConfig):
         render=False,
         exclude_value=True,
     )
-    f0_methods: DropdownConfig = DropdownConfig(
-        label="Pitch extraction algorithm(s)",
+    f0_method: DropdownConfig = DropdownConfig(
+        label="Pitch extraction algorithm",
         info=(
-            "If more than one method is selected, then the median of the pitch values"
-            " extracted by each method is used. RMVPE is recommended for most cases and"
-            " is the default when no method is selected."
+            "RMVPE is recommended for most cases and is the default when no method is"
+            " selected."
         ),
-        value=[F0Method.RMVPE],
+        value=F0Method.RMVPE,
         choices=list(F0Method),
-        multiselect=True,
+        multiselect=False,
     )
     index_rate: SliderConfig = SliderConfig(
         label="Index rate",
@@ -150,16 +154,6 @@ class GenerationConfig(BaseTabConfig):
         maximum=0.5,
     )
 
-    hop_length: SliderConfig = SliderConfig.hop_length(
-        label="Hop length",
-        info=(
-            "How often the CREPE-based pitch extraction method checks for pitch changes"
-            " measured in milliseconds. Lower values lead to longer conversion times"
-            " and a higher risk of voice cracks, but better pitch accuracy."
-        ),
-        visible=True,
-    )
-
     split_voice: CheckboxConfig = CheckboxConfig(
         label="Split input voice",
         info=(
@@ -190,6 +184,23 @@ class GenerationConfig(BaseTabConfig):
         info="Speaker ID for multi-speaker-models.",
         value=0,
         precision=0,
+    )
+    proposed_pitch: CheckboxConfig = CheckboxConfig(
+        label="Proposed pitch",
+        info="Adjust the input audio pitch to match the voice model range.",
+        value=False,
+        exclude_value=True,
+    )
+    proposed_pitch_threshold: SliderConfig = SliderConfig(
+        label="Proposed pitch threshold",
+        info=(
+            "Male voice models typically use 155.0 and female voice models typically"
+            " use 255.0."
+        ),
+        value=155.0,
+        minimum=50.0,
+        maximum=1200.0,
+        visible=False,
     )
     output_sr: DropdownConfig = DropdownConfig(
         label="Output sample rate",

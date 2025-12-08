@@ -246,16 +246,14 @@ def run_pipeline(
         ),
     ] = 0,
     f0_method: Annotated[
-        list[F0Method] | None,
+        F0Method | None,
         typer.Option(
             case_sensitive=False,
             autocompletion=complete_f0_method,
             rich_help_panel=PanelName.RVC_SYNTHESIS_OPTIONS,
             help=(
-                "The method to use for pitch extraction during the RVC process. This"
-                " option can be provided multiple times to use multiple pitch"
-                " extraction methods in combination. If not provided, will default to"
-                " the rmvpe method, which is generally recommended."
+                "The method to use for pitch extraction.  If not provided, will"
+                " default to the rmvpe method, which is generally recommended."
             ),
         ),
     ] = None,
@@ -299,20 +297,6 @@ def run_pipeline(
             ),
         ),
     ] = 0.33,
-    hop_length: Annotated[
-        int,
-        typer.Option(
-            min=1,
-            max=512,
-            rich_help_panel=PanelName.RVC_SYNTHESIS_OPTIONS,
-            help=(
-                "Controls how often the CREPE-based pitch extraction method checks for"
-                " pitch changes during the RVC process. Measured in milliseconds."
-                " Lower values lead to longer conversion times and a higher risk of"
-                " voice cracks, but better pitch accuracy."
-            ),
-        ),
-    ] = 128,
     split_speech: Annotated[
         bool,
         typer.Option(
@@ -397,6 +381,22 @@ def run_pipeline(
             help="The id of the speaker to use for multi-speaker RVC models.",
         ),
     ] = 0,
+    proposed_pitch: Annotated[
+        bool,
+        typer.Option(
+            rich_help_panel=PanelName.VOICE_SYNTHESIS_OPTIONS,
+            help="Whether to use proposed pitch correction during conversion.",
+        ),
+    ] = False,
+    proposed_pitch_threshold: Annotated[
+        float,
+        typer.Option(
+            min=0,
+            max=1,
+            rich_help_panel=PanelName.VOICE_SYNTHESIS_OPTIONS,
+            help="The threshold for proposed pitch correction.",
+        ),
+    ] = 155.0,
     output_gain: Annotated[
         int,
         typer.Option(
@@ -446,11 +446,10 @@ def run_pipeline(
         tts_volume_change=tts_volume_change,
         n_octaves=n_octaves,
         n_semitones=n_semitones,
-        f0_methods=f0_method,
+        f0_method=f0_method,
         index_rate=index_rate,
         rms_mix_rate=rms_mix_rate,
         protect_rate=protect_rate,
-        hop_length=hop_length,
         split_speech=split_speech,
         autotune_speech=autotune_speech,
         autotune_strength=autotune_strength,
@@ -459,6 +458,8 @@ def run_pipeline(
         embedder_model=embedder_model,
         custom_embedder_model=custom_embedder_model,
         sid=sid,
+        proposed_pitch=proposed_pitch,
+        proposed_pitch_threshold=proposed_pitch_threshold,
         output_gain=output_gain,
         output_sr=output_sr,
         output_format=output_format,

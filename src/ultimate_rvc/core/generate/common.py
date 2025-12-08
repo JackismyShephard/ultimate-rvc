@@ -260,11 +260,10 @@ def convert(
     model_name: str,
     n_octaves: int = 0,
     n_semitones: int = 0,
-    f0_methods: Sequence[F0Method] | None = None,
+    f0_method: F0Method | None = None,
     index_rate: float = 0.3,
     rms_mix_rate: float = 1.0,
     protect_rate: float = 0.33,
-    hop_length: int = 128,
     split_audio: bool = False,
     autotune_audio: bool = False,
     autotune_strength: float = 1.0,
@@ -273,6 +272,8 @@ def convert(
     embedder_model: EmbedderModel = EmbedderModel.CONTENTVEC,
     custom_embedder_model: str | None = None,
     sid: int = 0,
+    proposed_pitch: bool = False,
+    proposed_pitch_threshold: float = 155.0,
     content_type: RVCContentType = RVCContentType.AUDIO,
     make_directory: bool = False,
 ) -> Path:
@@ -292,7 +293,7 @@ def convert(
         The number of octaves to pitch-shift the converted audio by.
     n_semitones : int, default=0
         The number of semitones to pitch-shift the converted audio by.
-    f0_methods : Sequence[F0Method], optional
+    f0_method : Sequence[F0Method], optional
         The methods to use for pitch extraction. If None, the method
         used is rmvpe.
     index_rate : float, default=0.3
@@ -302,8 +303,6 @@ def convert(
         audio.
     protect_rate : float, default=0.33
         The protection rate for consonants and breathing sounds.
-    hop_length : int, default=128
-        The hop length to use for CREPE-based pitch extraction.
     split_audio : bool, default=False
         Whether to split the audio track into smaller segments before
         converting it.
@@ -322,6 +321,10 @@ def convert(
         speaker embeddings.
     sid : int, default=0
         The speaker id to use for multi-speaker models.
+    proposed_pitch : bool, default=False
+        Whether to use proposed pitch correction during conversion.
+    proposed_pitch_threshold : float, default=155.0
+        The threshold for proposed pitch correction.
     content_type : RVCContentType, default=RVCContentType.AUDIO
         The type of content to convert. Determines what is shown in
         display mesages and saved file names.
@@ -368,7 +371,7 @@ def convert(
     )
 
     n_semitones = n_octaves * 12 + n_semitones
-    f0_methods_set = set(f0_methods) if f0_methods else {F0Method.RMVPE}
+    f0_method = f0_method or F0Method.RMVPE
 
     args_dict = RVCAudioMetaData(
         audio_track=FileMetaData(
@@ -377,11 +380,10 @@ def convert(
         ),
         model_name=model_name,
         n_semitones=n_semitones,
-        f0_methods=sorted(f0_methods_set),
+        f0_method=f0_method,
         index_rate=index_rate,
         rms_mix_rate=rms_mix_rate,
         protect_rate=protect_rate,
-        hop_length=hop_length,
         split_audio=split_audio,
         autotune_audio=autotune_audio,
         autotune_strength=autotune_strength,
@@ -390,6 +392,8 @@ def convert(
         embedder_model=embedder_model,
         custom_embedder_model=custom_embedder_model,
         sid=sid,
+        proposed_pitch=proposed_pitch,
+        proposed_pitch_threshold=proposed_pitch_threshold,
     ).model_dump()
 
     paths = [
@@ -414,11 +418,10 @@ def convert(
             model_path=str(rvc_model_path),
             index_path=str(rvc_index_path) if rvc_index_path else "",
             pitch=n_semitones,
-            f0_methods=f0_methods_set,
+            f0_method=f0_method,
             index_rate=index_rate,
             volume_envelope=rms_mix_rate,
             protect=protect_rate,
-            hop_length=hop_length,
             split_audio=split_audio,
             f0_autotune=autotune_audio,
             f0_autotune_strength=autotune_strength,
@@ -433,6 +436,8 @@ def convert(
             post_process=False,
             resample_sr=0,
             sid=sid,
+            proposed_pitch=proposed_pitch,
+            proposed_pitch_threshold=proposed_pitch_threshold,
         )
         json_dump(args_dict, converted_audio_json_path)
     return converted_audio_path
