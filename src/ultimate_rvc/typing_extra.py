@@ -43,6 +43,8 @@ class EmbedderModel(StrEnum):
     """Enumeration of audio embedding models."""
 
     CONTENTVEC = "contentvec"
+    SPIN = "spin"
+    SPIN_V2 = "spin-v2"
     CHINESE_HUBERT_BASE = "chinese-hubert-base"
     JAPANESE_HUBERT_BASE = "japanese-hubert-base"
     KOREAN_HUBERT_BASE = "korean-hubert-base"
