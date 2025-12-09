@@ -28,7 +28,6 @@ from ultimate_rvc.typing_extra import (
 def extract_features(
     model_name: str,
     f0_method: TrainingF0Method = TrainingF0Method.RMVPE,
-    hop_length: int = 128,
     embedder_model: EmbedderModel = EmbedderModel.CONTENTVEC,
     custom_embedder_model: str | None = None,
     include_mutes: int = 2,
@@ -46,9 +45,6 @@ def extract_features(
         The name of the voice model to be trained.
     f0_method : TrainingF0Method, default=TrainingF0Method.RMVPE
         The method to use for extracting pitch features.
-    hop_length : int, default=128
-        The hop length to use for extracting pitch features. Only used
-        with the CREPE pitch extraction method.
     embedder_model : EmbedderModel, default=EmbedderModel.CONTENTVEC
         The model to use for extracting audio embeddings.
     custom_embedder_model : StrPath, optional
@@ -100,10 +96,6 @@ def extract_features(
         chosen_embedder_model = str(custom_embedder_model_path)
         embedder_model_id = f"custom_{combined_file_hash}"
 
-    f0_method_id = f0_method
-    if f0_method in {TrainingF0Method.CREPE, TrainingF0Method.CREPE_TINY}:
-        f0_method_id = f"{f0_method}_{hop_length}"
-
     device_type, device_ids = validate_devices(hardware_acceleration, gpu_ids)
 
     devices = (
@@ -117,7 +109,7 @@ def extract_features(
 
     file_infos = extract.initialize_extraction(
         str(model_path),
-        f0_method_id,
+        f0_method,
         embedder_model_id,
     )
     extract.update_model_info(
@@ -126,7 +118,7 @@ def extract_features(
         combined_file_hash,
     )
     display_progress("[~] Extracting pitch features...")
-    extract.run_pitch_extraction(file_infos, devices, f0_method, hop_length, cpu_cores)
+    extract.run_pitch_extraction(file_infos, devices, f0_method, cpu_cores)
     display_progress("[~] Extracting audio embeddings...")
     extract.run_embedding_extraction(
         file_infos,
@@ -147,6 +139,6 @@ def extract_features(
     preparing_files.generate_filelist(
         str(model_path),
         include_mutes,
-        f0_method_id,
+        f0_method,
         embedder_model_id,
     )

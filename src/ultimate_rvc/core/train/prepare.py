@@ -24,7 +24,12 @@ from ultimate_rvc.core.exceptions import (
     NotProvidedError,
     UIMessage,
 )
-from ultimate_rvc.typing_extra import AudioExt, AudioSplitMethod, TrainingSampleRate
+from ultimate_rvc.typing_extra import (
+    AudioExt,
+    AudioNormalizationMode,
+    AudioSplitMethod,
+    TrainingSampleRate,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -108,12 +113,13 @@ def preprocess_dataset(
     model_name: str,
     dataset: StrPath,
     sample_rate: TrainingSampleRate = TrainingSampleRate.HZ_40K,
-    split_method: AudioSplitMethod = AudioSplitMethod.AUTOMATIC,
-    chunk_len: float = 3.0,
-    overlap_len: float = 0.3,
+    normalization_mode: AudioNormalizationMode = AudioNormalizationMode.POST,
     filter_audio: bool = True,
     clean_audio: bool = False,
     clean_strength: float = 0.7,
+    split_method: AudioSplitMethod = AudioSplitMethod.AUTOMATIC,
+    chunk_len: float = 3.0,
+    overlap_len: float = 0.3,
     cpu_cores: int = cpu_count(),
 ) -> None:
     """
@@ -133,6 +139,18 @@ def preprocess_dataset(
     sample_rate : TrainingSampleRate, default=TrainingSampleRate.HZ_40K
         The target sample rate for the audio files in the provided
         dataset.
+    normalization_mode : AudioNormalizationMode, default=AudioNormalizationMode.POST
+        The audio normalization method to use for the audio files in
+        the provided dataset.
+    filter_audio : bool, default=True
+        Whether to remove low-frequency sounds from the audio files in
+        the provided dataset by applying a high-pass butterworth filter.
+    clean_audio : bool, default=False
+        Whether to clean the audio files in the provided dataset using
+        noise reduction algorithms.
+    clean_strength : float, default=0.7
+        The intensity of the cleaning to apply to the audio files in the
+        provided dataset.
     split_method : AudioSplitMethod, default=AudioSplitMethod.AUTOMATIC
         The method to use for splitting the audio files in the provided
         dataset. Use the `Skip` method to skip splitting if the audio
@@ -146,15 +164,6 @@ def preprocess_dataset(
     overlap_len: float, default=0.3
         length of overlap between split audio chunks when using the
         `Simple` split method.
-    filter_audio : bool, default=True
-        Whether to remove low-frequency sounds from the audio files in
-        the provided dataset by applying a high-pass butterworth filter.
-    clean_audio : bool, default=False
-        Whether to clean the audio files in the provided dataset using
-        noise reduction algorithms.
-    clean_strength : float, default=0.7
-        The intensity of the cleaning to apply to the audio files in the
-        provided dataset.
     cpu_cores : int, default=cpu_count()
         The number of CPU cores to use for preprocessing.
 
@@ -190,4 +199,5 @@ def preprocess_dataset(
         clean_strength,
         chunk_len,
         overlap_len,
+        normalization_mode,
     )

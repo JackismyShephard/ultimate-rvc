@@ -22,6 +22,8 @@ from ultimate_rvc.cli.common import (
     complete_embedder_model,
     complete_f0_method,
     complete_index_algorithm,
+    complete_normalization_mode,
+    complete_precision_type,
     complete_pretrained_type,
     complete_training_sample_rate,
     complete_vocoder,
@@ -34,10 +36,12 @@ from ultimate_rvc.core.train.prepare import populate_dataset as _populate_datase
 from ultimate_rvc.core.train.prepare import preprocess_dataset as _preprocess_dataset
 from ultimate_rvc.core.train.train import run_training as _run_training
 from ultimate_rvc.typing_extra import (
+    AudioNormalizationMode,
     AudioSplitMethod,
     DeviceType,
     EmbedderModel,
     IndexAlgorithm,
+    PrecisionType,
     PretrainedType,
     TrainingF0Method,
     TrainingSampleRate,
@@ -116,6 +120,17 @@ def preprocess_dataset(
             help="The target sample rate for the audio files in the provided dataset",
         ),
     ] = TrainingSampleRate.HZ_40K,
+    normalization_mode: Annotated[
+        AudioNormalizationMode,
+        typer.Option(
+            case_sensitive=False,
+            autocompletion=complete_normalization_mode,
+            help=(
+                "The audio normalization method to use for the audio files in the"
+                " provided dataset."
+            ),
+        ),
+    ] = AudioNormalizationMode.POST,
     split_method: Annotated[
         AudioSplitMethod,
         typer.Option(
@@ -197,6 +212,7 @@ def preprocess_dataset(
         model_name=model_name,
         dataset=dataset,
         sample_rate=sample_rate,
+        normalization_mode=normalization_mode,
         split_method=split_method,
         chunk_len=chunk_len,
         overlap_len=overlap_len,
@@ -246,17 +262,6 @@ def extract_features(
             help="The method to use for extracting pitch features.",
         ),
     ] = TrainingF0Method.RMVPE,
-    hop_length: Annotated[
-        int,
-        typer.Option(
-            min=1,
-            max=512,
-            help=(
-                "The hop length to use for extracting pitch features. Only used"
-                " with the CREPE pitch extraction method."
-            ),
-        ),
-    ] = 128,
     embedder_model: Annotated[
         EmbedderModel,
         typer.Option(
@@ -331,7 +336,6 @@ def extract_features(
     _extract_features(
         model_name=model_name,
         f0_method=f0_method,
-        hop_length=hop_length,
         embedder_model=embedder_model,
         custom_embedder_model=custom_embedder_model,
         include_mutes=include_mutes,
@@ -557,6 +561,19 @@ def run_training(
             ),
         ),
     ] = False,
+    precision: Annotated[
+        PrecisionType,
+        typer.Option(
+            rich_help_panel=PanelName.DEVICE_AND_MEMORY_OPTIONS,
+            autocompletion=complete_precision_type,
+            case_sensitive=False,
+            help=(
+                "The numerical precision to use during training. Lower precision can"
+                " reduce VRAM usage and speed up training, but may lead to"
+                " instability."
+            ),
+        ),
+    ] = PrecisionType.FP32,
 ) -> None:
     """
     Train a voice model using its associated preprocessed dataset and
@@ -585,6 +602,7 @@ def run_training(
         gpu_ids=gpu_id_set,
         preload_dataset=preload_dataset,
         reduce_memory_usage=reduce_memory_usage,
+        precision=precision,
     )
     if trained_model_files is None:
         rprint("[!] Training failed!")
