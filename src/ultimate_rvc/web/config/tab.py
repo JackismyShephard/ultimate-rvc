@@ -80,13 +80,13 @@ class GenerationConfig(BaseTabConfig):
     autotune_strength: SliderConfig
         Configuration settings for an autotune strength slider
         component.
-    sid : NumberConfig
-        Configuration settings for a speaker ID number component.
     proposed_pitch: CheckboxConfig
         Configuration settings for a proposed pitch checkbox component.
     proposed_pitch_threshold: SliderConfig
         Configuration settings for a proposed pitch threshold slider
         component.
+    sid : NumberConfig
+        Configuration settings for a speaker ID number component.
     output_sr : DropdownConfig
         Configuration settings for an output sample rate dropdown
         component.
@@ -164,7 +164,7 @@ class GenerationConfig(BaseTabConfig):
     )
     autotune_voice: CheckboxConfig = CheckboxConfig(
         label="Autotune converted voice",
-        info="Whether to apply autotune to the converted voice.<br><br>",
+        info="Whether to apply autotune to the converted voice.",
         value=False,
         exclude_value=True,
     )
@@ -179,15 +179,12 @@ class GenerationConfig(BaseTabConfig):
         maximum=1.0,
         visible=False,
     )
-    sid: NumberConfig = NumberConfig(
-        label="Speaker ID",
-        info="Speaker ID for multi-speaker-models.",
-        value=0,
-        precision=0,
-    )
     proposed_pitch: CheckboxConfig = CheckboxConfig(
         label="Proposed pitch",
-        info="Adjust the input audio pitch to match the voice model range.",
+        info=(
+            "Whether to adjust the pitch of the converted voice so that it matches the"
+            " range of the voice model used."
+        ),
         value=False,
         exclude_value=True,
     )
@@ -201,6 +198,12 @@ class GenerationConfig(BaseTabConfig):
         minimum=50.0,
         maximum=1200.0,
         visible=False,
+    )
+    sid: NumberConfig = NumberConfig(
+        label="Speaker ID",
+        info="Speaker ID for multi-speaker-models.",
+        value=0,
+        precision=0,
     )
     output_sr: DropdownConfig = DropdownConfig(
         label="Output sample rate",
@@ -288,10 +291,7 @@ class SongGenerationConfig(GenerationConfig):
     )
     clean_voice: CheckboxConfig = CheckboxConfig(
         label="Clean converted voice",
-        info=(
-            "Whether to clean the converted voice using noise reduction"
-            " algorithms.<br><br>"
-        ),
+        info="Whether to clean the converted voice using noise reduction algorithms.",
         value=False,
         exclude_value=True,
     )
@@ -447,10 +447,7 @@ class SpeechGenerationConfig(GenerationConfig):
     )
     clean_voice: CheckboxConfig = CheckboxConfig(
         label="Clean converted voice",
-        info=(
-            "Whether to clean the converted voice using noise reduction"
-            " algorithms.<br><br>"
-        ),
+        info="Whether to clean the converted voice using noise reduction algorithms.",
         value=True,
         exclude_value=True,
     )

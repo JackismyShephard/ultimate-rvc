@@ -328,6 +328,28 @@ def run_pipeline(
             ),
         ),
     ] = 1.0,
+    proposed_pitch: Annotated[
+        bool,
+        typer.Option(
+            rich_help_panel=PanelName.VOICE_SYNTHESIS_OPTIONS,
+            help=(
+                "Whether to adjust the pitch of the speech converted using RVC so that"
+                " it matches the range of the voice model used."
+            ),
+        ),
+    ] = False,
+    proposed_pitch_threshold: Annotated[
+        float,
+        typer.Option(
+            min=0,
+            max=1,
+            rich_help_panel=PanelName.VOICE_SYNTHESIS_OPTIONS,
+            help=(
+                "Threshold for proposed pitch correction. Male voice models typically"
+                " use 155.0 and female voice models typically use 255.0."
+            ),
+        ),
+    ] = 155.0,
     clean_speech: Annotated[
         bool,
         typer.Option(
@@ -381,22 +403,6 @@ def run_pipeline(
             help="The id of the speaker to use for multi-speaker RVC models.",
         ),
     ] = 0,
-    proposed_pitch: Annotated[
-        bool,
-        typer.Option(
-            rich_help_panel=PanelName.VOICE_SYNTHESIS_OPTIONS,
-            help="Whether to use proposed pitch correction during conversion.",
-        ),
-    ] = False,
-    proposed_pitch_threshold: Annotated[
-        float,
-        typer.Option(
-            min=0,
-            max=1,
-            rich_help_panel=PanelName.VOICE_SYNTHESIS_OPTIONS,
-            help="The threshold for proposed pitch correction.",
-        ),
-    ] = 155.0,
     output_gain: Annotated[
         int,
         typer.Option(
@@ -453,13 +459,13 @@ def run_pipeline(
         split_speech=split_speech,
         autotune_speech=autotune_speech,
         autotune_strength=autotune_strength,
+        proposed_pitch=proposed_pitch,
+        proposed_pitch_threshold=proposed_pitch_threshold,
         clean_speech=clean_speech,
         clean_strength=clean_strength,
         embedder_model=embedder_model,
         custom_embedder_model=custom_embedder_model,
         sid=sid,
-        proposed_pitch=proposed_pitch,
-        proposed_pitch_threshold=proposed_pitch_threshold,
         output_gain=output_gain,
         output_sr=output_sr,
         output_format=output_format,

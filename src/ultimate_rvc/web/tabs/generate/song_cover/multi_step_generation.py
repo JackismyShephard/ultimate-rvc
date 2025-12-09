@@ -274,30 +274,7 @@ def _render_step_2(tab_config: MultiStepSongGenerationConfig) -> None:
                     with gr.Row():
                         tab_config.rms_mix_rate.instantiate()
                         tab_config.protect_rate.instantiate()
-                with gr.Accordion("Vocal enrichment", open=False), gr.Row():
-                    with gr.Column():
-                        tab_config.split_voice.instantiate()
-                    with gr.Column():
-                        tab_config.autotune_voice.instantiate()
-                        tab_config.autotune_strength.instantiate()
-                    with gr.Column():
-                        tab_config.clean_voice.instantiate()
-                        tab_config.clean_strength.instantiate()
-                    with gr.Row():
-                        tab_config.proposed_pitch.instantiate()
-                        tab_config.proposed_pitch_threshold.instantiate()
-                tab_config.autotune_voice.instance.change(
-                    partial(toggle_visibility, targets={True}),
-                    inputs=tab_config.autotune_voice.instance,
-                    outputs=tab_config.autotune_strength.instance,
-                    show_progress="hidden",
-                )
-                tab_config.clean_voice.instance.change(
-                    partial(toggle_visibility, targets={True}),
-                    inputs=tab_config.clean_voice.instance,
-                    outputs=tab_config.clean_strength.instance,
-                    show_progress="hidden",
-                )
+                _render_step_2_vocal_enrichment(tab_config)
                 with gr.Accordion("Speaker embeddings", open=False), gr.Row():
                     with gr.Column():
                         tab_config.embedder_model.instantiate()
@@ -331,12 +308,12 @@ def _render_step_2(tab_config: MultiStepSongGenerationConfig) -> None:
                 tab_config.split_voice.value,
                 tab_config.autotune_voice.value,
                 tab_config.autotune_strength.value,
+                tab_config.proposed_pitch.value,
+                tab_config.proposed_pitch_threshold.value,
                 tab_config.clean_voice.value,
                 tab_config.clean_strength.value,
                 tab_config.embedder_model.value,
                 tab_config.sid.value,
-                tab_config.proposed_pitch.value,
-                tab_config.proposed_pitch_threshold.value,
                 gr.Dropdown(value=[SongTransferOption.STEP_3_VOCALS]),
             ],
             outputs=[
@@ -349,12 +326,12 @@ def _render_step_2(tab_config: MultiStepSongGenerationConfig) -> None:
                 tab_config.split_voice.instance,
                 tab_config.autotune_voice.instance,
                 tab_config.autotune_strength.instance,
+                tab_config.proposed_pitch.instance,
+                tab_config.proposed_pitch_threshold.instance,
                 tab_config.clean_voice.instance,
                 tab_config.clean_strength.instance,
                 tab_config.embedder_model.instance,
                 tab_config.sid.instance,
-                tab_config.proposed_pitch.instance,
-                tab_config.proposed_pitch_threshold.instance,
                 converted_vocals_transfer,
             ],
             show_progress="hidden",
@@ -377,13 +354,13 @@ def _render_step_2(tab_config: MultiStepSongGenerationConfig) -> None:
                 tab_config.split_voice.instance,
                 tab_config.autotune_voice.instance,
                 tab_config.autotune_strength.instance,
+                tab_config.proposed_pitch.instance,
+                tab_config.proposed_pitch_threshold.instance,
                 tab_config.clean_voice.instance,
                 tab_config.clean_strength.instance,
                 tab_config.embedder_model.instance,
                 tab_config.custom_embedder_model.instance,
                 tab_config.sid.instance,
-                tab_config.proposed_pitch.instance,
-                tab_config.proposed_pitch_threshold.instance,
             ],
             outputs=converted_vocals_track_output,
             concurrency_id=ConcurrencyId.GPU,
@@ -395,6 +372,40 @@ def _render_step_2(tab_config: MultiStepSongGenerationConfig) -> None:
             converted_vocals_track_output,
             tab_config.input_audio.all,
         )
+
+
+def _render_step_2_vocal_enrichment(tab_config: MultiStepSongGenerationConfig) -> None:
+    with gr.Accordion("Vocal enrichment", open=False):
+        with gr.Row(), gr.Column():
+            tab_config.split_voice.instantiate()
+        with gr.Row():
+            with gr.Column():
+                tab_config.autotune_voice.instantiate()
+                tab_config.autotune_strength.instantiate()
+            with gr.Column():
+                tab_config.proposed_pitch.instantiate()
+                tab_config.proposed_pitch_threshold.instantiate()
+            with gr.Column():
+                tab_config.clean_voice.instantiate()
+                tab_config.clean_strength.instantiate()
+    tab_config.autotune_voice.instance.change(
+        partial(toggle_visibility, targets={True}),
+        inputs=tab_config.autotune_voice.instance,
+        outputs=tab_config.autotune_strength.instance,
+        show_progress="hidden",
+    )
+    tab_config.proposed_pitch.instance.change(
+        partial(toggle_visibility, targets={True}),
+        inputs=tab_config.proposed_pitch.instance,
+        outputs=tab_config.proposed_pitch_threshold.instance,
+        show_progress="hidden",
+    )
+    tab_config.clean_voice.instance.change(
+        partial(toggle_visibility, targets={True}),
+        inputs=tab_config.clean_voice.instance,
+        outputs=tab_config.clean_strength.instance,
+        show_progress="hidden",
+    )
 
 
 def _render_step_3(tab_config: MultiStepSongGenerationConfig) -> None:

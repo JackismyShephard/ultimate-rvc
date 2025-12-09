@@ -917,13 +917,13 @@ def run_pipeline(
     split_vocals: bool = False,
     autotune_vocals: bool = False,
     autotune_strength: float = 1.0,
+    proposed_pitch: bool = False,
+    proposed_pitch_threshold: float = 155.0,
     clean_vocals: bool = False,
     clean_strength: float = 0.7,
     embedder_model: EmbedderModel = EmbedderModel.CONTENTVEC,
     custom_embedder_model: str | None = None,
     sid: int = 0,
-    proposed_pitch: bool = False,
-    proposed_pitch_threshold: float = 155.0,
     room_size: float = 0.15,
     wet_level: float = 0.2,
     dry_level: float = 0.8,
@@ -970,6 +970,11 @@ def run_pipeline(
         Whether to apply autotune to the converted vocals.
     autotune_strength : float, default=1.0
         The strength of the autotune to apply to the converted vocals.
+    proposed_pitch: bool = False,
+        Whether to adjust the pitch of the converted vocals so that it
+        matches the range of the voice model used.
+    proposed_pitch_threshold: float = 155.0,
+        The threshold for proposed pitch correction.
     clean_vocals : bool, default=False
         Whether to clean the converted vocals.
     clean_strength : float, default=0.7
@@ -983,10 +988,6 @@ def run_pipeline(
     sid : int, default=0
         The speaker id to use for multi-speaker models during vocal
         conversion.
-    proposed_pitch: bool = False,
-        Whether to use proposed pitch correction during conversion.
-    proposed_pitch_threshold: float = 155.0,
-        The threshold for proposed pitch correction.
     room_size : float, default=0.15
         The room size of the reverb effect to apply to the converted
         vocals.
@@ -1068,13 +1069,13 @@ def run_pipeline(
         split_audio=split_vocals,
         autotune_audio=autotune_vocals,
         autotune_strength=autotune_strength,
+        proposed_pitch=proposed_pitch,
+        proposed_pitch_threshold=proposed_pitch_threshold,
         clean_audio=clean_vocals,
         clean_strength=clean_strength,
         embedder_model=embedder_model,
         custom_embedder_model=custom_embedder_model,
         sid=sid,
-        proposed_pitch=proposed_pitch,
-        proposed_pitch_threshold=proposed_pitch_threshold,
         content_type=RVCContentType.VOCALS,
     )
     display_progress("[~] Post-processing vocals...", 5 / 9, progress_bar)

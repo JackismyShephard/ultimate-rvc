@@ -135,6 +135,11 @@ class RVCAudioMetaData(BaseModel):
     autotune_strength : float
         The strength of the autotune effect applied to the converted
         audio.
+    proposed_pitch : bool
+        Whether to adjust the pitch of the converted audio so that it
+        matches the range of the voice model used.
+    proposed_pitch_threshold : float
+        The threshold for proposed pitch correction.
     clean_audio : bool
         Whether the converted audio was cleaned.
     clean_strength : float
@@ -147,10 +152,6 @@ class RVCAudioMetaData(BaseModel):
         embeddings.
     sid : int
         The speaker id used for multi-speaker conversion.
-    proposed_pitch : bool
-        Whether proposed pitch correction was used during conversion.
-    proposed_pitch_threshold : float
-        The threshold for proposed pitch correction.
 
     """
 
@@ -164,13 +165,13 @@ class RVCAudioMetaData(BaseModel):
     split_audio: bool
     autotune_audio: bool
     autotune_strength: float
+    proposed_pitch: bool
+    proposed_pitch_threshold: float
     clean_audio: bool
     clean_strength: float
     embedder_model: EmbedderModel
     custom_embedder_model: str | None
     sid: int
-    proposed_pitch: bool
-    proposed_pitch_threshold: float
 
     model_config = ConfigDict(protected_namespaces=())
 
