@@ -267,13 +267,13 @@ def convert(
     split_audio: bool = False,
     autotune_audio: bool = False,
     autotune_strength: float = 1.0,
+    proposed_pitch: bool = False,
+    proposed_pitch_threshold: float = 155.0,
     clean_audio: bool = False,
     clean_strength: float = 0.7,
     embedder_model: EmbedderModel = EmbedderModel.CONTENTVEC,
     custom_embedder_model: str | None = None,
     sid: int = 0,
-    proposed_pitch: bool = False,
-    proposed_pitch_threshold: float = 155.0,
     content_type: RVCContentType = RVCContentType.AUDIO,
     make_directory: bool = False,
 ) -> Path:
@@ -310,6 +310,11 @@ def convert(
         Whether to apply autotune to the converted audio.
     autotune_strength : float, default=1.0
         The strength of the autotune to apply to the converted audio.
+    proposed_pitch : bool, default=False
+        Whether to adjust the pitch of the converted audio so that it
+        matches the range of the voice model used.
+    proposed_pitch_threshold : float, default=155.0
+        The threshold for proposed pitch correction.
     clean_audio : bool, default=False
         Whether to clean the converted audio.
     clean_strength : float, default=0.7
@@ -321,10 +326,6 @@ def convert(
         speaker embeddings.
     sid : int, default=0
         The speaker id to use for multi-speaker models.
-    proposed_pitch : bool, default=False
-        Whether to use proposed pitch correction during conversion.
-    proposed_pitch_threshold : float, default=155.0
-        The threshold for proposed pitch correction.
     content_type : RVCContentType, default=RVCContentType.AUDIO
         The type of content to convert. Determines what is shown in
         display mesages and saved file names.
@@ -387,13 +388,13 @@ def convert(
         split_audio=split_audio,
         autotune_audio=autotune_audio,
         autotune_strength=autotune_strength,
+        proposed_pitch=proposed_pitch,
+        proposed_pitch_threshold=proposed_pitch_threshold,
         clean_audio=clean_audio,
         clean_strength=clean_strength,
         embedder_model=embedder_model,
         custom_embedder_model=custom_embedder_model,
         sid=sid,
-        proposed_pitch=proposed_pitch,
-        proposed_pitch_threshold=proposed_pitch_threshold,
     ).model_dump()
 
     paths = [

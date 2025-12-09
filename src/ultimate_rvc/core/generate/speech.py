@@ -463,13 +463,13 @@ def run_pipeline(
     split_speech: bool = False,
     autotune_speech: bool = False,
     autotune_strength: float = 1,
+    proposed_pitch: bool = False,
+    proposed_pitch_threshold: float = 155.0,
     clean_speech: bool = False,
     clean_strength: float = 0.7,
     embedder_model: EmbedderModel = EmbedderModel.CONTENTVEC,
     custom_embedder_model: str | None = None,
     sid: int = 0,
-    proposed_pitch: bool = False,
-    proposed_pitch_threshold: float = 155.0,
     output_gain: int = 0,
     output_sr: int = 44100,
     output_format: AudioExt = AudioExt.MP3,
@@ -540,6 +540,13 @@ def run_pipeline(
     autotune_strength : float, default=1
         The strength of the autotune applied to the converted speech.
 
+    proposed_pitch: bool = False,
+        Whether to adjust the pitch of the speech converted using RVC so
+        that it matches the range of the voice model used.
+
+    proposed_pitch_threshold: float = 155.0,
+        The threshold for proposed pitch correction.
+
     clean_speech : bool, default=False
         Whether to clean the speech converted using RVC.
 
@@ -555,12 +562,6 @@ def run_pipeline(
 
     sid : int, default=0
         The id of the speaker to use for multi-speaker RVC models.
-
-    proposed_pitch: bool = False,
-        Whether to use proposed pitch correction during conversion.
-
-    proposed_pitch_threshold: float = 155.0,
-        The threshold for proposed pitch correction.
 
     output_gain: int, default=0
         The gain to apply to the converted speech during mixing.
@@ -610,13 +611,13 @@ def run_pipeline(
         split_audio=split_speech,
         autotune_audio=autotune_speech,
         autotune_strength=autotune_strength,
+        proposed_pitch=proposed_pitch,
+        proposed_pitch_threshold=proposed_pitch_threshold,
         clean_audio=clean_speech,
         clean_strength=clean_strength,
         embedder_model=embedder_model,
         custom_embedder_model=custom_embedder_model,
         sid=sid,
-        proposed_pitch=proposed_pitch,
-        proposed_pitch_threshold=proposed_pitch_threshold,
         content_type=RVCContentType.SPEECH,
     )
     display_progress("[~] Mixing speech track...", 0.66, progress_bar)

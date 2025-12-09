@@ -151,6 +151,28 @@ def run_pipeline(
             ),
         ),
     ] = 1.0,
+    proposed_pitch: Annotated[
+        bool,
+        typer.Option(
+            rich_help_panel=PanelName.VOICE_ENRICHMENT_OPTIONS,
+            help=(
+                "Whether to adjust the pitch of the converted vocals so that it"
+                " matches the range of the voice model used."
+            ),
+        ),
+    ] = False,
+    proposed_pitch_threshold: Annotated[
+        float,
+        typer.Option(
+            min=0,
+            max=1,
+            rich_help_panel=PanelName.VOICE_ENRICHMENT_OPTIONS,
+            help=(
+                "Threshold for proposed pitch correction. Male voice models typically"
+                " use 155.0 and female voice models typically use 255.0."
+            ),
+        ),
+    ] = 155.0,
     clean_vocals: Annotated[
         bool,
         typer.Option(
@@ -201,22 +223,6 @@ def run_pipeline(
             help="The id of the speaker to use for multi-speaker RVC models.",
         ),
     ] = 0,
-    proposed_pitch: Annotated[
-        bool,
-        typer.Option(
-            rich_help_panel=PanelName.VOICE_SYNTHESIS_OPTIONS,
-            help="Whether to use proposed pitch correction during conversion.",
-        ),
-    ] = False,
-    proposed_pitch_threshold: Annotated[
-        float,
-        typer.Option(
-            min=0,
-            max=1,
-            rich_help_panel=PanelName.VOICE_SYNTHESIS_OPTIONS,
-            help="The threshold for proposed pitch correction.",
-        ),
-    ] = 155.0,
     room_size: Annotated[
         float,
         typer.Option(
@@ -345,13 +351,13 @@ def run_pipeline(
         split_vocals=split_vocals,
         autotune_vocals=autotune_vocals,
         autotune_strength=autotune_strength,
+        proposed_pitch=proposed_pitch,
+        proposed_pitch_threshold=proposed_pitch_threshold,
         clean_vocals=clean_vocals,
         clean_strength=clean_strength,
         embedder_model=embedder_model,
         custom_embedder_model=custom_embedder_model,
         sid=sid,
-        proposed_pitch=proposed_pitch,
-        proposed_pitch_threshold=proposed_pitch_threshold,
         room_size=room_size,
         wet_level=wet_level,
         dry_level=dry_level,

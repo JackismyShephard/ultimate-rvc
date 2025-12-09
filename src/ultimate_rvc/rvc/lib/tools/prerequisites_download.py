@@ -37,7 +37,7 @@ pretraineds_hifigan_list = [
         ],
     ),
 ]
-pretraineds_refinegan_list = ["refinegan/", ["f0D32k.pth", "f0G32k.pth"]]
+pretraineds_refinegan_list = [("refinegan/", ["f0D32k.pth", "f0G32k.pth"])]
 models_list = [("predictors/", ["rmvpe.pt", "fcpe.pt"])]
 embedders_list = [
     ("embedders/contentvec/", ["pytorch_model.bin", "config.json"]),
