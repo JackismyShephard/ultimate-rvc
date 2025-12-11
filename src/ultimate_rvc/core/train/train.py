@@ -161,9 +161,9 @@ def run_training(
     upload_name: str | None = None,
     hardware_acceleration: DeviceType = DeviceType.AUTOMATIC,
     gpu_ids: set[int] | None = None,
+    precision: PrecisionType = PrecisionType.FP32,
     preload_dataset: bool = False,
     reduce_memory_usage: bool = False,
-    precision: PrecisionType = PrecisionType.FP32,
 ) -> list[str] | None:
     """
 
@@ -236,6 +236,10 @@ def run_training(
     gpu_ids : set[int], optional
         Set of ids of the GPUs to use for training the voice model when
         `GPU` is selected for hardware acceleration.
+    precision : PrecisionType, default=PrecisionType.FP32
+        The precision type to use when training the voice model. FP16
+        and BF16 can reduce VRAM usage and speed up training on
+        supported hardware.
     preload_dataset : bool, default=False
         Whether to preload all training data into GPU memory. This can
         improve training speed but requires a lot of VRAM.
@@ -244,10 +248,6 @@ def run_training(
         speed by enabling activation checkpointing. This is useful for
         GPUs with limited memory (e.g., <6GB VRAM) or when training with
         a batch size larger than what your GPU can normally accommodate.
-    precision : PrecisionType, default=PrecisionType.FP32
-        The precision type to use when training the voice model. FP16
-        and BF16 can reduce VRAM usage and speed up training on
-        supported hardware.
 
     Returns
     -------

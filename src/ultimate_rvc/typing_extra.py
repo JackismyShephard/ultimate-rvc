@@ -114,14 +114,6 @@ class PretrainedSampleRate(StrEnum):
     HZ_48K = "48k"
 
 
-class TrainingF0Method(StrEnum):
-    """Enumeration of pitch extraction methods for training."""
-
-    RMVPE = "rmvpe"
-    CREPE = "crepe"
-    CREPE_TINY = "crepe-tiny"
-
-
 class AudioSplitMethod(StrEnum):
     """
     Enumeration of methods to use for splitting audio files during
@@ -139,9 +131,9 @@ class AudioNormalizationMode(StrEnum):
     dataset preprocessing.
     """
 
-    NONE = "None"
-    PRE = "Pre"
-    POST = "Post"
+    NONE = "none"
+    PRE = "pre"
+    POST = "post"
 
 
 class Vocoder(StrEnum):

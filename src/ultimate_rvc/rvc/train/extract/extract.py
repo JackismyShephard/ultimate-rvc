@@ -17,8 +17,6 @@ now_dir = pathlib.Path.cwd()
 sys.path.append(os.path.join(now_dir))
 
 # Zluda hijack
-import pathlib
-
 import ultimate_rvc.rvc.lib.zluda
 from ultimate_rvc.common import RVC_MODELS_DIR
 from ultimate_rvc.rvc.configs.config import Config

@@ -1,5 +1,14 @@
 # TODO
 
+* issue with caching for step 2:
+  * results from pitch extracton and embedding extraction are saved with names corresponding to the audio files they were generated from.
+  * When rerunning they are not recomputed if output files already exist.
+  * Problem is that a user can go back to step 1: audio prporcessing and create a new set of files with the same names as before but with different content.
+  * In this case the cached files will not be recomputed even though they should be.
+  * Temporary solution: always delete cached files befor running step 2 again.
+  * long term solution: save all param used for generation in step 1 in model_info.json. We can also have a model_info.json inside each subfolder lik f0___ embedder_extracted etc. then compare the one in root folder with the one in a subfolder to decide if it should be deleted before running step 2 again.
+  * another alterantive: in both step 1 audio preprocessing and step 2 always save all parameters into model_info.json. onceptually then we should be able to just hash this json compare it to hash in each file and that way determine if it needs to be recomputed. We can also skip the file level and instead do it folder level but then we might have an issue with computing the hash as we need to take into account the names of the files in the folder too or perhaps we can get away with computing the hash of the concatenated hashes of each file in the folder.
+* NEXT UP: test step 2 with crepe an crepe tiny pithc extraction methods
 * Test if custom embeddder models stil work
 * incorporate latest changes from applio
 * fix issue with lazy loader for package on windows:

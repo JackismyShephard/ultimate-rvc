@@ -40,10 +40,10 @@ from ultimate_rvc.typing_extra import (
     AudioSplitMethod,
     DeviceType,
     EmbedderModel,
+    F0Method,
     IndexAlgorithm,
     PrecisionType,
     PretrainedType,
-    TrainingF0Method,
     TrainingSampleRate,
     Vocoder,
 )
@@ -255,13 +255,13 @@ def extract_features(
         typer.Argument(help="The name of the voice model to be trained."),
     ],
     f0_method: Annotated[
-        TrainingF0Method,
+        F0Method,
         typer.Option(
             case_sensitive=False,
             autocompletion=complete_f0_method,
             help="The method to use for extracting pitch features.",
         ),
-    ] = TrainingF0Method.RMVPE,
+    ] = F0Method.RMVPE,
     embedder_model: Annotated[
         EmbedderModel,
         typer.Option(
@@ -539,6 +539,19 @@ def run_training(
             ),
         ),
     ] = None,
+    precision: Annotated[
+        PrecisionType,
+        typer.Option(
+            rich_help_panel=PanelName.DEVICE_AND_MEMORY_OPTIONS,
+            autocompletion=complete_precision_type,
+            case_sensitive=False,
+            help=(
+                "The numerical precision to use during training. Lower precision can"
+                " reduce VRAM usage and speed up training, but may lead to"
+                " instability."
+            ),
+        ),
+    ] = PrecisionType.FP32,
     preload_dataset: Annotated[
         bool,
         typer.Option(
@@ -561,19 +574,6 @@ def run_training(
             ),
         ),
     ] = False,
-    precision: Annotated[
-        PrecisionType,
-        typer.Option(
-            rich_help_panel=PanelName.DEVICE_AND_MEMORY_OPTIONS,
-            autocompletion=complete_precision_type,
-            case_sensitive=False,
-            help=(
-                "The numerical precision to use during training. Lower precision can"
-                " reduce VRAM usage and speed up training, but may lead to"
-                " instability."
-            ),
-        ),
-    ] = PrecisionType.FP32,
 ) -> None:
     """
     Train a voice model using its associated preprocessed dataset and
@@ -600,9 +600,9 @@ def run_training(
         upload_name=upload_name,
         hardware_acceleration=hardware_acceleration,
         gpu_ids=gpu_id_set,
+        precision=precision,
         preload_dataset=preload_dataset,
         reduce_memory_usage=reduce_memory_usage,
-        precision=precision,
     )
     if trained_model_files is None:
         rprint("[!] Training failed!")

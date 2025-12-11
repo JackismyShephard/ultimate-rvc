@@ -120,8 +120,8 @@ def _render_step_1(total_config: TotalConfig) -> None:
             tab_config.preprocess_model.instance.render()
         with gr.Accordion("Options", open=False):
             with gr.Row():
-                tab_config.normalization_mode.instantiate()
                 tab_config.sample_rate.instantiate()
+                tab_config.normalization_mode.instantiate()
             with gr.Row():
                 with gr.Column():
                     tab_config.filter_audio.instantiate()
@@ -180,12 +180,12 @@ def _render_step_1(total_config: TotalConfig) -> None:
                     tab_config.dataset.instance,
                     tab_config.sample_rate.instance,
                     tab_config.normalization_mode.instance,
-                    tab_config.split_method.instance,
-                    tab_config.chunk_len.instance,
-                    tab_config.overlap_len.instance,
                     tab_config.filter_audio.instance,
                     tab_config.clean_audio.instance,
                     tab_config.clean_strength.instance,
+                    tab_config.split_method.instance,
+                    tab_config.chunk_len.instance,
+                    tab_config.overlap_len.instance,
                     tab_config.preprocess_cores.instance,
                 ],
                 outputs=preprocess_msg,
@@ -380,9 +380,9 @@ def _render_step_3(total_config: TotalConfig) -> None:
                 tab_config.upload_name.instance,
                 tab_config.training_acceleration.instance,
                 tab_config.training_gpus.instance,
+                tab_config.precision.instance,
                 tab_config.preload_dataset.instance,
                 tab_config.reduce_memory_usage.instance,
-                tab_config.precision.instance,
             ],
             outputs=voice_model_files,
             show_progress_on=train_msg,
@@ -433,9 +433,9 @@ def _render_step_3(total_config: TotalConfig) -> None:
                 tab_config.upload_model.value,
                 tab_config.training_acceleration.value,
                 GPU_CHOICES[0][1] if GPU_CHOICES else None,
+                tab_config.precision.value,
                 tab_config.preload_dataset.value,
                 tab_config.reduce_memory_usage.value,
-                tab_config.precision.value,
             ],
             outputs=[
                 tab_config.num_epochs.instance,
@@ -452,9 +452,9 @@ def _render_step_3(total_config: TotalConfig) -> None:
                 tab_config.upload_model.instance,
                 tab_config.training_acceleration.instance,
                 tab_config.training_gpus.instance,
+                tab_config.precision.instance,
                 tab_config.preload_dataset.instance,
                 tab_config.reduce_memory_usage.instance,
-                tab_config.precision.instance,
             ],
             show_progress="hidden",
         )

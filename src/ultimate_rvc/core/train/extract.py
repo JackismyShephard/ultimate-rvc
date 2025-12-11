@@ -21,13 +21,13 @@ from ultimate_rvc.core.train.common import validate_devices
 from ultimate_rvc.typing_extra import (
     DeviceType,
     EmbedderModel,
-    TrainingF0Method,
+    F0Method,
 )
 
 
 def extract_features(
     model_name: str,
-    f0_method: TrainingF0Method = TrainingF0Method.RMVPE,
+    f0_method: F0Method = F0Method.RMVPE,
     embedder_model: EmbedderModel = EmbedderModel.CONTENTVEC,
     custom_embedder_model: str | None = None,
     include_mutes: int = 2,
@@ -43,7 +43,7 @@ def extract_features(
     ----------
     model_name : str
         The name of the voice model to be trained.
-    f0_method : TrainingF0Method, default=TrainingF0Method.RMVPE
+    f0_method : F0Method, defaultF0Method.RMVPE
         The method to use for extracting pitch features.
     embedder_model : EmbedderModel, default=EmbedderModel.CONTENTVEC
         The model to use for extracting audio embeddings.

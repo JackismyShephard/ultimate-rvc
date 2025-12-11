@@ -14,7 +14,6 @@ from ultimate_rvc.typing_extra import (
     PrecisionType,
     PretrainedType,
     SampleRate,
-    TrainingF0Method,
     TrainingSampleRate,
     Vocoder,
 )
@@ -691,8 +690,8 @@ class TrainingConfig(BaseTabConfig):
     f0_method: DropdownConfig = DropdownConfig(
         label="F0 method",
         info="The method to use for extracting pitch features.",
-        value=TrainingF0Method.RMVPE,
-        choices=list(TrainingF0Method),
+        value=F0Method.RMVPE,
+        choices=list(F0Method),
         exclude_value=True,
     )
 
@@ -860,6 +859,15 @@ class TrainingConfig(BaseTabConfig):
     )
     training_acceleration: DropdownConfig = DropdownConfig.hardware_acceleration()
     training_gpus: DropdownConfig = DropdownConfig.gpu()
+    precision: DropdownConfig = DropdownConfig(
+        label="Precision",
+        info=(
+            "The precision type to use when training the voice model. FP16 and BF16 can"
+            " reduce VRAM usage and speed up training on supported hardware."
+        ),
+        value=PrecisionType.FP32,
+        choices=list(PrecisionType),
+    )
     preload_dataset: CheckboxConfig = CheckboxConfig(
         label="Preload dataset",
         info=(
@@ -877,13 +885,4 @@ class TrainingConfig(BaseTabConfig):
             " what your GPU can normally accommodate."
         ),
         value=False,
-    )
-    precision: DropdownConfig = DropdownConfig(
-        label="Precision",
-        info=(
-            "The precision type to use when training the voice model. FP16 and BF16 can"
-            " reduce VRAM usage and speed up training on supported hardware."
-        ),
-        value=PrecisionType.FP32,
-        choices=list(PrecisionType),
     )
