@@ -1,5 +1,6 @@
 import json
 import os
+import pathlib
 
 import torch
 
@@ -40,23 +41,13 @@ class Config:
         configs = {}
         for config_file in version_config_paths:
             config_path = os.path.join(str(RVC_CONFIGS_DIR), config_file)
-            with open(config_path) as f:
+            with pathlib.Path(config_path).open() as f:
                 configs[config_file] = json.load(f)
         return configs
 
-    def has_mps(self) -> bool:
-        # Check if Metal Performance Shaders are available - for macOS 12.3+.
-        return torch.backends.mps.is_available()
-
-    def has_xpu(self) -> bool:
-        # Check if XPU is available.
-        return hasattr(torch, "xpu") and torch.xpu.is_available()
-
-    def device_config(self) -> tuple:
+    def device_config(self):
         if self.device.startswith("cuda"):
             self.set_cuda_config()
-        elif self.has_mps():
-            self.device = "mps"
         else:
             self.device = "cpu"
 

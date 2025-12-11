@@ -3,6 +3,7 @@ import hashlib
 import json
 import logging
 import os
+import pathlib
 import sys
 from collections import OrderedDict
 
@@ -10,8 +11,8 @@ import torch
 
 logger = logging.getLogger(__name__)
 
-now_dir = os.getcwd()
-sys.path.append(now_dir)
+now_dir = pathlib.Path.cwd()
+sys.path.append(str(now_dir))
 
 
 def replace_keys_in_dict(d, old_key_part, new_key_part):
@@ -31,7 +32,7 @@ def extract_model(
     ckpt,
     sr,
     name,
-    model_dir,
+    model_path,
     epoch,
     step,
     hps,
@@ -42,11 +43,13 @@ def extract_model(
 ):
     try:
 
-        model_dir_path = os.path.dirname(model_dir)
-        os.makedirs(model_dir_path, exist_ok=True)
+        model_dir = os.path.dirname(model_path)
+        pathlib.Path(model_dir).mkdir(exist_ok=True, parents=True)
 
-        if os.path.exists(os.path.join(model_dir_path, "model_info.json")):
-            with open(os.path.join(model_dir_path, "model_info.json")) as f:
+        if pathlib.Path(os.path.join(model_dir, "model_info.json")).exists():
+            with pathlib.Path(os.path.join(model_dir, "model_info.json")).open(
+                "r"
+            ) as f:
                 data = json.load(f)
                 dataset_length = data.get("total_dataset_duration", None)
                 embedder_model = data.get("embedder_model", None)
@@ -107,9 +110,9 @@ def extract_model(
                 ".parametrizations.weight.original0",
                 ".weight_g",
             ),
-            model_dir,
+            model_path,
         )
-        logger.info("Saved model '%s' (epoch %d and step %d)", model_dir, epoch, step)
+        logger.info("Saved model '%s' (epoch %s and step %s)", model_path, epoch, step)
 
     except Exception as error:
-        print(f"An error occurred extracting the model: {error}")
+        logger.error("An error occurred extracting the model: %s", error)

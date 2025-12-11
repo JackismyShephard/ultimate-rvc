@@ -1,5 +1,3 @@
-from typing import Union
-
 import math
 import os
 from functools import partial

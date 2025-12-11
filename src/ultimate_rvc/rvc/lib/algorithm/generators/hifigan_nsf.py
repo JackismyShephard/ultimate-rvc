@@ -36,7 +36,7 @@ class SourceModuleHnNSF(torch.nn.Module):
         add_noise_std: float = 0.003,
         voiced_threshod: float = 0,
     ):
-        super(SourceModuleHnNSF, self).__init__()
+        super().__init__()
 
         self.sine_amp = sine_amp
         self.noise_std = add_noise_std
@@ -91,7 +91,7 @@ class HiFiGANNSFGenerator(torch.nn.Module):
         sr: int,
         checkpointing: bool = False,
     ):
-        super(HiFiGANNSFGenerator, self).__init__()
+        super().__init__()
 
         self.num_kernels = len(resblock_kernel_sizes)
         self.num_upsamples = len(upsample_rates)

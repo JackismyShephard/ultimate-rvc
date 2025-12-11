@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 import lazy_loader as lazy
 
 import os
+import pathlib
 from concurrent.futures import ThreadPoolExecutor
 
 from ultimate_rvc.common import (
@@ -36,12 +37,15 @@ pretraineds_hifigan_list = [
         ],
     ),
 ]
+pretraineds_refinegan_list = [("refinegan/", ["f0D32k.pth", "f0G32k.pth"])]
 models_list = [("predictors/", ["rmvpe.pt", "fcpe.pt"])]
 embedders_list = [
     ("embedders/contentvec/", ["pytorch_model.bin", "config.json"]),
     ("embedders/chinese_hubert_base/", ["pytorch_model.bin", "config.json"]),
     ("embedders/japanese_hubert_base/", ["pytorch_model.bin", "config.json"]),
     ("embedders/korean_hubert_base/", ["pytorch_model.bin", "config.json"]),
+    ("embedders/spin/", ["pytorch_model.bin", "config.json"]),
+    ("embedders/spin-v2/", ["pytorch_model.bin", "config.json"]),
 ]
 executables_list = [
     ("", ["ffmpeg.exe", "ffprobe.exe"]),
@@ -49,6 +53,7 @@ executables_list = [
 
 folder_mapping_list = {
     "pretrained_v2/": str(PRETRAINED_MODELS_DIR / "hifi-gan/"),
+    "refinegan/": str(PRETRAINED_MODELS_DIR / "refinegan/"),
     "embedders/contentvec/": str(EMBEDDER_MODELS_DIR / "contentvec/"),
     "embedders/chinese_hubert_base/": str(
         EMBEDDER_MODELS_DIR / "chinese_hubert_base/",
@@ -59,6 +64,8 @@ folder_mapping_list = {
     "embedders/korean_hubert_base/": str(
         EMBEDDER_MODELS_DIR / "korean_hubert_base/",
     ),
+    "embedders/spin/": str(EMBEDDER_MODELS_DIR / "spin/"),
+    "embedders/spin-v2/": str(EMBEDDER_MODELS_DIR / "spin-v2/"),
     "predictors/": str(RVC_MODELS_DIR / "predictors/"),
     "formant/": str(RVC_MODELS_DIR / "formant/"),
 }
@@ -73,7 +80,7 @@ def get_file_size_if_missing(file_list):
         local_folder = folder_mapping_list.get(remote_folder, "")
         for file in files:
             destination_path = os.path.join(local_folder, file)
-            if not os.path.exists(destination_path):
+            if not pathlib.Path(destination_path).exists():
                 url = f"{url_base}/{remote_folder}{file}"
                 response = requests.head(url)
                 total_size += int(response.headers.get("content-length", 0))
@@ -87,10 +94,10 @@ def download_file(url, destination_path, global_bar):
     """
     dir_name = os.path.dirname(destination_path)
     if dir_name:
-        os.makedirs(dir_name, exist_ok=True)
+        pathlib.Path(dir_name).mkdir(exist_ok=True, parents=True)
     response = requests.get(url, stream=True)
     block_size = 1024
-    with open(destination_path, "wb") as file:
+    with pathlib.Path(destination_path).open("wb") as file:
         for data in response.iter_content(block_size):
             file.write(data)
             global_bar.update(len(data))
@@ -107,7 +114,7 @@ def download_mapping_files(file_mapping_list, global_bar):
             local_folder = folder_mapping_list.get(remote_folder, "")
             for file in file_list:
                 destination_path = os.path.join(local_folder, file)
-                if not os.path.exists(destination_path):
+                if not pathlib.Path(destination_path).exists():
                     url = f"{url_base}/{remote_folder}{file}"
                     futures.append(
                         executor.submit(
@@ -152,6 +159,7 @@ def calculate_total_size(
     if exe and os.name == "nt":
         total_size += get_file_size_if_missing(executables_list)
     total_size += get_file_size_if_missing(pretraineds_hifigan)
+    total_size += get_file_size_if_missing(pretraineds_refinegan_list)
     return total_size
 
 
@@ -186,3 +194,4 @@ def prequisites_download_pipeline(
                     print("No executables needed")
             if pretraineds_hifigan:
                 download_mapping_files(pretraineds_hifigan_list, global_bar)
+                download_mapping_files(pretraineds_refinegan_list, global_bar)

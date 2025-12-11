@@ -131,7 +131,7 @@ class ResidualCouplingBlock(torch.nn.Module):
         n_flows: int = 4,
         gin_channels: int = 0,
     ):
-        super(ResidualCouplingBlock, self).__init__()
+        super().__init__()
         self.channels = channels
         self.hidden_channels = hidden_channels
         self.kernel_size = kernel_size

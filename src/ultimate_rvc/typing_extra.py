@@ -43,6 +43,8 @@ class EmbedderModel(StrEnum):
     """Enumeration of audio embedding models."""
 
     CONTENTVEC = "contentvec"
+    SPIN = "spin"
+    SPIN_V2 = "spin-v2"
     CHINESE_HUBERT_BASE = "chinese-hubert-base"
     JAPANESE_HUBERT_BASE = "japanese-hubert-base"
     KOREAN_HUBERT_BASE = "korean-hubert-base"
@@ -87,6 +89,14 @@ class DeviceType(StrEnum):
     GPU = "GPU"
 
 
+class PrecisionType(StrEnum):
+    """Enumeration of precision types for training voice models."""
+
+    FP32 = "fp32"
+    FP16 = "fp16"
+    BF16 = "bf16"
+
+
 class TrainingSampleRate(StrEnum):
     """Enumeration of sample rates for training voice models."""
 
@@ -121,6 +131,17 @@ class AudioSplitMethod(StrEnum):
     SKIP = "Skip"
     SIMPLE = "Simple"
     AUTOMATIC = "Automatic"
+
+
+class AudioNormalizationMode(StrEnum):
+    """
+    Enumeration of audio normalization methods during
+    dataset preprocessing.
+    """
+
+    NONE = "None"
+    PRE = "Pre"
+    POST = "Post"
 
 
 class Vocoder(StrEnum):

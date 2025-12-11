@@ -1,11 +1,12 @@
 from typing import TYPE_CHECKING
 
+import lazy_loader as lazy
+
 import glob
 import logging
 import os
+import pathlib
 from collections import OrderedDict
-
-import lazy_loader as lazy
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -100,9 +101,9 @@ def load_checkpoint(checkpoint_path, model, optimizer=None, load_opt=1):
         load_opt (int, optional): Whether to load the optimizer state. Defaults to 1.
 
     """
-    assert os.path.isfile(
-        checkpoint_path,
-    ), f"Checkpoint file not found: {checkpoint_path}"
+    assert pathlib.Path(
+        checkpoint_path
+    ).is_file(), f"Checkpoint file not found: {checkpoint_path}"
 
     checkpoint_dict = torch.load(
         checkpoint_path,
@@ -148,6 +149,7 @@ def load_checkpoint(checkpoint_path, model, optimizer=None, load_opt=1):
         checkpoint_dict["iteration"],
         checkpoint_dict.get("lowest_value", {"value": float("inf"), "epoch": 0}),
         checkpoint_dict.get("consecutive_increases", 0),
+        checkpoint_dict.get("scaler", {}),
     )
 
 
@@ -159,6 +161,7 @@ def save_checkpoint(
     lowest_value,
     consecutive_increases,
     checkpoint_path,
+    scaler,
 ):
     """
     Save the model and optimizer state to a checkpoint file.
@@ -181,6 +184,7 @@ def save_checkpoint(
         "consecutive_increases": consecutive_increases,
         "optimizer": optimizer.state_dict(),
         "learning_rate": learning_rate,
+        "scaler": scaler.state_dict(),
     }
 
     # Create a backwards-compatible checkpoint
@@ -293,7 +297,7 @@ def load_filepaths_and_text(filename, split="|"):
         split (str, optional): The delimiter used to split the lines.
 
     """
-    with open(filename, encoding="utf-8") as f:
+    with pathlib.Path(filename).open(encoding="utf-8") as f:
         return [line.strip().split(split) for line in f]
 
 

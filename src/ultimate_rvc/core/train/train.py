@@ -32,6 +32,7 @@ from ultimate_rvc.core.train.typing_extra import ModelInfo, TrainingInfo
 from ultimate_rvc.typing_extra import (
     DeviceType,
     IndexAlgorithm,
+    PrecisionType,
     PretrainedType,
     Vocoder,
 )
@@ -162,6 +163,7 @@ def run_training(
     gpu_ids: set[int] | None = None,
     preload_dataset: bool = False,
     reduce_memory_usage: bool = False,
+    precision: PrecisionType = PrecisionType.FP32,
 ) -> list[str] | None:
     """
 
@@ -242,6 +244,10 @@ def run_training(
         speed by enabling activation checkpointing. This is useful for
         GPUs with limited memory (e.g., <6GB VRAM) or when training with
         a batch size larger than what your GPU can normally accommodate.
+    precision : PrecisionType, default=PrecisionType.FP32
+        The precision type to use when training the voice model. FP16
+        and BF16 can reduce VRAM usage and speed up training on
+        supported hardware.
 
     Returns
     -------
@@ -314,6 +320,7 @@ def run_training(
         reduce_memory_usage,
         device_type,
         device_ids,
+        precision,
     )
 
     model_file = model_path / f"{model_name}_best.pth"

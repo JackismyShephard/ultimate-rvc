@@ -1,15 +1,15 @@
-from typing import IO, List, Optional, Tuple, Union
+from typing import IO
 
 import json
 import os
+import pathlib
 import re
 import shutil
 import sys
 import tempfile
-import textwrap
 import time
 import warnings
-from urllib.parse import parse_qs, unquote, urlparse
+from urllib.parse import unquote, urlparse
 
 import requests
 
@@ -88,9 +88,9 @@ def _create_session(
         sess.proxies = {"http": proxy, "https": proxy}
 
     cookies_file = os.path.join(HOME, ".cache/gdown/cookies.json")
-    if os.path.exists(cookies_file) and use_cookies:
+    if pathlib.Path(cookies_file).exists() and use_cookies:
         try:
-            with open(cookies_file) as f:
+            with pathlib.Path(cookies_file).open() as f:
                 cookies = json.load(f)
             for k, v in cookies:
                 sess.cookies[k] = v
@@ -184,13 +184,15 @@ def download(
                 continue
 
         if use_cookies:
-            os.makedirs(os.path.dirname(cookies_file), exist_ok=True)
+            pathlib.Path(os.path.dirname(cookies_file)).mkdir(
+                exist_ok=True, parents=True
+            )
             cookies = [
                 (k, v)
                 for k, v in sess.cookies.items()
                 if not k.startswith("download_warning_")
             ]
-            with open(cookies_file, "w") as f:
+            with pathlib.Path(cookies_file).open("w") as f:
                 json.dump(cookies, f, indent=2)
 
         if "Content-Disposition" in res.headers:
@@ -219,7 +221,7 @@ def download(
     download_path = output or filename_from_url
 
     if isinstance(download_path, str) and download_path.endswith(os.path.sep):
-        os.makedirs(download_path, exist_ok=True)
+        pathlib.Path(download_path).mkdir(exist_ok=True, parents=True)
         download_path = os.path.join(download_path, filename_from_url)
 
     temp_dir = os.path.dirname(download_path) or "."
@@ -254,7 +256,7 @@ def download(
             )
 
         try:
-            file_obj: IO = open(temp_file_path, "ab")
+            file_obj: IO = pathlib.Path(temp_file_path).open("ab")
         except Exception as e:
             print(
                 f"Could not open the temporary file {temp_file_path}: {e}",

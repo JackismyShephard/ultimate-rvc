@@ -1,5 +1,6 @@
 import json
 import os
+import pathlib
 import shutil
 from random import shuffle
 
@@ -7,14 +8,21 @@ from ultimate_rvc.rvc.common import RVC_CONFIGS_DIR, RVC_TRAINING_MODELS_DIR
 from ultimate_rvc.rvc.configs.config import Config
 
 config = Config()
-current_directory = os.getcwd()
+current_directory = pathlib.Path.cwd()
 
 
-def generate_config(model_path: str):
+def generate_config(model_path: str, sample_rate: int | None = None):
     file_path = os.path.join(model_path, "model_info.json")
-    with open(file_path) as f:
-        data = json.load(f)
-    sample_rate = data["sample_rate"]
+    if pathlib.Path(file_path).exists():
+        with pathlib.Path(file_path).open() as f:
+            data = json.load(f)
+    else:
+        data = {}
+    sample_rate = data.get("sample_rate") if sample_rate is None else sample_rate
+    if sample_rate is None:
+        raise ValueError(
+            "Sample rate must be provided either as argument or in model_info.json"
+        )
     config_path = os.path.join(RVC_CONFIGS_DIR, f"{sample_rate}.json")
     config_save_path = os.path.join(model_path, "config.json")
     shutil.copyfile(config_path, config_save_path)
@@ -25,11 +33,20 @@ def generate_filelist(
     include_mutes: int,
     f0_method_id: str,
     embedder_model_id: str,
+    sample_rate: int | None = None,
 ):
     file_path = os.path.join(model_path, "model_info.json")
-    with open(file_path) as f:
-        data = json.load(f)
-    sample_rate = data["sample_rate"]
+
+    if pathlib.Path(file_path).exists():
+        with pathlib.Path(file_path).open() as f:
+            data = json.load(f)
+    else:
+        data = {}
+    sample_rate = data.get("sample_rate") if sample_rate is None else sample_rate
+    if sample_rate is None:
+        raise ValueError(
+            "Sample rate must be provided either as argument or in model_info.json"
+        )
 
     gt_wavs_dir = os.path.join(model_path, "sliced_audios")
     feature_dir = os.path.join(
@@ -49,7 +66,12 @@ def generate_filelist(
     names = gt_wavs_files & feature_files & f0_files & f0nsf_files
 
     options = []
-    mute_base_path = os.path.join(RVC_TRAINING_MODELS_DIR, "mute")
+    if embedder_model_id == "spin":
+        mute_base_path = os.path.join(RVC_TRAINING_MODELS_DIR, "mute_spin")
+    elif embedder_model_id == "spin-v2":
+        mute_base_path = os.path.join(RVC_TRAINING_MODELS_DIR, "mute_spin-v2")
+    else:
+        mute_base_path = os.path.join(RVC_TRAINING_MODELS_DIR, "mute")
     sids = []
     for name in names:
         sid = name.split("_")[0]
@@ -83,10 +105,10 @@ def generate_filelist(
             "speakers_id": len(sids),
         },
     )
-    with open(file_path, "w") as f:
+    with pathlib.Path(file_path).open("w") as f:
         json.dump(data, f, indent=4)
 
     shuffle(options)
 
-    with open(os.path.join(model_path, "filelist.txt"), "w") as f:
+    with pathlib.Path(os.path.join(model_path, "filelist.txt")).open("w") as f:
         f.write("\n".join(options))

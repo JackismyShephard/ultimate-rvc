@@ -1,5 +1,3 @@
-from typing import List
-
 import numpy as np
 
 import torch
@@ -24,7 +22,7 @@ class ConvBlockRes(nn.Module):
     """
 
     def __init__(self, in_channels, out_channels, momentum=0.01):
-        super(ConvBlockRes, self).__init__()
+        super().__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(
                 in_channels=in_channels,
@@ -80,7 +78,7 @@ class ResEncoderBlock(nn.Module):
         n_blocks=1,
         momentum=0.01,
     ):
-        super(ResEncoderBlock, self).__init__()
+        super().__init__()
         self.n_blocks = n_blocks
         self.conv = nn.ModuleList()
         self.conv.append(ConvBlockRes(in_channels, out_channels, momentum))
@@ -123,7 +121,7 @@ class Encoder(nn.Module):
         out_channels=16,
         momentum=0.01,
     ):
-        super(Encoder, self).__init__()
+        super().__init__()
         self.n_encoders = n_encoders
         self.bn = nn.BatchNorm2d(in_channels, momentum=momentum)
         self.layers = nn.ModuleList()
@@ -168,7 +166,7 @@ class Intermediate(nn.Module):
     """
 
     def __init__(self, in_channels, out_channels, n_inters, n_blocks, momentum=0.01):
-        super(Intermediate, self).__init__()
+        super().__init__()
         self.n_inters = n_inters
         self.layers = nn.ModuleList()
         self.layers.append(
@@ -199,7 +197,7 @@ class ResDecoderBlock(nn.Module):
     """
 
     def __init__(self, in_channels, out_channels, stride, n_blocks=1, momentum=0.01):
-        super(ResDecoderBlock, self).__init__()
+        super().__init__()
         out_padding = (0, 1) if stride == (1, 2) else (1, 1)
         self.n_blocks = n_blocks
         self.conv1 = nn.Sequential(
@@ -242,7 +240,7 @@ class Decoder(nn.Module):
     """
 
     def __init__(self, in_channels, n_decoders, stride, n_blocks, momentum=0.01):
-        super(Decoder, self).__init__()
+        super().__init__()
         self.layers = nn.ModuleList()
         self.n_decoders = n_decoders
         for _ in range(self.n_decoders):
@@ -281,7 +279,7 @@ class DeepUnet(nn.Module):
         in_channels=1,
         en_out_channels=16,
     ):
-        super(DeepUnet, self).__init__()
+        super().__init__()
         self.encoder = Encoder(
             in_channels,
             128,
@@ -335,7 +333,7 @@ class E2E(nn.Module):
         in_channels=1,
         en_out_channels=16,
     ):
-        super(E2E, self).__init__()
+        super().__init__()
         self.unet = DeepUnet(
             kernel_size,
             n_blocks,
@@ -451,7 +449,6 @@ class RMVPE0Predictor:
 
     Args:
         model_path (str): Path to the RMVPE0 model file.
-        is_half (bool): Whether to use half-precision floating-point numbers.
         device (str, optional): Device to use for computation. Defaults to None, which uses CUDA if available.
 
     """
@@ -478,7 +475,7 @@ class RMVPE0Predictor:
         cents_mapping = 20 * np.arange(N_CLASS) + 1997.3794084376191
         self.cents_mapping = np.pad(cents_mapping, (4, 4))
 
-    def mel2hidden(self, mel):
+    def mel2hidden(self, mel, chunk_size=32000):
         """
         Converts Mel-spectrogram features to hidden representation.
 
@@ -488,13 +485,37 @@ class RMVPE0Predictor:
         """
         with torch.no_grad():
             n_frames = mel.shape[-1]
+            # print('n_frames', n_frames)
+            # print('mel shape before padding', mel.shape)
             mel = F.pad(
                 mel,
                 (0, 32 * ((n_frames - 1) // 32 + 1) - n_frames),
                 mode="reflect",
             )
-            hidden = self.model(mel)
-            return hidden[:, :n_frames]
+            # print('mel shape after padding', mel.shape)
+
+            output_chunks = []
+            pad_frames = mel.shape[-1]
+            for start in range(0, pad_frames, chunk_size):
+                # print('chunk @', start)
+                end = min(start + chunk_size, pad_frames)
+                mel_chunk = mel[..., start:end]
+                assert (
+                    mel_chunk.shape[-1] % 32 == 0
+                ), "chunk_size must be divisible by 32"
+                # print(' before padding', mel_chunk.shape)
+                # mel_chunk = F.pad(mel_chunk, (320, 320), mode="reflect")
+                # print(' after padding', mel_chunk.shape)
+
+                out_chunk = self.model(mel_chunk)
+                # print(' result chunk', out_chunk.shape)
+                # out_chunk = out_chunk[:, 320:-320, :]
+                # print(' trimmed chunk', out_chunk.shape)
+                output_chunks.append(out_chunk)
+
+            hidden = torch.cat(output_chunks, dim=1)
+        # print('output', hidden[:, :n_frames].shape)
+        return hidden[:, :n_frames]
 
     def decode(self, hidden, thred=0.03):
         """
@@ -521,6 +542,9 @@ class RMVPE0Predictor:
         """
         audio = torch.from_numpy(audio).float().to(self.device).unsqueeze(0)
         mel = self.mel_extractor(audio, center=True)
+        del audio
+        with torch.no_grad():
+            torch.cuda.empty_cache()
         hidden = self.mel2hidden(mel)
         hidden = hidden.squeeze(0).cpu().numpy()
         f0 = self.decode(hidden, thred=thred)
@@ -567,7 +591,7 @@ class BiGRU(nn.Module):
     """
 
     def __init__(self, input_features, hidden_features, num_layers):
-        super(BiGRU, self).__init__()
+        super().__init__()
         self.gru = nn.GRU(
             input_features,
             hidden_features,
