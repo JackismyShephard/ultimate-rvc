@@ -189,7 +189,7 @@ def _render_download_tab(event_state: ManageModelEventState) -> None:
                 # inputs=[tags, search_query] when instantiating
                 # gr.Dataframe because that does not work with reload
                 # mode due to a bug.
-                gr.on(
+                gr.on(  # type: ignore[reportUnknownMemberType]
                     triggers=[search_query.change, tags.change],
                     fn=_filter_public_models_table,
                     inputs=[tags, search_query],

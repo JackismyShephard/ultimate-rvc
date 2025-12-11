@@ -6,10 +6,12 @@ from pydantic import BaseModel
 
 from ultimate_rvc.typing_extra import (
     AudioExt,
+    AudioNormalizationMode,
     AudioSplitMethod,
     EmbedderModel,
     F0Method,
     IndexAlgorithm,
+    PrecisionType,
     PretrainedType,
     SampleRate,
     TrainingF0Method,
@@ -475,6 +477,9 @@ class TrainingConfig(BaseTabConfig):
         for audio preprocessing.
     sample_rate : DropdownConfig
         Configuration settings for a sample rate dropdown component.
+    normalization_mode: DropdownConfig
+        Configuration settings for a normalization mode dropdown
+        component.
     filter_audio : CheckboxConfig
         Configuration settings for a filter audio checkbox component.
     clean_audio : CheckboxConfig
@@ -496,8 +501,6 @@ class TrainingConfig(BaseTabConfig):
         feature extraction.
     f0_method : DropdownConfig
         Configuration settings for an F0 method dropdown component.
-    hop_length : SliderConfig
-        Configuration settings for a hop length slider component.
     include_mutes : SliderConfig
         Configuration settings for an include mutes slider component.
     extract_cores : SliderConfig
@@ -614,6 +617,15 @@ class TrainingConfig(BaseTabConfig):
         value=TrainingSampleRate.HZ_40K,
         choices=list(TrainingSampleRate),
     )
+    normalization_mode: DropdownConfig = DropdownConfig(
+        label="Normalization mode",
+        info=(
+            "The normalization method to use for the audio files in the provided"
+            " dataset."
+        ),
+        value=AudioNormalizationMode.POST,
+        choices=list(AudioNormalizationMode),
+    )
     filter_audio: CheckboxConfig = CheckboxConfig(
         label="Filter audio",
         info=(
@@ -684,11 +696,6 @@ class TrainingConfig(BaseTabConfig):
         exclude_value=True,
     )
 
-    hop_length: SliderConfig = SliderConfig.hop_length(
-        label="Hop length",
-        info="The hop length to use for extracting pitch features.<br><br>",
-        visible=False,
-    )
     include_mutes: SliderConfig = SliderConfig(
         label="Include mutes",
         info=(
@@ -870,4 +877,13 @@ class TrainingConfig(BaseTabConfig):
             " what your GPU can normally accommodate."
         ),
         value=False,
+    )
+    precision: DropdownConfig = DropdownConfig(
+        label="Precision",
+        info=(
+            "The precision type to use when training the voice model. FP16 and BF16 can"
+            " reduce VRAM usage and speed up training on supported hardware."
+        ),
+        value=PrecisionType.FP32,
+        choices=list(PrecisionType),
     )

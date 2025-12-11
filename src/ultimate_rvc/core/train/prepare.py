@@ -139,7 +139,7 @@ def preprocess_dataset(
     sample_rate : TrainingSampleRate, default=TrainingSampleRate.HZ_40K
         The target sample rate for the audio files in the provided
         dataset.
-    normalization_mode : AudioNormalizationMode, default=AudioNormalizationMode.POST
+    normalization_mode : AudioNormalizationMode, default=POST
         The audio normalization method to use for the audio files in
         the provided dataset.
     filter_audio : bool, default=True

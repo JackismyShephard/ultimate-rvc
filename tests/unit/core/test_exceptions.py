@@ -313,7 +313,7 @@ class TestNotFoundError:
         error = NotFoundError(Entity.FILE, location)
 
         assert isinstance(error, OSError)
-        assert str(error) == "File not found at: /some/path/file.txt"
+        assert str(error) == f"File not found at: {location}"
 
     def test_not_found_error_with_location_enum(self) -> None:
         """Test NotFoundError with Location enum."""
@@ -1335,8 +1335,7 @@ class TestInvalidAudioFormatError:
 
         assert (
             str(error)
-            == "Invalid audio file format: /path/to/file.txt. Supported formats are:"
-            " .wav, .mp3."
+            == f"Invalid audio file format: {path}. Supported formats are: .wav, .mp3."
         )
 
     @pytest.mark.parametrize(
