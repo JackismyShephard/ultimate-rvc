@@ -256,36 +256,6 @@ class SliderConfig(InfoComponentConfig[float | None, gr.Slider]):
         return cls(label=label, info=info, value=0, minimum=-12, maximum=12, step=1)
 
     @classmethod
-    def hop_length(cls, label: str, info: str, visible: bool) -> SliderConfig:
-        """
-        Create a slider configuration for hop length.
-
-        Parameters
-        ----------
-        label : str
-            The label for the hop length slider.
-        info : str
-            The information text for the hop length slider.
-        visible : bool
-            Whether the slider should be visible.
-
-        Returns
-        -------
-        SliderConfig
-            A slider configuration for hop length.
-
-        """
-        return cls(
-            label=label,
-            info=info,
-            value=128,
-            minimum=1,
-            maximum=512,
-            step=1,
-            visible=visible,
-        )
-
-    @classmethod
     def clean_strength(cls, visible: bool) -> SliderConfig:
         """
         Create a slider configuration for clean strength.

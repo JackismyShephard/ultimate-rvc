@@ -55,7 +55,7 @@ repos:
       - id: pytest
         name: pytest
         # TODO remove --no-cov once coverage is stable
-        entry: ./urvc uv run pytest --no-cov
+        entry: uv run pytest --no-cov
         language: system
         pass_filenames: false
         always_run: true

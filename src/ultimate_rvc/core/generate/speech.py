@@ -50,7 +50,6 @@ from ultimate_rvc.typing_extra import (
 )
 
 if TYPE_CHECKING:
-
     import gradio as gr
 
     import edge_tts

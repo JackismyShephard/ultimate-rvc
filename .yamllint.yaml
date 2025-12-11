@@ -5,3 +5,5 @@ rules:
     present: false
   empty-lines:
     max-end: 1
+  new-lines:
+    type: platform
