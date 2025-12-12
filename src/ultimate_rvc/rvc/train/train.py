@@ -465,9 +465,9 @@ def run(
         net_g = DDP(net_g, device_ids=[device_id])
         net_d = DDP(net_d, device_ids=[device_id])
 
-    if rank == 0 and train_dtype == torch.bfloat16:
+    if rank == 0 and device.type == "cuda" and train_dtype == torch.bfloat16:
         logger.info("Using BFloat16 for training.")
-    elif rank == 0 and train_dtype == torch.float16:
+    elif rank == 0 and device.type == "cuda" and train_dtype == torch.float16:
         logger.info("Using Float16 for training.")
 
     # Load checkpoint if available
@@ -758,7 +758,7 @@ def train_and_evaluate(
                 # Discriminator backward and update
                 global_disc_loss[epoch - 1] += loss_disc.item()
                 optim_d.zero_grad()
-                if train_dtype == torch.float16:
+                if device.type == "cuda" and train_dtype == torch.float16:
                     scaler.scale(loss_disc).backward()
                     scaler.unscale_(optim_d)
                     grad_norm_d = commons.grad_norm(net_d.parameters())
@@ -804,7 +804,7 @@ def train_and_evaluate(
             loss_gen_all = loss_gen + loss_fm + loss_mel + loss_kl
             global_gen_loss[epoch - 1] += loss_gen_all.item()
             optim_g.zero_grad()
-            if train_dtype == torch.float16:
+            if device.type == "cuda" and train_dtype == torch.float16:
                 scaler.scale(loss_gen_all).backward()
                 scaler.unscale_(optim_g)
                 grad_norm_g = commons.grad_norm(net_g.parameters())
