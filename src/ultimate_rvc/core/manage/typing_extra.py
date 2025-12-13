@@ -10,7 +10,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel, RootModel
 
-from ultimate_rvc.typing_extra import PretrainedSampleRate
+from ultimate_rvc.typing_extra import TrainingSampleRate
 
 
 class VoiceModelTagName(StrEnum):
@@ -105,29 +105,29 @@ class PretrainedPaths(BaseModel):
     D: str
 
 
-class PretrainedModelMetaData(RootModel[dict[PretrainedSampleRate, PretrainedPaths]]):
+class PretrainedModelMetaData(RootModel[dict[TrainingSampleRate, PretrainedPaths]]):
     """
     Metadata for a pretrained model with a given name.
 
     Attributes
     ----------
-    root : dict[PretrainedSampleRate, PretrainedPaths]
+    root : dict[TrainingSampleRate, PretrainedPaths]
         Mapping from sample rate to paths to the generator and
         discriminator for the pretrained model with the given name
         at the given sample rate.
 
     """
 
-    root: dict[PretrainedSampleRate, PretrainedPaths]
+    root: dict[TrainingSampleRate, PretrainedPaths]
 
-    def __getitem__(self, item: PretrainedSampleRate) -> PretrainedPaths:
+    def __getitem__(self, item: TrainingSampleRate) -> PretrainedPaths:
         """
         Get the paths to the generator and discriminator for the
         pretrained model at the given sample rate.
 
         Parameters
         ----------
-        item : PretrainedSampleRate
+        item : TrainingSampleRate
             The sample rate for which to get paths to the generator
             and discriminator for the pretrained model.
 
@@ -140,14 +140,14 @@ class PretrainedModelMetaData(RootModel[dict[PretrainedSampleRate, PretrainedPat
         """
         return self.root[item]
 
-    def keys(self) -> list[PretrainedSampleRate]:
+    def keys(self) -> list[TrainingSampleRate]:
         """
         Get the sample rates for which generator and discriminator
         paths are available for the pretrained model.
 
         Returns
         -------
-        list[PretrainedSampleRate]
+        list[TrainingSampleRate]
             The sample rates for which paths are available for the
             pretrained model.
 
@@ -161,7 +161,7 @@ class PretrainedModelMetaDataTable(RootModel[dict[str, PretrainedModelMetaData]]
 
     Attributes
     ----------
-    root : dict[str, PretrainedSampleRates]
+    root : dict[str, PretrainedModelMetaData]
         Mapping from the names of pretrained models to metadata for
         those models.
 
@@ -199,14 +199,14 @@ class PretrainedModelMetaDataTable(RootModel[dict[str, PretrainedModelMetaData]]
         return titan_name if titan_name in self.names else next(iter(self.names), None)
 
     @property
-    def default_sample_rates(self) -> list[PretrainedSampleRate]:
+    def default_sample_rates(self) -> list[TrainingSampleRate]:
         """
         Get the sample rates for which instances of the default
         pretrained model are available online.
 
         Returns
         -------
-        list[PretrainedSampleRate]
+        list[TrainingSampleRate]
             The sample rates for which instances of the default
             pretrained model are available online.
 
@@ -214,14 +214,14 @@ class PretrainedModelMetaDataTable(RootModel[dict[str, PretrainedModelMetaData]]
         return self.get_sample_rates(self.default_name) if self.default_name else []
 
     @property
-    def default_sample_rate(self) -> PretrainedSampleRate | None:
+    def default_sample_rate(self) -> TrainingSampleRate | None:
         """
         Get the first sample rate for which an instance of the default
         pretrained model is available online.
 
         Returns
         -------
-        PretrainedSampleRate | None
+        TrainingSampleRate | None
             The first sample rate for which an instance of the default
             pretrained model is available online, or if no instances are
             available online.
@@ -229,7 +229,7 @@ class PretrainedModelMetaDataTable(RootModel[dict[str, PretrainedModelMetaData]]
         """
         return next(iter(self.default_sample_rates), None)
 
-    def get_sample_rates(self, name: str) -> list[PretrainedSampleRate]:
+    def get_sample_rates(self, name: str) -> list[TrainingSampleRate]:
         """
         Get the sample rates for which instances of the pretrained
         model with the provided name are available online.
@@ -242,7 +242,7 @@ class PretrainedModelMetaDataTable(RootModel[dict[str, PretrainedModelMetaData]]
 
         Returns
         -------
-        list[PretrainedSampleRate]
+        list[TrainingSampleRate]
             The sample rates for which there are instances of the
             pretrained model with the provided name available online.
 
@@ -252,7 +252,7 @@ class PretrainedModelMetaDataTable(RootModel[dict[str, PretrainedModelMetaData]]
     def get_sample_rates_with_default(
         self,
         name: str,
-    ) -> tuple[PretrainedSampleRate | None, list[PretrainedSampleRate]]:
+    ) -> tuple[TrainingSampleRate | None, list[TrainingSampleRate]]:
         """
         Get the sample rates for which instances of the pretrained
         model with the provided name are available online, and the
@@ -266,7 +266,7 @@ class PretrainedModelMetaDataTable(RootModel[dict[str, PretrainedModelMetaData]]
 
         Returns
         -------
-        tuple[PretrainedSampleRate | None, list[PretrainedSampleRate]]
+        tuple[TrainingSampleRate | None, list[TrainingSampleRate]]
             A tuple containing the default sample rate for the
             pretrained model with the provided name, and a list of all
             sample rates for which there are instances of that model
@@ -287,7 +287,7 @@ class PretrainedModelMetaDataTable(RootModel[dict[str, PretrainedModelMetaData]]
 
         Returns
         -------
-        PretrainedSampleRates
+        PretrainedModelMetaData
             The metadata for the pretrained model with the given name.
 
         """

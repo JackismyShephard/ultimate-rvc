@@ -14,6 +14,7 @@ import gradio as gr
 import pandas as pd  # noqa: TC002
 
 from ultimate_rvc.core.manage.models import (
+    PRETRAINED_MODELS_TABLE,
     delete_all_custom_embedder_models,
     delete_all_custom_pretrained_models,
     delete_all_models,
@@ -28,7 +29,6 @@ from ultimate_rvc.core.manage.models import (
     filter_public_models_table,
     get_custom_embedder_model_names,
     get_custom_pretrained_model_names,
-    get_pretrained_metadata,
     get_public_model_tags,
     get_training_model_names,
     get_voice_model_names,
@@ -239,18 +239,17 @@ def _render_download_tab(event_state: ManageModelEventState) -> None:
             )
         with gr.Accordion("Pretrained models", open=False):
             with gr.Row():
-                pretrained_model_metadata = get_pretrained_metadata()
                 pretrained_model = gr.Dropdown(
                     label="Pretrained model",
                     info="Select the pretrained model you want to download.",
-                    value=pretrained_model_metadata.default_name,
-                    choices=pretrained_model_metadata.names,
+                    value=PRETRAINED_MODELS_TABLE.default_name,
+                    choices=PRETRAINED_MODELS_TABLE.names,
                 )
                 pretrained_sample_rate = gr.Dropdown(
                     label="Sample rate",
                     info="Select the sample rate for the pretrained model.",
-                    value=pretrained_model_metadata.default_sample_rate,
-                    choices=pretrained_model_metadata.default_sample_rates,
+                    value=PRETRAINED_MODELS_TABLE.default_sample_rate,
+                    choices=PRETRAINED_MODELS_TABLE.default_sample_rates,
                 )
 
                 pretrained_model.change(
@@ -612,6 +611,5 @@ def _update_pretrained_sample_rates(name: str) -> gr.Dropdown:
         The updated dropdown for pretrained sample rates.
 
     """
-    pretrained_metadata = get_pretrained_metadata()
-    default, sample_rates = pretrained_metadata.get_sample_rates_with_default(name)
+    default, sample_rates = PRETRAINED_MODELS_TABLE.get_sample_rates_with_default(name)
     return gr.Dropdown(value=default, choices=sample_rates)

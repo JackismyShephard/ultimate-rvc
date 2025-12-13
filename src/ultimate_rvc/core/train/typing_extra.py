@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict
 
+from ultimate_rvc.typing_extra import TrainingSampleRate  # noqa: TC002
+
 
 class ModelInfo(BaseModel):
     """
@@ -14,13 +16,13 @@ class ModelInfo(BaseModel):
 
     Attributes
     ----------
-    sample_rate : PretrainedSampleRate
+    sample_rate : TrainingSampleRate
         The sample rate of the post-processed audio to train the model
         on.
 
     """
 
-    sample_rate: int
+    sample_rate: TrainingSampleRate
     # TODO add more attributes later
 
 

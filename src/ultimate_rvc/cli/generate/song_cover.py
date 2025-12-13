@@ -19,11 +19,12 @@ from ultimate_rvc.cli.common import (
     complete_audio_ext,
     complete_embedder_model,
     complete_f0_method,
+    complete_sample_rate,
     format_duration,
 )
 from ultimate_rvc.cli.typing_extra import PanelName
 from ultimate_rvc.core.generate.song_cover import run_pipeline as _run_pipeline
-from ultimate_rvc.typing_extra import AudioExt, EmbedderModel, F0Method
+from ultimate_rvc.typing_extra import AudioExt, EmbedderModel, F0Method, SampleRate
 
 app = typer.Typer(
     name="song-cover",
@@ -164,8 +165,8 @@ def run_pipeline(
     proposed_pitch_threshold: Annotated[
         float,
         typer.Option(
-            min=0,
-            max=1,
+            min=50.0,
+            max=1200.0,
             rich_help_panel=PanelName.VOICE_ENRICHMENT_OPTIONS,
             help=(
                 "Threshold for proposed pitch correction. Male voice models typically"
@@ -297,12 +298,13 @@ def run_pipeline(
         ),
     ] = 0,
     output_sr: Annotated[
-        int,
+        SampleRate,
         typer.Option(
+            complete_sample_rate,
             rich_help_panel=PanelName.AUDIO_MIXING_OPTIONS,
             help="The sample rate of the song cover.",
         ),
-    ] = 44100,
+    ] = SampleRate.HZ_44K,
     output_format: Annotated[
         AudioExt,
         typer.Option(

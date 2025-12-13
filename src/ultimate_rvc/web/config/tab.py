@@ -209,7 +209,7 @@ class GenerationConfig(BaseTabConfig):
     output_sr: DropdownConfig = DropdownConfig(
         label="Output sample rate",
         info="The sample rate of the mixed output track.",
-        value=SampleRate.HZ_44100,
+        value=SampleRate.HZ_44K,
         choices=list(SampleRate),
     )
     output_format: DropdownConfig = DropdownConfig(
@@ -764,6 +764,7 @@ class TrainingConfig(BaseTabConfig):
         minimum=1,
         maximum=100,
         visible=False,
+        step=1,
     )
     vocoder: DropdownConfig = DropdownConfig(
         label="Vocoder",

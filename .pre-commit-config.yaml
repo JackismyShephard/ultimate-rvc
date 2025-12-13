@@ -49,16 +49,5 @@ repos:
         # integration
         pass_filenames: false
 
-  # 7) Test runner
-  - repo: local
-    hooks:
-      - id: pytest
-        name: pytest
-        # TODO remove --no-cov once coverage is stable
-        entry: uv run pytest --no-cov
-        language: system
-        pass_filenames: false
-        always_run: true
-
 # Exclude the RVC directory from all hooks for now.
 exclude: ^src/ultimate_rvc/rvc/

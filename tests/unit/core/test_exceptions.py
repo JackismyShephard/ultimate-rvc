@@ -16,8 +16,6 @@ from ultimate_rvc.core.exceptions import (
     EventNotInstantiatedError,
     GPUNotFoundError,
     HttpUrlError,
-    IncompatiblePretrainedModelError,
-    IncompatibleVocoderError,
     InvalidAudioFormatError,
     InvalidLocationError,
     Location,
@@ -29,6 +27,7 @@ from ultimate_rvc.core.exceptions import (
     NotInstantiatedError,
     NotProvidedError,
     PretrainedModelExistsError,
+    PretrainedModelIncompatibleError,
     PretrainedModelNotAvailableError,
     Step,
     UIMessage,
@@ -36,7 +35,7 @@ from ultimate_rvc.core.exceptions import (
     UploadTypeError,
     YoutubeUrlError,
 )
-from ultimate_rvc.typing_extra import PretrainedSampleRate
+from ultimate_rvc.typing_extra import TrainingSampleRate
 
 
 class TestEntityEnum:
@@ -508,12 +507,12 @@ class TestPretrainedModelNotAvailableError:
     def test_pretrained_model_not_available_error_with_sample_rate(self) -> None:
         """Test PretrainedModelNotAvailableError with sample rate."""
         error = PretrainedModelNotAvailableError(
-            "test_model", PretrainedSampleRate.HZ_44K
+            "test_model", TrainingSampleRate.HZ_40K
         )
 
         assert (
             str(error)
-            == "Pretrained model with name 'test_model' and sample rate 44k is not"
+            == "Pretrained model with name 'test_model' and sample rate 40000 is not"
             " available for download."
         )
 
@@ -527,24 +526,24 @@ class TestPretrainedModelNotAvailableError:
             ),
             (
                 "model2",
-                PretrainedSampleRate.HZ_32K,
+                TrainingSampleRate.HZ_32K,
                 (
-                    "Pretrained model with name 'model2' and sample rate 32k is not"
+                    "Pretrained model with name 'model2' and sample rate 32000 is not"
                     " available for download."
                 ),
             ),
             (
                 "model3",
-                PretrainedSampleRate.HZ_48K,
+                TrainingSampleRate.HZ_48K,
                 (
-                    "Pretrained model with name 'model3' and sample rate 48k is not"
+                    "Pretrained model with name 'model3' and sample rate 48000 is not"
                     " available for download."
                 ),
             ),
         ],
     )
     def test_pretrained_model_not_available_error_parametrized(
-        self, name: str, sample_rate: PretrainedSampleRate | None, expected_message: str
+        self, name: str, sample_rate: TrainingSampleRate | None, expected_message: str
     ) -> None:
         """
         Test PretrainedModelNotAvailableError with different
@@ -565,37 +564,31 @@ class TestIncompatiblePretrainedModelError:
 
     def test_incompatible_pretrained_model_error_basic(self) -> None:
         """Test basic IncompatiblePretrainedModelError functionality."""
-        error = IncompatiblePretrainedModelError("test_model", 44100)
+        error = PretrainedModelIncompatibleError(
+            "test_model", TrainingSampleRate.HZ_40K
+        )
 
         assert isinstance(error, OSError)
         assert (
             str(error)
             == "Pretrained model with name 'test_model' is incompatible with sample"
-            " rate 44100."
+            " rate 44000."
         )
 
     @pytest.mark.parametrize(
         ("name", "sample_rate", "expected_message"),
         [
             (
-                "model1",
-                22050,
-                (
-                    "Pretrained model with name 'model1' is incompatible with sample"
-                    " rate 22050."
-                ),
-            ),
-            (
                 "model2",
-                44100,
+                TrainingSampleRate.HZ_32K,
                 (
                     "Pretrained model with name 'model2' is incompatible with sample"
-                    " rate 44100."
+                    " rate 32000."
                 ),
             ),
             (
                 "model3",
-                48000,
+                TrainingSampleRate.HZ_48K,
                 (
                     "Pretrained model with name 'model3' is incompatible with sample"
                     " rate 48000."
@@ -604,69 +597,18 @@ class TestIncompatiblePretrainedModelError:
         ],
     )
     def test_incompatible_pretrained_model_error_parametrized(
-        self, name: str, sample_rate: int, expected_message: str
+        self, name: str, sample_rate: TrainingSampleRate, expected_message: str
     ) -> None:
         """
         Test IncompatiblePretrainedModelError with different
         parameters.
         """
-        error = IncompatiblePretrainedModelError(name, sample_rate)
+        error = PretrainedModelIncompatibleError(name, sample_rate)
         assert str(error) == expected_message
 
     def test_incompatible_pretrained_model_error_inheritance(self) -> None:
         """Test IncompatiblePretrainedModelError inheritance."""
-        error = IncompatiblePretrainedModelError("test", 44100)
-        assert isinstance(error, OSError)
-        assert isinstance(error, Exception)
-
-
-class TestIncompatibleVocoderError:
-    """Test cases for IncompatibleVocoderError exception."""
-
-    def test_incompatible_vocoder_error_basic(self) -> None:
-        """Test basic IncompatibleVocoderError functionality."""
-        error = IncompatibleVocoderError("test_vocoder")
-
-        assert isinstance(error, OSError)
-        assert (
-            str(error)
-            == "The default pretrained model is incompatible with the vocoder"
-            " test_vocoder."
-        )
-
-    @pytest.mark.parametrize(
-        ("vocoder", "expected_message"),
-        [
-            (
-                "hifigan",
-                (
-                    "The default pretrained model is incompatible with the vocoder"
-                    " hifigan."
-                ),
-            ),
-            (
-                "melgan",
-                "The default pretrained model is incompatible with the vocoder melgan.",
-            ),
-            (
-                "waveglow",
-                (
-                    "The default pretrained model is incompatible with the vocoder"
-                    " waveglow."
-                ),
-            ),
-        ],
-    )
-    def test_incompatible_vocoder_error_parametrized(
-        self, vocoder: str, expected_message: str
-    ) -> None:
-        """Test IncompatibleVocoderError with different vocoders."""
-        error = IncompatibleVocoderError(vocoder)
-        assert str(error) == expected_message
-
-    def test_incompatible_vocoder_error_inheritance(self) -> None:
-        """Test IncompatibleVocoderError inheritance."""
-        error = IncompatibleVocoderError("test")
+        error = PretrainedModelIncompatibleError("test", TrainingSampleRate.HZ_32K)
         assert isinstance(error, OSError)
         assert isinstance(error, Exception)
 
@@ -963,12 +905,12 @@ class TestPretrainedModelExistsError:
 
     def test_pretrained_model_exists_error_basic(self) -> None:
         """Test basic PretrainedModelExistsError functionality."""
-        error = PretrainedModelExistsError("test_model", PretrainedSampleRate.HZ_44K)
+        error = PretrainedModelExistsError("test_model", TrainingSampleRate.HZ_40K)
 
         assert isinstance(error, OSError)
         assert (
             str(error)
-            == "Pretrained model with name 'test_model' and sample rate 44k already"
+            == "Pretrained model with name 'test_model' and sample rate 40000 already"
             " exists."
         )
 
@@ -977,32 +919,32 @@ class TestPretrainedModelExistsError:
         [
             (
                 "model1",
-                PretrainedSampleRate.HZ_32K,
+                TrainingSampleRate.HZ_32K,
                 (
-                    "Pretrained model with name 'model1' and sample rate 32k already"
+                    "Pretrained model with name 'model1' and sample rate 32000 already"
                     " exists."
                 ),
             ),
             (
                 "model2",
-                PretrainedSampleRate.HZ_44K,
+                TrainingSampleRate.HZ_40K,
                 (
-                    "Pretrained model with name 'model2' and sample rate 44k already"
+                    "Pretrained model with name 'model2' and sample rate 40000 already"
                     " exists."
                 ),
             ),
             (
                 "model3",
-                PretrainedSampleRate.HZ_48K,
+                TrainingSampleRate.HZ_48K,
                 (
-                    "Pretrained model with name 'model3' and sample rate 48k already"
+                    "Pretrained model with name 'model3' and sample rate 48000 already"
                     " exists."
                 ),
             ),
         ],
     )
     def test_pretrained_model_exists_error_parametrized(
-        self, name: str, sample_rate: PretrainedSampleRate, expected_message: str
+        self, name: str, sample_rate: TrainingSampleRate, expected_message: str
     ) -> None:
         """Test PretrainedModelExistsError with different parameters."""
         error = PretrainedModelExistsError(name, sample_rate)
@@ -1010,7 +952,7 @@ class TestPretrainedModelExistsError:
 
     def test_pretrained_model_exists_error_inheritance(self) -> None:
         """Test PretrainedModelExistsError inheritance."""
-        error = PretrainedModelExistsError("test", PretrainedSampleRate.HZ_44K)
+        error = PretrainedModelExistsError("test", TrainingSampleRate.HZ_40K)
         assert isinstance(error, OSError)
         assert isinstance(error, Exception)
 
