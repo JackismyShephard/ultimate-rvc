@@ -190,7 +190,7 @@ def preprocess_dataset(
 
     train_preprocess.preprocess_training_set(
         str(dataset_path),
-        int(sample_rate),
+        sample_rate,
         cpu_cores,
         str(model_path),
         split_method,

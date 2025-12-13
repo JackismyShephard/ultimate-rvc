@@ -15,7 +15,6 @@ from pathlib import Path
 from ultimate_rvc.common import (
     CUSTOM_EMBEDDER_MODELS_DIR,
     CUSTOM_PRETRAINED_MODELS_DIR,
-    PRETRAINED_MODELS_DIR,
     TRAINING_MODELS_DIR,
     VOICE_MODELS_DIR,
 )
@@ -23,7 +22,6 @@ from ultimate_rvc.core.common import (
     copy_files_to_new_dir,
     display_progress,
     get_file_size,
-    json_dump,
     json_load,
     validate_model,
     validate_url,
@@ -60,13 +58,17 @@ if TYPE_CHECKING:
 
     import tqdm
 
-    from ultimate_rvc.typing_extra import PretrainedSampleRate, StrPath
+    from ultimate_rvc.typing_extra import StrPath, TrainingSampleRate
 else:
     requests = lazy.load("requests")
     tqdm = lazy.load("tqdm")
 
 PUBLIC_MODELS_JSON = json_load(Path(__file__).parent / "public_models.json")
 PUBLIC_MODELS_TABLE = VoiceModelMetaDataTable.model_validate(PUBLIC_MODELS_JSON)
+PRETRAINED_MODELS_JSON = json_load(Path(__file__).parent / "custom_pretrains.json")
+PRETRAINED_MODELS_TABLE = PretrainedModelMetaDataTable.model_validate(
+    PRETRAINED_MODELS_JSON
+)
 
 
 def get_voice_model_names() -> list[str]:
@@ -215,55 +217,6 @@ def filter_public_models_table(
     return load_public_models_table(filter_fns)
 
 
-def get_pretrained_metadata() -> PretrainedModelMetaDataTable:
-    """
-    Get metadata for pretrained models available for download.
-
-    Returns
-    -------
-    PretrainedModelMetaDataTable
-        Table with metadata for pretrained models available for
-        download.
-
-    """
-    PRETRAINED_MODELS_DIR.mkdir(parents=True, exist_ok=True)
-    pretrained_metadata_path = PRETRAINED_MODELS_DIR / "custom_pretrains.json"
-    if pretrained_metadata_path.is_file():
-        pretrained_metadata_dict = json_load(pretrained_metadata_path)
-        pretrained_metadata = PretrainedModelMetaDataTable.model_validate(
-            pretrained_metadata_dict,
-        )
-    else:
-        try:
-            json_url = "https://huggingface.co/JackismyShephard/ultimate-rvc/raw/main/pretrains.json"
-            response = requests.get(json_url, timeout=10)
-            response.raise_for_status()
-            pretrained_metadata_dict = response.json()
-            pretrained_metadata = PretrainedModelMetaDataTable.model_validate(
-                pretrained_metadata_dict,
-            )
-            json_dump(pretrained_metadata_dict, pretrained_metadata_path)
-        except requests.exceptions.RequestException:
-            pretrained_metadata_dict = {
-                "Titan": {
-                    "32k": {
-                        "D": (
-                            "blaise-tk/TITAN/resolve/main/models/medium/"
-                            "32k/pretrained/D-f032k-TITAN-Medium.pth"
-                        ),
-                        "G": (
-                            "blaise-tk/TITAN/resolve/main/models/medium/"
-                            "32k/pretrained/G-f032k-TITAN-Medium.pth"
-                        ),
-                    },
-                },
-            }
-            pretrained_metadata = PretrainedModelMetaDataTable.model_validate(
-                pretrained_metadata_dict,
-            )
-    return pretrained_metadata
-
-
 def _extract_voice_model(
     zip_file: StrPath,
     extraction_dir: StrPath,
@@ -396,7 +349,7 @@ def _download_pretrained_model_file(
                 progress_bar.update(len(data))
 
 
-def download_pretrained_model(name: str, sample_rate: PretrainedSampleRate) -> None:
+def download_pretrained_model(name: str, sample_rate: TrainingSampleRate) -> None:
     """
     Download a pretrained model.
 
@@ -404,7 +357,7 @@ def download_pretrained_model(name: str, sample_rate: PretrainedSampleRate) -> N
     ----------
     name : str
         The name of the pretrained model to download.
-    sample_rate : PretrainedSampleRate
+    sample_rate : TrainingSampleRate
         The sample rate of the pretrained model to download.
 
     Raises
@@ -422,13 +375,11 @@ def download_pretrained_model(name: str, sample_rate: PretrainedSampleRate) -> N
     if model_path.is_dir():
         raise PretrainedModelExistsError(name, sample_rate)
 
-    pretrained_metadata = get_pretrained_metadata()
-
-    if name not in pretrained_metadata.names:
+    if name not in PRETRAINED_MODELS_TABLE.names:
         raise PretrainedModelNotAvailableError(name)
-    if sample_rate not in pretrained_metadata.get_sample_rates(name):
+    if sample_rate not in PRETRAINED_MODELS_TABLE.get_sample_rates(name):
         raise PretrainedModelNotAvailableError(name, sample_rate)
-    paths = pretrained_metadata[name][sample_rate]
+    paths = PRETRAINED_MODELS_TABLE[name][sample_rate]
 
     d_url = f"https://huggingface.co/{paths.D}"
     g_url = f"https://huggingface.co/{paths.G}"

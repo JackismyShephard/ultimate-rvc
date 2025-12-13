@@ -63,11 +63,11 @@ class RVCContentType(StrEnum):
 class SampleRate(IntEnum):
     """Enumeration of supported audio sample rates."""
 
-    HZ_16000 = 16000
-    HZ_44100 = 44100
-    HZ_48000 = 48000
-    HZ_96000 = 96000
-    HZ_192000 = 192000
+    HZ_16K = 16000
+    HZ_44K = 44100
+    HZ_48K = 48000
+    HZ_96K = 96000
+    HZ_192K = 192000
 
 
 class AudioExt(StrEnum):
@@ -97,21 +97,12 @@ class PrecisionType(StrEnum):
     BF16 = "bf16"
 
 
-class TrainingSampleRate(StrEnum):
+class TrainingSampleRate(IntEnum):
     """Enumeration of sample rates for training voice models."""
 
-    HZ_32K = "32000"
-    HZ_40K = "40000"
-    HZ_48K = "48000"
-
-
-class PretrainedSampleRate(StrEnum):
-    """Enumeration of valid sample rates for pretrained models."""
-
-    HZ_32K = "32k"
-    HZ_40K = "40k"
-    HZ_44K = "44k"
-    HZ_48K = "48k"
+    HZ_32K = 32000
+    HZ_40K = 40000
+    HZ_48K = 48000
 
 
 class AudioSplitMethod(StrEnum):

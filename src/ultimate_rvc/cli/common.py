@@ -10,6 +10,7 @@ from ultimate_rvc.typing_extra import (
     IndexAlgorithm,
     PrecisionType,
     PretrainedType,
+    SampleRate,
     TrainingSampleRate,
     Vocoder,
 )
@@ -137,6 +138,24 @@ def complete_audio_split_method(incomplete: str) -> list[str]:
     return complete_name(incomplete, list(AudioSplitMethod))
 
 
+def complete_sample_rate(incomplete: str) -> list[str]:
+    """
+    Return a list of sample rates that start with the incomplete string.
+
+    Parameters
+    ----------
+    incomplete : str
+        The incomplete string to complete.
+
+    Returns
+    -------
+    list[str]
+        The list of sample rates that start with the incomplete string.
+
+    """
+    return complete_name(incomplete, [str(sr) for sr in SampleRate])
+
+
 def complete_training_sample_rate(incomplete: str) -> list[str]:
     """
     Return a list of training sample rates that start with the
@@ -154,7 +173,7 @@ def complete_training_sample_rate(incomplete: str) -> list[str]:
         string.
 
     """
-    return complete_name(incomplete, list(TrainingSampleRate))
+    return complete_name(incomplete, [str(sr) for sr in TrainingSampleRate])
 
 
 def complete_normalization_mode(incomplete: str) -> list[str]:

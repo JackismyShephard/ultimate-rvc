@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Literal
 from enum import StrEnum
 
 if TYPE_CHECKING:
-    from ultimate_rvc.typing_extra import PretrainedSampleRate, StrPath
+    from ultimate_rvc.typing_extra import StrPath, TrainingSampleRate
 
 
 class Entity(StrEnum):
@@ -289,7 +289,8 @@ class PretrainedModelNotAvailableError(OSError):
     def __init__(
         self,
         name: str,
-        sample_rate: PretrainedSampleRate | None = None,
+        sample_rate: TrainingSampleRate | None = None,
+        download: bool = True,
     ) -> None:
         r"""
         Initialize a PretrainedModelNotAvailableError instance.
@@ -305,25 +306,29 @@ class PretrainedModelNotAvailableError(OSError):
         name : str
             The name of the pretrained model that is not available for
             download.
-        sample_rate : PretrainedSampleRate, optional
+        sample_rate : TrainingSampleRate, optional
             The sample rate of the pretrained model that is not
             available for download.
+        download : bool, default=True
+            Whether the pretrained model is not available for download
+            or on disk.
 
         """
         suffix = f" and sample rate {sample_rate}" if sample_rate else ""
+        second_suffix = " for download" if download else ""
         super().__init__(
-            f"Pretrained model with name '{name}'{suffix} is not available for"
-            " download.",
+            f"Pretrained model with name '{name}'{suffix} is not"
+            f" available{second_suffix}.",
         )
 
 
-class IncompatiblePretrainedModelError(OSError):
+class PretrainedModelIncompatibleError(OSError):
     """
     Raised when a pretrained model is incompatible with a given sample
     rate.
     """
 
-    def __init__(self, name: str, sample_rate: int) -> None:
+    def __init__(self, name: str, sample_rate: TrainingSampleRate) -> None:
         r"""
         Initialize an IncompatiblePretrainedModelError instance.
 
@@ -337,7 +342,7 @@ class IncompatiblePretrainedModelError(OSError):
         name : str
             The name of the pretrained model that is incompatible with
             a given sample rate.
-        sample_rate : int
+        sample_rate : TrainingSampleRate
             The sample rate that the pretrained model is incompatible
             with.
 
@@ -345,33 +350,6 @@ class IncompatiblePretrainedModelError(OSError):
         super().__init__(
             f"Pretrained model with name '{name}' is incompatible with sample rate"
             f" {sample_rate}.",
-        )
-
-
-class IncompatibleVocoderError(OSError):
-    """
-    Raised when a default pretrained model is incompatible with a
-    given vocoder.
-    """
-
-    def __init__(self, vocoder: str) -> None:
-        r"""
-        Initialize an IncompatibleVocoderError instance.
-
-        Exception message will be formatted as:
-
-        'The default pretrained model is incompatible with the vocoder
-        `<vocoder>`.'
-
-        Parameters
-        ----------
-        vocoder : str
-            The vocoder that the default pretrained model is
-            incompatible with.
-
-        """
-        super().__init__(
-            f"The default pretrained model is incompatible with the vocoder {vocoder}.",
         )
 
 
@@ -509,7 +487,7 @@ class PretrainedModelExistsError(OSError):
     already exists.
     """
 
-    def __init__(self, name: str, sample_rate: PretrainedSampleRate) -> None:
+    def __init__(self, name: str, sample_rate: TrainingSampleRate) -> None:
         r"""
         Initialize a PretrainedModelExistsError instance.
 
@@ -522,7 +500,7 @@ class PretrainedModelExistsError(OSError):
         ----------
         name : str
             The name of the pretrained model that already exists.
-        sample_rate : PretrainedSampleRate
+        sample_rate : TrainingSampleRate
             The sample rate of the pretrained model that already exists.
 
         """

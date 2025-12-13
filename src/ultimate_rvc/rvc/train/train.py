@@ -473,7 +473,6 @@ def run(
     # Load checkpoint if available
     scaler_dict = {}
     try:
-        logger.info("Starting training...")
         _, _, _, epoch_str, lowest_d_value, consecutive_increases_disc, scaler_dict = (
             load_checkpoint(
                 latest_checkpoint_path(experiment_dir, "D_*.pth"),
@@ -490,6 +489,20 @@ def run(
         )
         epoch_str += 1
         global_step = (epoch_str - 1) * len(train_loader)
+        logger.info("Resumed from epoch %s", epoch_str)
+        logger.info(
+            "Loaded lowest generator loss %.3f at epoch %s, lowest discriminator loss"
+            " %.3f at epoch %s",
+            lowest_g_value["value"],
+            lowest_g_value["epoch"],
+            lowest_d_value["value"],
+            lowest_d_value["epoch"],
+        )
+        logger.info(
+            "Loaded consecutive increases gen %d, consecutive increases disc %d",
+            consecutive_increases_gen,
+            consecutive_increases_disc,
+        )
 
     except Exception:
         epoch_str = 1
@@ -608,6 +621,8 @@ def run(
         )
     if epoch_str > custom_total_epoch:
         cleanup_training_processes(experiment_dir)
+        return
+    logger.info("Starting training...")
     for epoch in range(epoch_str, custom_total_epoch + 1):
         train_and_evaluate(
             rank,
