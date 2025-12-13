@@ -1,6 +1,6 @@
 # TODO
 
-* issue: refinegan is very slow (when using pretrained type none)
+* Ideally we should try to load pretrained model into model architecture before starting training to catch any potential issues and report them as proper exceptions from main process, rather than as now where they are reported from training subprocess and only show up in logging.
 * potential issue, when continuing training, even if threshold for overtraining has already been reached, one more epoch is still trained. This is because the check for overtraining is only done after an epoch is completed. Consider whether this is an issue or not.
 * issue with caching for step 2:
   * results from pitch extracton and embedding extraction are saved with names corresponding to the audio files they were generated from.
