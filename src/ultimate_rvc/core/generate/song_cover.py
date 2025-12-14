@@ -910,7 +910,7 @@ def run_pipeline(
     model_name: str,
     n_octaves: int = 0,
     n_semitones: int = 0,
-    f0_method: F0Method | None = None,
+    f0_method: F0Method = F0Method.RMVPE,
     index_rate: float = 0.3,
     rms_mix_rate: float = 1.0,
     protect_rate: float = 0.33,
@@ -952,9 +952,9 @@ def run_pipeline(
     n_semitones : int, default=0
         The number of semi-tones to pitch-shift the converted vocals,
         instrumentals, and backup vocals by.
-    f0_method: F0Method | None = None,
+    f0_method: F0Method, default=F0Method.RMVPE
         The method to use for pitch extraction during vocal
-        conversion. If None, the method used is rmvpe.
+        conversion.
     index_rate : float, default=0.3
         The influence of the index file on the vocal conversion.
     rms_mix_rate : float, default=1.0

@@ -466,7 +466,7 @@ def run_pipeline(
     tts_volume_change: int = 0,
     n_octaves: int = 0,
     n_semitones: int = 0,
-    f0_method: F0Method | None = None,
+    f0_method: F0Method = F0Method.RMVPE,
     index_rate: float = 0.3,
     rms_mix_rate: float = 1.0,
     protect_rate: float = 0.33,
@@ -526,7 +526,7 @@ def run_pipeline(
         The number of semitones to shift the pitch of the speech
         converted using RVC.
 
-    f0_method: F0Method | None = None
+    f0_method: F0Method, default=F0Method.RMVPE
         The method to use for pitch extraction during RVC.
 
     index_rate : float, default=0.3

@@ -71,17 +71,14 @@ def run_pipeline(
         ),
     ] = 0,
     f0_method: Annotated[
-        F0Method | None,
+        F0Method,
         typer.Option(
             case_sensitive=False,
             autocompletion=complete_f0_method,
             rich_help_panel=PanelName.VOICE_SYNTHESIS_OPTIONS,
-            help=(
-                "The method to use for pitch extraction.  If not provided, will"
-                " default to the rmvpe method, which is generally recommended."
-            ),
+            help="The method to use for pitch extraction.",
         ),
-    ] = None,
+    ] = F0Method.RMVPE,
     index_rate: Annotated[
         float,
         typer.Option(

@@ -284,7 +284,7 @@ class ConfigNotFoundError(EntityNotFoundError):
 
 
 class PretrainedModelNotAvailableError(OSError):
-    """Raised when a pretrained model is not available for download."""
+    """Raised when a pretrained model is not available."""
 
     def __init__(
         self,
@@ -298,8 +298,8 @@ class PretrainedModelNotAvailableError(OSError):
         Exception message will be formatted as:
 
         'Pretrained model with name "`<name>`"
-        [and sample rate `<sample_rate>`] is not available for
-        download.'
+        [and sample rate `<sample_rate>`] is not available [for
+        download].'
 
         Parameters
         ----------
@@ -308,10 +308,10 @@ class PretrainedModelNotAvailableError(OSError):
             download.
         sample_rate : TrainingSampleRate, optional
             The sample rate of the pretrained model that is not
-            available for download.
+            available.
         download : bool, default=True
             Whether the pretrained model is not available for download
-            or on disk.
+            or not available on disk.
 
         """
         suffix = f" and sample rate {sample_rate}" if sample_rate else ""

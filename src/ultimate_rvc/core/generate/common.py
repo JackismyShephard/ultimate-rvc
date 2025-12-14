@@ -260,7 +260,7 @@ def convert(
     model_name: str,
     n_octaves: int = 0,
     n_semitones: int = 0,
-    f0_method: F0Method | None = None,
+    f0_method: F0Method = F0Method.RMVPE,
     index_rate: float = 0.3,
     rms_mix_rate: float = 1.0,
     protect_rate: float = 0.33,
@@ -293,9 +293,8 @@ def convert(
         The number of octaves to pitch-shift the converted audio by.
     n_semitones : int, default=0
         The number of semitones to pitch-shift the converted audio by.
-    f0_method : Sequence[F0Method], optional
-        The methods to use for pitch extraction. If None, the method
-        used is rmvpe.
+    f0_method : F0Method, default=F0Method.RMVPE
+        The method to use for pitch extraction.
     index_rate : float, default=0.3
         The influence of the index file on the voice conversion.
     rms_mix_rate : float, default = 1.0
@@ -372,7 +371,6 @@ def convert(
     )
 
     n_semitones = n_octaves * 12 + n_semitones
-    f0_method = f0_method or F0Method.RMVPE
 
     args_dict = RVCAudioMetaData(
         audio_track=FileMetaData(

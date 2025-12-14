@@ -131,6 +131,35 @@ def preprocess_dataset(
             ),
         ),
     ] = AudioNormalizationMode.POST,
+    filter_audio: Annotated[
+        bool,
+        typer.Option(
+            help=(
+                "Whether to remove low-frequency sounds from the audio files in the"
+                " provided dataset by applying a high-pass butterworth filter."
+            ),
+        ),
+    ] = True,
+    clean_audio: Annotated[
+        bool,
+        typer.Option(
+            help=(
+                "Whether to clean the audio files in the provided dataset using noise"
+                " reduction algorithms."
+            ),
+        ),
+    ] = False,
+    clean_strength: Annotated[
+        float,
+        typer.Option(
+            min=0.0,
+            max=1.0,
+            help=(
+                "The intensity of the cleaning to apply to the audio files in the"
+                " provided dataset."
+            ),
+        ),
+    ] = 0.7,
     split_method: Annotated[
         AudioSplitMethod,
         typer.Option(
@@ -164,35 +193,6 @@ def preprocess_dataset(
             ),
         ),
     ] = 0.3,
-    filter_audio: Annotated[
-        bool,
-        typer.Option(
-            help=(
-                "Whether to remove low-frequency sounds from the audio files in the"
-                " provided dataset by applying a high-pass butterworth filter."
-            ),
-        ),
-    ] = True,
-    clean_audio: Annotated[
-        bool,
-        typer.Option(
-            help=(
-                "Whether to clean the audio files in the provided dataset using noise"
-                " reduction algorithms."
-            ),
-        ),
-    ] = False,
-    clean_strength: Annotated[
-        float,
-        typer.Option(
-            min=0.0,
-            max=1.0,
-            help=(
-                "The intensity of the cleaning to apply to the audio files in the"
-                " provided dataset."
-            ),
-        ),
-    ] = 0.7,
     cpu_cores: Annotated[
         int,
         typer.Option(
@@ -213,12 +213,12 @@ def preprocess_dataset(
         dataset=dataset,
         sample_rate=sample_rate,
         normalization_mode=normalization_mode,
-        split_method=split_method,
-        chunk_len=chunk_len,
-        overlap_len=overlap_len,
         filter_audio=filter_audio,
         clean_audio=clean_audio,
         clean_strength=clean_strength,
+        split_method=split_method,
+        chunk_len=chunk_len,
+        overlap_len=overlap_len,
         cpu_cores=cpu_cores,
     )
 

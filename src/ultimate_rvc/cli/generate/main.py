@@ -164,17 +164,14 @@ def convert_voice(
         ),
     ] = 0,
     f0_method: Annotated[
-        F0Method | None,
+        F0Method,
         typer.Option(
             case_sensitive=False,
             autocompletion=complete_f0_method,
             rich_help_panel=PanelName.VOICE_SYNTHESIS_OPTIONS,
-            help=(
-                "The method to use for pitch extraction.  If not provided, will"
-                " default to the rmvpe method, which is generally recommended."
-            ),
+            help="The method to use for pitch extraction.",
         ),
-    ] = None,
+    ] = F0Method.RMVPE,
     index_rate: Annotated[
         float,
         typer.Option(
@@ -258,8 +255,8 @@ def convert_voice(
     proposed_pitch_threshold: Annotated[
         float,
         typer.Option(
-            min=0,
-            max=1,
+            min=50.0,
+            max=1200.0,
             rich_help_panel=PanelName.VOICE_ENRICHMENT_OPTIONS,
             help=(
                 "Threshold for proposed pitch correction. Male voice models typically"

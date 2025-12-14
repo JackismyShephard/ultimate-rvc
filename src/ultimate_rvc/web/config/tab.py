@@ -114,10 +114,7 @@ class GenerationConfig(BaseTabConfig):
     )
     f0_method: DropdownConfig = DropdownConfig(
         label="Pitch extraction algorithm",
-        info=(
-            "RMVPE is recommended for most cases and is the default when no method is"
-            " selected."
-        ),
+        info="RMVPE is recommended for most cases and is the default.",
         value=F0Method.RMVPE,
         choices=list(F0Method),
         multiselect=False,
@@ -557,6 +554,8 @@ class TrainingConfig(BaseTabConfig):
     training_gpus : DropdownConfig
         Configuration settings for a GPU dropdown component for
         training.
+    precision: DropdownConfig
+        Configuration settings for a precision type dropdown component.
     preload_dataset : CheckboxConfig
         Configuration settings for a preload dataset checkbox component.
     reduce_memory_usage : CheckboxConfig

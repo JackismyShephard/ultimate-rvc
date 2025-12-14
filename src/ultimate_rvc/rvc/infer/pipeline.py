@@ -13,8 +13,6 @@ import librosa
 now_dir = pathlib.Path.cwd()
 sys.path.append(str(now_dir))
 
-import lazy_loader as lazy
-
 import logging
 
 from ultimate_rvc.rvc.lib.predictors.f0 import CREPE, FCPE, RMVPE
