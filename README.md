@@ -19,15 +19,15 @@ Courtesy of [Social & Apps](https://www.youtube.com/@socialapps1194)
 
 ## New Features
 
-* Easy and automated setup using launcher scripts for both windows and Debian-based linux systems
+* Easy and automated setup using launcher scripts for both Windows and Debian-based linux systems
 * Significants improvements to voice conversion quality and speed. New features include support for additional pitch extraction methods such as FCPE, different embedder models and pre/post-processing options such as autotuning and noise reduction.
 * TTS functionality, which allows you to generate speech from text using any RVC-based voice model. With this feature, you can do things such as generate audio books using your favourite character's voice.
 * A voice model training suite, which allows you to train your own voice models using a wide range of options, such as different datasets, embedder models, and training configurations.
 * Caching system which saves intermediate audio files as needed, thereby reducing inference time as much as possible. For example, if song A has already been converted using model B and now you want to convert song A using model C, then vocal extraction can be skipped and inference time reduced drastically
 * Ability to listen to intermediate audio files in the UI. This is useful for getting an idea of what is happening in each step of a given generation pipeline.
 * "multi-step" generation tabs: Here you can try out each step of a given generation pipeline in isolation. For example, if you already have extracted vocals available and only want to convert these using your voice model, then you can do that in a dedicated "multi-step" tab for song cover generation. Besides, these "multi-step" generation tabs are also useful for experimenting with settings for each step in a given generation pipeline.
-* Lots of visual and performance improvements resulting from updating from Gradio 3 to Gradio 5 and from python 3.9 to python 3.13
-* A redistributable package on PyPI, which allows you to easily access the Ultimate RVC project from any python 3.13 environment.
+* Lots of visual and performance improvements resulting from updating from Gradio 3 to Gradio 5 and from Python 3.9 to Python 3.13
+* A redistributable package on PyPI, which allows you to easily access the Ultimate RVC project from any Python 3.13 environment.
 * Support for saving and loading of custom configurations for the Ultimate RVC web application. This allows you to easily switch between different configurations without having to manually change settings each time.
 
 ## Online Platforms
@@ -38,7 +38,7 @@ For those without a powerful enough NVIDIA GPU, you may try out Ultimate RV usin
 
 The Ultimate RVC project currently supports Windows and Debian-based Linux distributions, namely Ubuntu 22.04 and Ubuntu 24.04. Support for other platforms is not guaranteed.
 
-To setup the project follow the steps below and execute the provided commands in an appropriate terminal. On windows this terminal should be **powershell**, while on Debian-based linux distributions it should be a **bash**-compliant shell.
+To setup the project follow the steps below and execute the provided commands in an appropriate terminal. On Windows this terminal should be **powershell**, while on Debian-based linux distributions it should be a **bash**-compliant shell.
 
 ### Install Git
 
@@ -139,7 +139,7 @@ pip install ultimate-rvc[cuda] --extra-index-url https://download.pytorch.org/wh
 
 ### CLI Usage
 
-The `ultimate-rvc` package can be used as a python library but is primarily intended to be used as a command line tool. The package exposes two top-level commands:
+The `ultimate-rvc` package can be used as a Python library but is primarily intended to be used as a command line tool. The package exposes two top-level commands:
 
 * `urvc` which lets the user generate song covers directly from their terminal
 * `urvc-web` which starts a local instance of the Ultimate RVC web application
@@ -162,6 +162,7 @@ The behaviour of the Ultimate RVC project can be customized via a number of envi
 * `YT_COOKIEFILE`: The path to a file containing cookies to use when downloading audio from YouTube via the web UI. If not set, no cookies will be used.
 * `URVC_ACCELERATOR`: The type of hardware accelerator to use when running Ultimate RVC directly via the shell scripts in this repository. Currently supported options are `cuda` and `rocm`, with `cuda` being the default. Note that `rocm` is not supported on Windows and experimental on linux.
 * `URVC_CONFIG`: The name of a configuration with custom values for settings to load when starting the Ultimate RVC web application. If not set, the default configuration for Ultimate RVC will be used. The configuration should be located in the `configs` directory of the Ultimate RVC project. If it does not exist, an error will be raised.
+* `NODE_PATH`: The path to custom Node.js installation to use when running the Ultimate RVC web application and downloading from YouTube. If not set, a default Node.js installation bundled with Ultimate RVC will be used.
 
 ## Help & Community
 
