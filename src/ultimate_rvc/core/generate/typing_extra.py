@@ -304,12 +304,10 @@ EdgeTTSVoiceTable = list[list[str]]
 EdgeTTSVoiceKey = Literal[
     "Name",
     "ShortName",
-    "DisplayName",
-    "LocalName",
-    "LocaleName",
-    "Locale",
     "Gender",
-    "WordsPerMinute",
+    "Locale",
+    "SuggestedCodec",
+    "FriendlyName",
     "Status",
 ]
 EdgeTTSVoiceTagKey = Literal[
