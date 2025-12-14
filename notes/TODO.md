@@ -1,7 +1,5 @@
 # TODO
 
-* Ideally we should try to load pretrained model into model architecture before starting training to catch any potential issues and report them as proper exceptions from main process, rather than as now where they are reported from training subprocess and only show up in logging.
-* potential issue, when continuing training, even if threshold for overtraining has already been reached, one more epoch is still trained. This is because the check for overtraining is only done after an epoch is completed. Consider whether this is an issue or not.
 * issue with caching for step 2:
   * results from pitch extracton and embedding extraction are saved with names corresponding to the audio files they were generated from.
   * When rerunning they are not recomputed if output files already exist.
@@ -10,9 +8,10 @@
   * Temporary solution: always delete cached files befor running step 2 again.
   * long term solution: save all param used for generation in step 1 in model_info.json. We can also have a model_info.json inside each subfolder lik f0___ embedder_extracted etc. then compare the one in root folder with the one in a subfolder to decide if it should be deleted before running step 2 again.
   * another alterantive: in both step 1 audio preprocessing and step 2 always save all parameters into model_info.json. onceptually then we should be able to just hash this json compare it to hash in each file and that way determine if it needs to be recomputed. We can also skip the file level and instead do it folder level but then we might have an issue with computing the hash as we need to take into account the names of the files in the folder too or perhaps we can get away with computing the hash of the concatenated hashes of each file in the folder.
-* NEXT UP: test step 2 with crepe an crepe tiny pithc extraction methods
+* potential issue, when continuing training, even if threshold for overtraining has already been reached, one more epoch is still trained. This is because the check for overtraining is only done after an epoch is completed. Consider whether this is an issue or not.
+* Ideally we should try to load pretrained model into model architecture before starting training to catch any potential issues and report them as proper exceptions from main process, rather than as now where they are reported from training subprocess and only show up in logging.
+
 * Test if custom embeddder models stil work
-* incorporate latest changes from applio
 * fix issue with lazy loader for package on windows:
 c:\Users\Jacki\test-project\.venv\Lib\site-packages\lazy_loader\__init__.py:202: RuntimeWarning: subpackages can technically be lazily loaded, but it causes the package to be eagerly loaded even if it is already lazily loaded.So, you probably shouldn't use subpackages with this lazy feature.
   warnings.warn(msg, RuntimeWarning)
