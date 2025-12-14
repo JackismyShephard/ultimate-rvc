@@ -19,20 +19,20 @@ dependencies = [
   # Networking
   "requests==2.32.5",
   "yt_dlp[default]>=2025.11.12",
-  "nodejs-wheel-binaries==24.11.1",
+  "nodejs-wheel-binaries==24.12.0",
   "wget==3.2",
 
   # Data science
   "numpy==2.3.5",
   "scipy==1.16.3",
-  "matplotlib==3.10.7",
+  "matplotlib==3.10.8",
   "tqdm==4.67.1",
   "gradio==5.49.1",
   "pandas-stubs==2.3.3.251201",
 
   # Machine learning
   "torchcrepe==0.0.24",
-  "faiss-cpu==1.13.0",
+  "faiss-cpu==1.13.1",
   # Version of onnxruntime-gpu needs to align with what 
   # version audio-separator package uses.
   "onnxruntime-gpu==1.23.2",
@@ -47,7 +47,7 @@ dependencies = [
   # Audio
   "static-ffmpeg==2.13",
   "static-sox==1.0.2",
-  "typed-ffmpeg==3.7.1",
+  "typed-ffmpeg==3.8.1",
   "soundfile==0.13.1",
   "librosa==0.11.0",
   "sox==1.5.0",
@@ -57,7 +57,7 @@ dependencies = [
   "pedalboard==0.9.19",
   "audio-separator[gpu]==0.40.0",
   "noisereduce==3.0.3",
-  "edge-tts==7.2.3",
+  "edge-tts==7.2.7",
   # TODO potentially add these later
   # below package outcommented until we use dio,pm and harvest
   #"pyworld-fixed==0.3.8",
