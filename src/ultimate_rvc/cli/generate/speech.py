@@ -252,7 +252,7 @@ def run_pipeline(
             case_sensitive=False,
             autocompletion=complete_f0_method,
             rich_help_panel=PanelName.RVC_SYNTHESIS_OPTIONS,
-            help="The method to use for pitch extraction.",
+            help="The method to use for pitch extraction during the RVC process.",
         ),
     ] = F0Method.RMVPE,
     index_rate: Annotated[
