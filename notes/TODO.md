@@ -1,5 +1,7 @@
 # TODO
 
+* In simple_cut method, when normalization_mode == "post", if _normalize_audio returns None (when tmp_max > 2.5), the code will fail at line 143 with AttributeError when trying to call .astype() on None. The function should handle this case by checking if the normalized chunk is None before writing it.
+* Variable p_len is not used in get_f0 functions.
 * issue with caching for step 2:
   * results from pitch extracton and embedding extraction are saved with names corresponding to the audio files they were generated from.
   * When rerunning they are not recomputed if output files already exist.
