@@ -297,7 +297,7 @@ def run_pipeline(
     output_sr: Annotated[
         SampleRate,
         typer.Option(
-            complete_sample_rate,
+            autocompletion=complete_sample_rate,
             rich_help_panel=PanelName.AUDIO_MIXING_OPTIONS,
             help="The sample rate of the song cover.",
         ),
