@@ -1,0 +1,27 @@
+services:
+  ultimate-rvc:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: ultimate-rvc-app:latest
+    container_name: ultimate-rvc
+    volumes:
+      - ../models:/app/models
+      - ../audio:/app/audio
+      - ../logs:/app/logs
+      - ../temp:/app/temp
+    ports:
+      - "7860:7860"
+    deploy:
+      resources:
+        limits:
+          cpus: '8.0'
+          memory: 16G
+        reservations:
+          cpus: '2.0'
+          memory: 4G
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
