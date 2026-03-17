@@ -10,7 +10,6 @@
 # Currently only supports Ubuntu 22.04 and Ubuntu 24.04.
 
 URVC_PKGMAN=apt-get
-PYVER=3.13
 
 UV_PATH=$(pwd)/uv
 VENV_PATH=$UV_PATH/.venv
@@ -101,8 +100,8 @@ bootstrap() {
     
     if [ "$IS_DOCKER" -eq "1" ]; then
         echo "Installing Python dependencies..."
-        uv venv --python "$PYVER"
-        uv pip install -r ./pyproject.toml --extra "$URVC_ACCELERATOR"
+		uv lock
+		uv sync --no-editable --extra "$URVC_ACCELERATOR"
         echo "Python dependencies installed!"
     else
         uv run --extra "$URVC_ACCELERATOR" ./src/ultimate_rvc/core/main.py
