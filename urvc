@@ -10,6 +10,8 @@
 # Currently only supports Ubuntu 22.04 and Ubuntu 24.04.
 
 PGKMAN=apt-get
+PYVER=3.13
+
 UV_PATH=$(pwd)/uv
 VENV_PATH=$UV_PATH/.venv
 URVC_ACCELERATOR=${URVC_ACCELERATOR:-cuda}
@@ -27,12 +29,11 @@ main() {
     command=$1
     shift
     case $command in
+        docker-bootstrap)
+            bootstrap 1
+            ;;
         install)
-            sudo $PKGMAN install -y python3-dev build-essential unzip
-            install_distro_specifics
-            install_cuda_128
-            curl -LsSf https://astral.sh/uv/0.9.11/install.sh | sh
-            uv run --extra "$URVC_ACCELERATOR" ./src/ultimate_rvc/core/main.py
+            bootstrap 0
             ;;
         update)
             git pull
@@ -89,6 +90,24 @@ main() {
     esac
 }
 
+
+bootstrap() {
+    IS_DOCKER=$1
+    
+    sudo $PKGMAN install -y python3-dev build-essential unzip
+    install_distro_specifics
+    install_cuda_128
+    curl -LsSf https://astral.sh/uv/0.9.11/install.sh | sh
+    
+    if [ "$IS_DOCKER" -eq "1" ]; then
+        echo "Installing Python dependencies..."
+        uv venv --python "$PYVER"
+        uv pip install -r ./pyproject.toml --extra "$URVC_ACCELERATOR"
+        echo "Python dependencies installed!"
+    else
+        uv run --extra "$URVC_ACCELERATOR" ./src/ultimate_rvc/core/main.py
+    fi
+}
 
 install_distro_specifics() {
     # shellcheck disable=SC1091
