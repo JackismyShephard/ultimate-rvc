@@ -9,8 +9,6 @@
 # Launcher script for Ultimate RVC on Debian-based linux systems.
 # Currently only supports Ubuntu 22.04 and Ubuntu 24.04.
 
-URVC_PKGMAN=apt-get
-
 UV_PATH=$(pwd)/uv
 VENV_PATH=$UV_PATH/.venv
 URVC_ACCELERATOR=${URVC_ACCELERATOR:-cuda}
@@ -93,7 +91,7 @@ main() {
 bootstrap() {
     IS_DOCKER=$1
     
-    sudo $URVC_PKGMAN install -y python3-dev build-essential unzip
+	sudo apt-get install -y python3-dev build-essential unzip
     install_distro_specifics
     install_cuda_128
     curl -LsSf https://astral.sh/uv/0.9.11/install.sh | sh
@@ -118,7 +116,7 @@ install_distro_specifics() {
                     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
                     ;;
                 22.04)
-                    sudo $URVC_PKGMAN install clang -y
+                    sudo apt-get install clang -y
                     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
                     ;;
                 *)
@@ -137,8 +135,8 @@ install_distro_specifics() {
 install_cuda_128() {
     echo "Installing CUDA 12.8"
     sudo dpkg -i cuda-keyring_1.1-1_all.deb
-    sudo $URVC_PKGMAN update
-    sudo $URVC_PKGMAN -y install cuda-toolkit-12-8
+    sudo apt-get update
+    sudo apt-get -y install cuda-toolkit-12-8
     rm -rf cuda-keyring_1.1-1_all.deb
     echo "CUDA 12.8 has been installed successfully"
 }
