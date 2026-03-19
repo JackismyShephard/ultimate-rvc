@@ -27,10 +27,13 @@ main() {
     shift
     case $command in
         docker-bootstrap)
-            bootstrap 1
+			echo "[  ] Installing dependencies..."
+            install_deps
+			echo "[OK] Dependencies installed!"
             ;;
         install)
-            bootstrap 0
+            install_deps
+			uv run --extra "$URVC_ACCELERATOR" ./src/ultimate_rvc/core/main.py
             ;;
         update)
             git pull
@@ -88,22 +91,13 @@ main() {
 }
 
 
-bootstrap() {
-    IS_DOCKER=$1
-    
+install_deps() {
 	sudo apt-get install -y python3-dev build-essential unzip
     install_distro_specifics
     install_cuda_128
     curl -LsSf https://astral.sh/uv/0.9.11/install.sh | sh
-    
-    if [ "$IS_DOCKER" -eq "1" ]; then
-        echo "Installing Python dependencies..."
-		uv lock
-		uv sync --no-editable --extra "$URVC_ACCELERATOR"
-        echo "Python dependencies installed!"
-    else
-        uv run --extra "$URVC_ACCELERATOR" ./src/ultimate_rvc/core/main.py
-    fi
+	
+	uv sync --no-editable --extra "$URVC_ACCELERATOR"
 }
 
 install_distro_specifics() {
