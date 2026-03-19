@@ -9,8 +9,7 @@ COPY . .
 RUN --mount=type=tmpfs,target=/var/lib/apt/lists \
 	--mount=type=tmpfs,target=/var/cache/apt/archives \
 	apt-get update && \
-	apt-get install -y --no-install-recommends sudo wget curl shellcheck dos2unix && \
-	dos2unix ./urvc && \
+	apt-get install -y --no-install-recommends sudo wget curl && \
 	./urvc docker-bootstrap
 
 EXPOSE 7860
