@@ -11,11 +11,9 @@ An extension of [AiCoverGen](https://github.com/SociallyIneptWeeb/AICoverGen), w
 
 ## Youtube Showcase
 
-* [Ultimate RVC: The Most Powerful AI Voice Cloning Tool Yet!](https://www.youtube.com/watch?v=dVpCF68JpNg)
-* [Ultimate-RVC on Your PC | Turn Any Voice Into Yours!](https://www.youtube.com/watch?v=IxFgz50y1AY)
-* [Train Any Voice with Ultimate RVC | Fast & Accurate Voice Cloning](https://www.youtube.com/watch?v=O7VeYLL3H-c)
+* [Ultimate RVC Installation Tutorial 2026 AI Voice Cloning, Song Covers & Voice Model Training!](Ultimate RVC Installation Tutorial 2026 AI Voice Cloning, Song Covers & Voice Model Trainin)
 
-Courtesy of [Social & Apps](https://www.youtube.com/@socialapps1194)
+Courtesy of [AiThatSpeaks](https://www.youtube.com/@Ai-Universe-x9j)
 
 ## New Features
 
