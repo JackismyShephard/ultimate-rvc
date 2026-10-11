@@ -1,7 +1,3 @@
-from typing import TYPE_CHECKING
-
-import lazy_loader as lazy
-
 import glob
 import logging
 import os
@@ -14,11 +10,6 @@ import numpy as np
 import torch
 
 import soundfile as sf
-
-if TYPE_CHECKING:
-    import static_sox.run as static_sox_run
-else:
-    static_sox_run = lazy.load("static_sox.run")
 
 logger = logging.getLogger(__name__)
 
@@ -63,8 +54,9 @@ def remove_sox_libmso6_from_ld_preload() -> None:
     environment variable.
 
     """
-    sox_exe = static_sox_run.get_or_fetch_platform_executables_else_raise()
-    remove_from_ld_preload(os.path.join(os.path.dirname(sox_exe), "libm.so.6"))
+    for entry in os.environ.get("LD_PRELOAD", "").split(os.pathsep):
+        if "static_sox" in entry and pathlib.Path(entry).name == "libm.so.6":
+            remove_from_ld_preload(entry)
 
 
 def replace_keys_in_dict(d, old_key_part, new_key_part):
