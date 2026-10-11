@@ -11,7 +11,7 @@ An extension of [AiCoverGen](https://github.com/SociallyIneptWeeb/AICoverGen), w
 
 ## Youtube Showcase
 
-[Ultimate RVC Installation Tutorial 2026 AI Voice Cloning, Song Covers & Voice Model Training!](https://www.youtube.com/watch?v=xDGiWl4wZmY&t=25s)
+[Ultimate RVC Installation Tutorial 2026 AI Voice Cloning, Song Covers & Voice Model Training](https://www.youtube.com/watch?v=xDGiWl4wZmY&t=25s)
 
 Courtesy of [AiThatSpeaks](https://www.youtube.com/@Ai-Universe-x9j)
 
