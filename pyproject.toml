@@ -58,6 +58,8 @@ dependencies = [
   "audio-separator[gpu]==0.40.0",
   "noisereduce==3.0.3",
   "edge-tts==7.2.7",
+  "sounddevice==0.5.3",
+  "webrtcvad==2.0.10",
   # TODO potentially add these later
   # below package outcommented until we use dio,pm and harvest
   #"pyworld-fixed==0.3.8",
